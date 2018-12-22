@@ -1,0 +1,28 @@
+{
+  "name": "@yodata/solid-serverless",
+  "version": "0.0.1",
+  "description": "(alpha) solid-server implementation in aws and (mostly) lambda",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yodata/solid-serverless.git"
+  },
+  "keywords": [
+    "yodata",
+    "solid-server",
+    "linked-data",
+    "ldp"
+  ],
+  "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Yodata/solid-serverless/issues"
+  },
+  "homepage": "https://github.com/Yodata/solid-serverless#readme",
+  "devDependencies": {
+    "lerna": "^3.6.0"
+  }
+}
