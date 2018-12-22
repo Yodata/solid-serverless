@@ -1,0 +1,6 @@
+#!/bin/bash
+
+aws cloudformation deploy \
+--capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM CAPABILITY_IAM \
+--template-file packaged.yaml \
+--stack-name data-processing-service

@@ -1,0 +1,8 @@
+{
+  "agent": "GoodDog",
+  "instrument": "NiceKitty",
+  "object": {
+    "type": "Dog",
+    "password": "secret"
+  }
+}

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >
+  Data validation, transformation, etc...
+  Last Modified: December 15, 2018
+  Author: Dave Duran <dave@yodata.io>
+
+Globals:
+  Function:
+    Runtime: nodejs8.10
+    Tags:
+      app: solid-serverless
+      component: data-processing
+
+Resources:
+  CreateViewService:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: src/
+      FunctionName: data-processing-service-create-view
+      Handler: create-view.handler
+      Description: 'Applies data policies and ACL.scope to create consumer specific views of data'
+
+  CheckScopeService:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: src/
+      FunctionName: data-processing-service-check-scope
+      Handler: check-scope.handler
+      Description: 'Validates data with ACL.scope and data policies, returns a ValidateAction'
+
+Outputs:
+  CreateViewService:
+    Description: Applies ACL Scope & Pod Data Policies
+    Value: !GetAtt CreateViewService.Arn
+
+  CreateViewServiceRole:
+    Description: Implicit IAM Role for data-processing-service-create-view
+    Value: !GetAtt CreateViewServiceRole.Arn

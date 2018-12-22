@@ -1,0 +1,7 @@
+{
+    "agent": "BadDog",
+    "object": {
+        "type": "Dog",
+        "password": "secret"
+    }
+}

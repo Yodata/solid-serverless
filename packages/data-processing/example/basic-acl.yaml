@@ -1,0 +1,4 @@
+type: Authorization
+accessTo: https://dave.real-living.yodata.me/public/
+mode: [Read, Write]
+agent: https://max.real-living.yodata.me/profile/card#me

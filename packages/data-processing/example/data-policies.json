@@ -1,0 +1,14 @@
+{
+    "#": {
+        "@context": {
+            "@vocab": "https://yodata.me/public/real-estate/context#",
+            "policy": "https://real-living.yodata.me/public/data-policy#"
+        },
+        "type": "DataPolicy",
+        "subject": "/",
+        "hasPolicy": {
+            "policy:DogCatcher": true,
+            "policy:DogBreeder": true
+        }
+    }
+}

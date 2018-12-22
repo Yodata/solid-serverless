@@ -1,0 +1,5 @@
+$id: 'https://yodata.me/public/real_estate/context#'
+Authorziation:
+  properties:
+    accessTo:
+      type: string

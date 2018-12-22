@@ -1,0 +1,5 @@
+RedactEmailAddress:
+  type: DataPolicy
+  kind: Transformation
+  policy:
+    email: $redact

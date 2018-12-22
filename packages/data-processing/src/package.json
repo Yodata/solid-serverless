@@ -1,0 +1,21 @@
+{
+  "name": "rl-data-processing",
+  "version": "0.0.1",
+  "description": "data validation, transformation and normalization for yodata/real-living",
+  "private": true,
+  "main": "src/index.js",
+  "repository": "https://github.com/yodata/real-living/tree/master/packages/rl-data-processing",
+  "author": "Dave Duran <dave@yodata.io>",
+  "license": "MIT",
+  "dependencies": {
+    "@yodata/transform": "^0.2.4",
+    "ajv": "^6.6.1",
+    "boom": "^7.3.0",
+    "got": "^9.4.0",
+    "jsonld": "^1.2.1",
+    "ow": "^0.8.0",
+    "winston": "^3.1.0"
+  },
+  "scripts": {},
+  "devDependencies": {}
+}
