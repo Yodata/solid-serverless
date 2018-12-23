@@ -1,6 +1,6 @@
 {
   "name": "@yodata/data-processing",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "yodata/solid-serverless/data-processing",
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
   "homepage": "https://github.com/Yodata/solid-serverless/tree/master/packages/data-processing#readme",
@@ -24,7 +24,7 @@
     "url": "https://github.com/Yodata/solid-serverless/issues"
   },
   "dependencies": {
-    "@yodata/solid-tools": "^0.0.1",
+    "@yodata/solid-tools": "^0.0.2",
     "mingo": "^2.2.8",
     "ow": "^0.8.0",
     "winston": "^3.1.0"
