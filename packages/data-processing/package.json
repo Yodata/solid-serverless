@@ -5,17 +5,13 @@
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
   "homepage": "https://github.com/Yodata/solid-serverless/tree/master/packages/data-processing#readme",
   "license": "MIT",
-  "main": "index.js",
   "directories": {
     "lib": "lib",
     "test": "__tests__",
     "bin": "script"
   },
-  "files": [
-    "lib"
-  ],
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   },
   "repository": {
     "type": "git",

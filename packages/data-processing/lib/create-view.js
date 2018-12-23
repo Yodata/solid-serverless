@@ -18,14 +18,5 @@ const denormalize = require('./denormalize').handler
  * @property {object} event.policy   - from {POD}/settings/yodata/policy
  */
 exports.handler = async function CreateView(event) {
-    console.log('createView', event)
-    
-    return normalize(event)
-    .then(checkScope)
-    .then(applyPolicy)
-    .then(denormalize)
-    .catch(error => {
-        console.error(error)
-        throw error
-    })
+    return event
 }

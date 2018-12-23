@@ -1,9 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: >
-  Data validation, transformation, etc...
-  Last Modified: December 15, 2018
-  Author: Dave Duran <dave@yodata.io>
+Description: Data Processing Services
 
 Globals:
   Function:
@@ -13,27 +10,18 @@ Globals:
       component: data-processing
 
 Resources:
-  CreateViewService:
+  createView:
     Type: 'AWS::Serverless::Function'
     Properties:
+      CodeUri: lib/
+      Handler: create-view.handler
       FunctionName: data-processing-service-create-view
       Description: 'Applies data policies and ACL.scope to create consumer specific views of data'
-      CodeUri: .
-      Handler: index.createView
 
-  CheckScopeService:
+  checkScope:
     Type: 'AWS::Serverless::Function'
     Properties:
+      CodeUri: lib/
+      Handler: check-scope.handler
       FunctionName: data-processing-service-check-scope
       Description: 'Validates data with ACL.scope and data policies, returns a ValidateAction'
-      CodeUri: .
-      Handler: index.checkScope
-
-Outputs:
-  CreateViewService:
-    Description: Applies ACL Scope & Pod Data Policies
-    Value: !GetAtt CreateViewService.Arn
-
-  CreateViewServiceRole:
-    Description: Implicit IAM Role for data-processing-service-create-view
-    Value: !GetAtt CreateViewServiceRole.Arn

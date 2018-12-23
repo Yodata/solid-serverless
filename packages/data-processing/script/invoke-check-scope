@@ -1,0 +1,3 @@
+#! /usr/local/bin/bash
+
+sam local invoke checkScope -e example/check-scope-payload.json

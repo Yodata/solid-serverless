@@ -1,41 +1,25 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Data validation, transformation, etc... Last Modified: December 15,
-  2018 Author: Dave Duran <dave@yodata.io>
-
-  '
+Description: Data Processing Services
 Globals:
   Function:
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless
       component: data-processing
-Outputs:
-  CreateViewService:
-    Description: Applies ACL Scope & Pod Data Policies
-    Value:
-      Fn::GetAtt:
-      - CreateViewService
-      - Arn
-  CreateViewServiceRole:
-    Description: Implicit IAM Role for data-processing-service-create-view
-    Value:
-      Fn::GetAtt:
-      - CreateViewServiceRole
-      - Arn
 Resources:
-  CheckScopeService:
+  checkScope:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-processing-service/c3f4b314f3bcb3d725ffc8fb33a035a7
+      CodeUri: s3://yodata-solid-serverless-data-processing-service/81cbc0b2fef246bfe6df024809f19caf
       Description: Validates data with ACL.scope and data policies, returns a ValidateAction
       FunctionName: data-processing-service-check-scope
-      Handler: index.checkScope
+      Handler: check-scope.handler
     Type: AWS::Serverless::Function
-  CreateViewService:
+  createView:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-processing-service/c3f4b314f3bcb3d725ffc8fb33a035a7
+      CodeUri: s3://yodata-solid-serverless-data-processing-service/81cbc0b2fef246bfe6df024809f19caf
       Description: Applies data policies and ACL.scope to create consumer specific
         views of data
       FunctionName: data-processing-service-create-view
-      Handler: index.createView
+      Handler: create-view.handler
     Type: AWS::Serverless::Function
 Transform: AWS::Serverless-2016-10-31
