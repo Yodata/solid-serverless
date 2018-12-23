@@ -10,18 +10,18 @@ Globals:
       component: data-processing
 
 Resources:
-  createView:
-    Type: 'AWS::Serverless::Function'
-    Properties:
-      CodeUri: lib/
-      Handler: create-view.handler
-      FunctionName: data-processing-service-create-view
-      Description: 'Applies data policies and ACL.scope to create consumer specific views of data'
-
   checkScope:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: lib/
-      Handler: check-scope.handler
+      CodeUri: .
+      Handler: lib/check-scope.handler
       FunctionName: data-processing-service-check-scope
       Description: 'Validates data with ACL.scope and data policies, returns a ValidateAction'
+
+  createView:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: .
+      Handler: lib/create-view.handler
+      FunctionName: data-processing-service-create-view
+      Description: 'Applies data policies and ACL.scope to create consumer specific views of data'

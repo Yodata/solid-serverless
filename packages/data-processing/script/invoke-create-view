@@ -1,0 +1,3 @@
+#! /usr/local/bin/bash
+
+sam local invoke createView -e example/check-scope-payload.json
