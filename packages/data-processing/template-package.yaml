@@ -1,13 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Transform, CheckScope, CheckAcl Last Modified: December 15, 2018 Author:
-  Dave Duran <dave@yodata.io>
+Description: 'Data validation, transformation, etc... Last Modified: December 15,
+  2018 Author: Dave Duran <dave@yodata.io>
 
   '
 Globals:
   Function:
     Runtime: nodejs8.10
     Tags:
-      app: solid
+      app: solid-serverless
       component: data-processing
 Outputs:
   CreateViewService:
@@ -25,17 +25,17 @@ Outputs:
 Resources:
   CheckScopeService:
     Properties:
-      CodeUri: s3://yodata-rl-data-processing-package/801caf91b0213521700d596fe4b09081
+      CodeUri: s3://yodata-solid-serverless-data-processing-service/c3f4b314f3bcb3d725ffc8fb33a035a7
       Description: Validates data with ACL.scope and data policies, returns a ValidateAction
       FunctionName: data-processing-service-check-scope
-      Handler: check-scope.handler
+      Handler: index.checkScope
     Type: AWS::Serverless::Function
   CreateViewService:
     Properties:
-      CodeUri: s3://yodata-rl-data-processing-package/801caf91b0213521700d596fe4b09081
+      CodeUri: s3://yodata-solid-serverless-data-processing-service/c3f4b314f3bcb3d725ffc8fb33a035a7
       Description: Applies data policies and ACL.scope to create consumer specific
         views of data
       FunctionName: data-processing-service-create-view
-      Handler: create-view.handler
+      Handler: index.createView
     Type: AWS::Serverless::Function
 Transform: AWS::Serverless-2016-10-31

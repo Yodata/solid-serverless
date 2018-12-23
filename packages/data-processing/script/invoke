@@ -1,3 +1,0 @@
-#!/bin/bash
-
-sam local invoke -n $1 -e $2

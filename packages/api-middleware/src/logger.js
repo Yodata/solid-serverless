@@ -7,6 +7,6 @@ const transports = [
     new winston.transports.Console()
 ]
 
-const logger = winston.createLogger({ format, transports });
+const logger = winston.createLogger({ format, transports, level: 'debug' });
 
 module.exports = logger

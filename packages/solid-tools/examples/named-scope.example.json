@@ -1,0 +1,26 @@
+{
+    "Remote": {
+        "type": "Authorization",
+        "accessTo": "/inbox/",
+        "mode": [
+            "Read",
+            "Append",
+            "Subscribe"
+        ],
+        "scope": {
+            "type": "AuthorizationScope",
+            "processor": "Mingo",
+            "effect": "Allow",
+            "condition": {
+                "$and": [
+                    {
+                        "type": "Dog"
+                    },
+                    {
+                        "name": "Fido"
+                    }
+                ]
+            }
+        }
+    }
+}

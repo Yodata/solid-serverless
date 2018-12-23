@@ -16,18 +16,18 @@ Resources:
   CreateViewService:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: src/
       FunctionName: data-processing-service-create-view
-      Handler: create-view.handler
       Description: 'Applies data policies and ACL.scope to create consumer specific views of data'
+      CodeUri: .
+      Handler: index.createView
 
   CheckScopeService:
     Type: 'AWS::Serverless::Function'
     Properties:
-      CodeUri: src/
       FunctionName: data-processing-service-check-scope
-      Handler: check-scope.handler
       Description: 'Validates data with ACL.scope and data policies, returns a ValidateAction'
+      CodeUri: .
+      Handler: index.checkScope
 
 Outputs:
   CreateViewService:

@@ -1,0 +1,12 @@
+{
+    "object": {
+        "type": "cat"
+    },
+    "scope": {
+        "processor": "Mingo",
+        "effect": "Allow",
+        "condition": {
+            "type": "cat"
+        }
+    }
+}
