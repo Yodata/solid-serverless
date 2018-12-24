@@ -1,27 +1,25 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
 Description: Data Processing Services
-
 Globals:
   Function:
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless
       component: data-processing
-
 Resources:
   checkScope:
-    Type: AWS::Serverless::Function
     Properties:
+      CodeUri: checkScope
+      Description: Validates data with ACL.scope and data policies, returns a ValidateAction
       FunctionName: data-processing-service-check-scope
-      Description: 'Validates data with ACL.scope and data policies, returns a ValidateAction'
-      CodeUri: lib/
       Handler: check-scope.handler
-
-  createView:
     Type: AWS::Serverless::Function
+  createView:
     Properties:
+      CodeUri: createView
+      Description: Applies data policies and ACL.scope to create consumer specific
+        views of data
       FunctionName: data-processing-service-create-view
-      Description: 'Applies data policies and ACL.scope to create consumer specific views of data'
-      CodeUri: lib/
       Handler: create-view.handler
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31
