@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Yodata API middleware for {env}.yodata.me repository=yodata/solid-serverless/packages/api-middleware
+
+  '
+Globals:
+  Function:
+    Environment:
+      Variables:
+        NODE_ENV: development
+    Runtime: nodejs8.10
+    Tags:
+      app: solid-serverless
+      component: api-middleware
+    Timeout: 3
+Outputs:
+  ApiMiddlewareFn:
+    Description: api-middleware service arn
+    Value:
+      Fn::GetAtt:
+      - ApiMiddlewareFn
+      - Arn
+  ApiMiddlewareFnIamRole:
+    Description: api-middleware service role
+    Value:
+      Fn::GetAtt:
+      - ApiMiddlewareFnRole
+      - Arn
+Resources:
+  ApiMiddlewareFn:
+    Properties:
+      CodeUri: ApiMiddlewareFn
+      FunctionName: api-middleware
+      Handler: middleware.handler
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

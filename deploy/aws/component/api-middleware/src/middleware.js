@@ -17,14 +17,18 @@ const get = require('lodash/get')
  * @param {object} [event.policy.local]
  */
 exports.handler = async (event) => {
-    logger.info('api-middleware', event)
-    event = await createContext(event)
-    event = await checkScope(event)
-    console.log('JSON from event' + JSON.stringify(event))
-
-    if (get(event,'response.end', false)) {
+    logger.debug('api-middleware', event)
+    return event
+    try {
+        event = await createContext(event)
+        event = await checkScope(event)
+        if (get(event,'response.end', false)) {
+            return event
+        } else {
+            return applyPolicy(event)
+        }
+    } catch (error) {
+        logger.error('api-middleware-error', error)
         return event
-    } else {
-        return applyPolicy(event)
     }
 };
