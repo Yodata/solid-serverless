@@ -28,7 +28,7 @@ Outputs:
 Resources:
   ApiMiddlewareFn:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-api-middleware/9242ea1ebdf80a199d745c95a051cd24
+      CodeUri: s3://yodata-solid-serverless-api-middleware/5bc617ed04df05e95ee5098222a77324
       FunctionName: api-middleware
       Handler: middleware.handler
     Type: AWS::Serverless::Function
