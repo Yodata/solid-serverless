@@ -9,5 +9,5 @@ const transports = [
 
 const defaultLogger = winston.createLogger({ format, transports, level: 'debug' });
 
-exports.logger = defaultLogger
+exports.defaultLogger = defaultLogger
 exports.createLogger = config => winston.createLogger(config)
