@@ -33,4 +33,9 @@ describe('@yodata/authorization-scope', () => {
         expect(scope.isAllowed({type:'error'})).toBeTruthy()
     })
 
+    test('empty scope is allowed', () => {
+        let scope = new Scope({})
+        return expect(scope.isAllowed({type:'anything'})).toBeTruthy()
+    })
+
 });

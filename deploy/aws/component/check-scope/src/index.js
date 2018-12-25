@@ -31,15 +31,18 @@ const {AuthorizationScope} = require('@yodata/solid-tools')
 exports.handler = async (event, context) => {
     try {
         logger.debug('check-scope recieved event ', event)
-        const scope = new AuthorizationScope(event.scope)
-        logger.debug('scope is valid', scope)
-        event.isAllowed = scope.isAllowed(event.object)
-        logger.debug('object is allowed?', event.isAllowed)
+        if (!event.scope) {
+            logger.error('event.scope undefined', event)
+            event.isAllowed = false
+        } else {
+            let scope = new AuthorizationScope(event.scope)
+            event.isAllowed = scope.isAllowed(event.object)
+        }
     } catch (error) {
         logger.error('check-scope error', {error, context})
-        //TODO: remove for final production release
-        event.isAllowed = process.env.NODE_ENV !== 'production'
+        //TODO: remove this in production
+        event.isAllowed = false
     }
-    logger.debug('check-scope response', event)
+    logger.debug('check-scope: event.isAllowed:', event.isAllowed)
     return event
 };

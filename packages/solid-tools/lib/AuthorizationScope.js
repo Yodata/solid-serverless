@@ -31,10 +31,7 @@ class AuthorizationScope {
         if (!Processors.hasOwnProperty(this.processor)) {
             throw new Error('INVALID_SCOPE_PROCESSOR', this.processor)
         }
-        if (!object.condition) {
-            throw new Error ('SCOPE_CONDITION_REQUIRED')
-        }
-        this.condition = object.condition
+        this.condition = object.condition || {}
         this.validator = Processors[this.processor](this.condition)
     }
 
