@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/Yodata/solid-serverless#readme",
   "devDependencies": {
+    "aws-sdk": "^2.382.0",
     "jest": "^23.6.0",
     "lerna": "^3.8.0"
   }

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+aws s3 mb yodata-solid-serverless-check-scope --profile solid
+

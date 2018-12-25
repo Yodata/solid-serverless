@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  {{cookiecutter.functionName}}
+  {{cookiecutter.description}}
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: nodejs8.10
+    Environment:
+      Variables:
+        NODE_ENV: dev
+
+Resources:
+  '{{cookiecutter.resourceKey}}':
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.handler
+      FunctionName: '{{cookiecutter.functionName}}'

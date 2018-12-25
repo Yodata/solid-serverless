@@ -1,0 +1,11 @@
+{
+    "name": "service-name",
+    "description": "what does it do?",
+    "awsProfileName": "",
+    "domain": "",
+    "author": "",
+    "resourceKey": "ServiceFunction",
+    "functionName": "{{cookiecutter.name}}",
+    "bucketName": "{{cookiecutter.domain + '-' + cookiecutter.name}}",
+    "stackName": "{{cookiecutter.domain + '-' + cookiecutter.name}}"
+}

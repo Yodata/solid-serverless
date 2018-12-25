@@ -1,0 +1,12 @@
+{
+    "object": {
+        "type": "Valid"
+    },
+    "scope": {
+        "processor": "Mingo",
+        "effect": "Allow",
+        "condition": {
+            "type": "Valid"
+        }
+    }
+}

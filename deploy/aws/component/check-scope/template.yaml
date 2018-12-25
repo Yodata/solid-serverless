@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  check-scope
+  validates event.object with event.scope, adding event.isValid {boolean}
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: nodejs8.10
+    Environment:
+      Variables:
+        NODE_ENV: dev
+
+Resources:
+  'CheckScopeFunction':
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.handler
+      FunctionName: 'check-scope'
