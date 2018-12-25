@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@yodata/solid-serverless-logger": "^0.0.3",
-    "@yodata/solid-tools": "^0.0.3"
+    "@yodata/solid-tools": "^0.0.4"
   },
   "devDependencies": {
     "aws-sdk": "^2.382.0",
