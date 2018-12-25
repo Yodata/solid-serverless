@@ -16,7 +16,7 @@ describe('Tests index', function () {
 
     test('empty scope is always allowed', async () => {
         event.scope = {}
-        const result = await handler(event)
+        const result = await handler(event, context)
         return expect(result).toHaveProperty('isAllowed', true)
     })
 
