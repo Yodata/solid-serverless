@@ -13,7 +13,7 @@ Globals:
 Resources:
   CheckScopeFunction:
     Properties:
-      CodeUri: CheckScopeFunction
+      CodeUri: s3://yodata-solid-serverless-check-scope/f3c6803c3b8d1357917f2e34e0b13bb8
       FunctionName: check-scope
       Handler: index.handler
     Type: AWS::Serverless::Function
