@@ -12,7 +12,7 @@ describe('data-policy-apply-policy', ()=>{
                     "RedactPassword": {
                         "processor": "Yodata",
                         "effect": "Transform",
-                        "value": stringify({password: '$redact'})
+                        "value": stringify({password: {value:'**REDACTED**'}})
                     }
                 }
             }
