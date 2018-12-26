@@ -6,6 +6,9 @@ Globals:
   Function:
     Environment:
       Variables:
+        CHECK_SCOPE_FUNCTION_NAME: check-scope
+        CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view
+        DEFAULT_JSONLD_CONTEXT: https://dev.yodata.io/public/real-estate/context.json
         NODE_ENV: development
     Runtime: nodejs8.10
     Tags:
@@ -28,8 +31,8 @@ Outputs:
 Resources:
   ApiMiddlewareFn:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-api-middleware/5bc617ed04df05e95ee5098222a77324
+      CodeUri: s3://yodata-solid-serverless-api-middleware/0e78db072a660defe824391115a345ca
       FunctionName: api-middleware
-      Handler: middleware.handler
+      Handler: index.handler
     Type: AWS::Serverless::Function
 Transform: AWS::Serverless-2016-10-31

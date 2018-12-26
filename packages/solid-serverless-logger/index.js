@@ -1,13 +1,21 @@
 const winston = require('winston');
-const format = winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.logstash()
-)
 const transports = [
     new winston.transports.Console()
 ]
+const getFormat = () => {
+    if (process.env.NODE_ENV === 'production') {
+        return winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.logstash()
+        )
+    } else {
+        return winston.format.prettyPrint()
+    }
+}
+const format = getFormat()
+const level = process.env.NODE_ENV === 'production' ? 'info': 'debug'
 
-const defaultLogger = winston.createLogger({ format, transports, level: 'debug' });
+const defaultOptions = {format,transports,level}
 
-exports.defaultLogger = defaultLogger
-exports.createLogger = config => winston.createLogger(config)
+exports.defaultLogger = winston.createLogger(defaultOptions)
+exports.createLogger = options => winston.createLogger({...defaultOptions, ...options})

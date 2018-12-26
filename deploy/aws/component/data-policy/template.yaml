@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  apply-policy
+  data policy service
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: nodejs8.10
+    Tags:
+      app: solid-serverless
+      domain: yodata
+    Environment:
+      Variables:
+        NODE_ENV: dev
+
+Resources:
+  'ApplyPolicyFunction':
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.handler
+      FunctionName: 'apply-policy'
+      AutoPublishAlias: next

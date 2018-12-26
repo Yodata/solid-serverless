@@ -1,0 +1,20 @@
+{
+  "name": "data-policy",
+  "version": "0.0.1",
+  "description": "data policy service",
+  "main": "index.js",
+  "author": "yodaveduran <dave@yodata.io>",
+  "license": "MIT",
+  "dependencies": {
+    "@yodata/solid-serverless-logger": "^0.0.3",
+    "@yodata/transform": "^0.2.5",
+    "kind-of": "^6.0.2"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.382.0",
+    "jest": "^23.6.0"
+  }
+}

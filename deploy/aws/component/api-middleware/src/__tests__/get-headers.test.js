@@ -1,4 +1,4 @@
-const getHeaders = require('./get-headers')
+const getHeaders = require('../get-headers')
 
 test('getHeaders', () => {
     let message = {

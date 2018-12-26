@@ -1,0 +1,26 @@
+{
+    "request": {
+        "rawHeaders": {
+            "content-type": [
+                "application/json"
+            ]
+        },
+        "body": "{\n\t\"type\": \"ForbiddenType\",\n\t\"name\": \"Request Batman\",\n\t\"email\": \"batman@example.com\",\n\t\"password\": \"same-password-i-use-for-every-account\"\n}"
+    },
+    "response": {
+        "status": 403,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": "{\"error\": \"Request denied due to scope policy.\"}"
+    },
+    "agent": "https://testuser.real-living.yodata.me/profile/card#me",
+    "scope": {
+        "effect": "Deny",
+        "processor": "Mingo",
+        "condition": {
+            "type": "ForbiddenType"
+        }
+    },
+    "policy": {}
+}

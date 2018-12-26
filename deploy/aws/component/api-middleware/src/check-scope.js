@@ -1,30 +1,22 @@
 const AWS = require('aws-sdk')
-const lambda = new AWS.Lambda()
-const FUNCTION_NAME = 'data-processing-service-check-scope'
+const lambda = new AWS.Lambda({region:'us-west-2'})
 const logger = require('./logger')
-const get = require('lodash/get')
 const set = require('lodash/set')
 
 
 module.exports = async function checkScope(event) {
-    return new Promise((resolve) => {
-        lambda.invoke(
-          {
-            FunctionName: FUNCTION_NAME,
-            Payload: JSON.stringify(event),
-          }, 
-          function ( err , response ) {
-            if (response.FunctionError) {
-              console.log('Check scope lambda returned an error')
-              set(event, 'response.status', 403)
-              set(event, 'response.body', '{"error":"Request denied due to scope policy"}')
-              set(event, 'response.end' , true)
-            } else {
-              console.log('Check scope lambda did not return an error')
-            }
-
-            console.log('Event after lambda: ' + JSON.stringify(event))
-            resolve(event)
-          })
-      })  
+  try {
+    const FunctionName = process.env.CHECK_SCOPE_FUNCTION_NAME
+    const Payload = JSON.stringify(event)
+    const response = await lambda.invoke({FunctionName, Payload, }).promise()
+    logger.debug('checkScope invoke response', response)
+    if (response.isAllowed === false) {
+      set(event, 'response.status', 403)
+      set(event, 'response.body', JSON.stringify({error: 'Request denied due to scope policy.'}))
+      set(event, 'response.end' , true)
+    }
+  } catch (error) {
+    logger.error('checkScope error', error)
+  }
+  return event
 }

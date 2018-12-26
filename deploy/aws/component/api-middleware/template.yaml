@@ -8,20 +8,26 @@ Globals:
   Function:
     Timeout: 3
     Runtime: nodejs8.10
-    Environment:
-      Variables:
-        NODE_ENV: development
     Tags:
       app: solid-serverless
       component: api-middleware
+    Environment:
+      Variables:
+        NODE_ENV: development
+        CHECK_SCOPE_FUNCTION_NAME: check-scope
+        CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view
+        DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
 
 Resources:
   ApiMiddlewareFn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
-      Handler: middleware.handler
+      Handler: index.handler
       FunctionName: api-middleware
+    Policies:
+      - LambdaInvokePolicy:
+          FunctionName: 'check-scope'
 
 Outputs:
   ApiMiddlewareFn:

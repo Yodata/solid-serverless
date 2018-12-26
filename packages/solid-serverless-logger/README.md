@@ -1,11 +1,20 @@
 # `@yodata/solid-serverless-logger`
 
-> TODO: description
+Default logger for aws Cloudwatch format is logstach in production, console/JSON in development.
 
 ## Usage
 
-```
-const solidServerlessLogger = require('@yodata/solid-serverless-logger');
+```javascript
+const {createLogger} = require('@yodata/solid-serverless-logger')
+const namespace = 'myservice'
+const meta = {
+    version: 'xxx'
+}
+const logger = createLogger(namespace, meta)
 
-// TODO: DEMONSTRATE API
+const message = 'log message'
+const data = {a: 1}
+logger.debug(message,data)
+//-> writes to the log
+// 'message', {a: 1, version: 'xxx'}
 ```
