@@ -1,3 +1,19 @@
 {
-    "type": "data-policy"
+    "object": {
+        "type": "Forbidden",
+        "password": "secret",
+        "deleteme": "now you see me"
+    },
+    "policy": {
+        "local": {
+            "InlinePolicy": {
+                "processor": "Yodata",
+                "effect": "Transform",
+                "value": "{\"password\": \"$redact\"}"
+            }
+        },
+        "global": {
+            "DeleteMe": "https://dev.yodata.io/public/data-policy/DeleteMe"
+        }
+    }
 }

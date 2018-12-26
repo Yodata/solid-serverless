@@ -1,4 +1,6 @@
 const logger = require('@yodata/solid-serverless-logger').defaultLogger
+const applyPolicy = require('./lib/apply-policy')
+const getPolicies = require('./lib/get-policies')
 
 /**
  * what does your function do?
@@ -10,6 +12,7 @@ const logger = require('@yodata/solid-serverless-logger').defaultLogger
  */
 exports.handler = async (event, context) => {
     try {
+        
         logger.debug('data-policy received event', {event,context})
     } catch (error) {
         logger.error('data-policy failed', {error, context})

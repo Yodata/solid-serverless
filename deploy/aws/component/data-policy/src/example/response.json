@@ -1,5 +1,18 @@
 {
-    "Payload": {
-        "type": "apply-policyResponse"
+    "object": {
+        "type": "Forbidden",
+        "password": "**REDACTED**"
+    },
+    "policy": {
+        "local": {
+            "InlinePolicy": {
+                "processor": "Yodata",
+                "effect": "Transform",
+                "value": "{\"password\": \"$redact\"}"
+            }
+        },
+        "global": {
+            "DeleteMe": "https://dev.yodata.io/public/data-policy/DeleteMe"
+        }
     }
 }
