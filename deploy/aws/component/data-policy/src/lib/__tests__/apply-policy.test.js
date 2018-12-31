@@ -12,12 +12,12 @@ describe('data-policy-apply-policy', ()=>{
                     "RedactPassword": {
                         "processor": "Yodata",
                         "effect": "Transform",
-                        "value": stringify({password: {value:'**REDACTED**'}})
+                        "value": stringify({password: {value: '[PASSWORD]'}})
                     }
                 }
             }
         }
         let response = await applyPolicy(event)
-        return expect(response.object).toMatchObject({password: '**REDACTED**'})
+        return expect(response.object).toMatchObject({password: '[PASSWORD]'})
     }) 
 })

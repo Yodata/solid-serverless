@@ -1,7 +1,6 @@
 {
     "object": {
-        "type": "Forbidden",
-        "password": "**REDACTED**"
+        "password": "[PASSWORD]"
     },
     "policy": {
         "local": {
