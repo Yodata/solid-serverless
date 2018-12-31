@@ -1,23 +1,24 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'apply-policy data policy service
+Description: 'data policy service serves functions: apply-policy get-policy
 
   '
 Globals:
   Function:
     Environment:
       Variables:
-        NODE_ENV: dev
+        DOMAIN: dev.yodata.io
+        NODE_ENV: production
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless
-      domain: yodata
-    Timeout: 3
+      domain: dev.yodata.io
+    Timeout: 10
 Resources:
   ApplyPolicyFunction:
     Properties:
       AutoPublishAlias: next
-      CodeUri: s3://yodata-solid-serverless-data-policy/19e5844fa57a5f70177402179bd089ca
+      CodeUri: s3://yodata-solid-serverless-data-policy/f5ab501d27546d509c2ea824775ada41
       FunctionName: apply-policy
-      Handler: index.handler
+      Handler: index.applyPolicy
     Type: AWS::Serverless::Function
 Transform: AWS::Serverless-2016-10-31

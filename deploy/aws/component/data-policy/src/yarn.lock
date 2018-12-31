@@ -131,6 +131,11 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@types/jest@^23.3.11":
+  version "23.3.11"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.3.11.tgz#d3a936ae753d9e484965f5cbd19027c2b8af2551"
+  integrity sha512-eroF85PoG87XjCwzxey7yBsQNkIY/TV5myKKSG/022A0FW25afdu/uub6JDMS5eT68zBBt82S+w/MFOTjeLM3Q==
+
 "@yodata/solid-serverless-logger@^0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.6.tgz#a87b4fd30ee2f084759ae852e2a10b5bb6a508a1"
@@ -147,10 +152,10 @@
     mingo "^2.2.8"
     winston "^3.1.0"
 
-"@yodata/transform@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@yodata/transform/-/transform-0.2.6.tgz#cd85a48d838360066810aa3992039b224e8c410e"
-  integrity sha512-Q7pHeexyMoYnWkiF39v0HPkDLOdCeDYneDdoY3PpgnHx1xby6FUIaK0DOZ4VK8U0PV8zvCQ8NKChO5okDTzHdw==
+"@yodata/transform@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@yodata/transform/-/transform-0.2.7.tgz#3179bfd42f1b8ae3fa24ff3b76e2ab75d0fe5380"
+  integrity sha512-ogZYqNt9HSNNRazmqtjdTj9U8pY21qhqPP5i4x1SAvWLv5b6QIeUKiiQDYPKlNpGY45qxv5Y0C3bd/BsVnm2kQ==
   dependencies:
     ajv "^6.5.5"
     ajv-keywords "^3.2.0"
@@ -920,7 +925,7 @@ debug@^3.1.0:
   dependencies:
     ms "^2.1.1"
 
-debug@^4.1.0:
+debug@^4.1.0, debug@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
   integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
@@ -1118,6 +1123,11 @@ escodegen@^1.9.1:
     optionator "^0.8.1"
   optionalDependencies:
     source-map "~0.6.1"
+
+eslint-plugin-jest@^22.1.2:
+  version "22.1.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jest/-/eslint-plugin-jest-22.1.2.tgz#1ea36cc3faedbdb788e702ca633d635ca14e91e8"
+  integrity sha512-jSPT4rVmNetkeCIyrvvOM0wJtgoUSbKHIUDoOGzIISsg51eWN/nISPNKVM+jXMMDI9oowbyapOnpKSXlsLiDpQ==
 
 esprima@^3.1.3:
   version "3.1.3"

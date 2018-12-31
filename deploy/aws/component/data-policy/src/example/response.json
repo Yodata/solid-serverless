@@ -1,13 +1,15 @@
 {
     "object": {
-        "password": "[PASSWORD]"
+        "type": "Forbidden",
+        "password": "[PASSWORD]",
+        "deleteme": "now you see me"
     },
     "policy": {
         "local": {
             "InlinePolicy": {
                 "processor": "Yodata",
                 "effect": "Transform",
-                "value": "{\"password\": \"$redact\"}"
+                "value": "{\"password\": {\"value\":\"[PASSWORD]\"}"
             }
         },
         "global": {

@@ -9,25 +9,28 @@ const Transform = require('@yodata/transform')
  * @param {Object} event.policy - from pod:settings/yodata/data-policies.json
  * @returns {Object} - the event with object transformed
  */
-module.exports = async function ApplyDataPolicies(event) {
+module.exports = async function ApplyDataPolicies(event, context) {
+    let object = event.object
+    let result = event.object
+    let policySet
     try {
-        logger.info('apply-data-policies', event)
-        let policySet = await getPolicies(event)
+        policySet = await getPolicies(event)
         policySet.forEach(policy => {
             let processor = policy.processor
             let policyValue = JSON.parse(policy.value)
-            switch(policy.processor) {
-                case 'Yodata':
-                    event.object = new Transform.Context(policyValue).map(event.object)
-                    break
-                default:
-                    logger.error('unknown data policy.processor', {policy})
+            switch(processor) {
+            case 'Yodata':
+                result = new Transform.Context(policyValue).map(result)
+                break
+            default:
+                logger.error(`data-policy:unknown-processor:${processor}`)
             }
-
+            logger.debug('data-policy:result', {object,result,policyValue,processor})
         })
     } catch (error) {
-        logger.error('error applying data polices', error)
+        logger.error('error applying data polices', {error, event, context})
     }
-    logger.debug('apply-data-policy:result', event.object)
+    logger.info('apply-data-policy:result', {object,result})
+    event.object = result
     return event
 }

@@ -1,7 +1,6 @@
 const applyPolicy = require('../apply-policy')
-const stringify = require('fast-json-stable-stringify')
 
-describe('data-policy-apply-policy', ()=>{
+describe('data-policy-apply-policy', () => {    
     test('response', async () => {
         let event = {
             object: {
@@ -9,10 +8,10 @@ describe('data-policy-apply-policy', ()=>{
             },
             policy: {
                 local: {
-                    "RedactPassword": {
-                        "processor": "Yodata",
-                        "effect": "Transform",
-                        "value": stringify({password: {value: '[PASSWORD]'}})
+                    'RedactPassword': {
+                        'processor': 'Yodata',
+                        'effect': 'Transform',
+                        'value': JSON.stringify({password: {value: '[PASSWORD]'}})
                     }
                 }
             }

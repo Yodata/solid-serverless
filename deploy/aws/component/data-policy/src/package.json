@@ -8,7 +8,8 @@
   "dependencies": {
     "@yodata/solid-serverless-logger": "^0.0.6",
     "@yodata/solid-tools": "^0.0.6",
-    "@yodata/transform": "^0.2.6",
+    "@yodata/transform": "^0.2.7",
+    "debug": "^4.1.1",
     "kind-of": "^6.0.2",
     "lodash": "^4.17.11"
   },
@@ -16,8 +17,10 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@types/jest": "^23.3.11",
     "aws-sdk": "^2.382.0",
-    "jest": "^23.6.0",
-    "@babel/core": "^7.2.2"
+    "eslint-plugin-jest": "^22.1.2",
+    "jest": "^23.6.0"
   }
 }

@@ -2,21 +2,16 @@ const logger = require('@yodata/solid-serverless-logger').defaultLogger
 const applyPolicy = require('./lib/apply-policy')
 const getPolicies = require('./lib/get-policies')
 
-/**
- * what does your function do?
- * @param {object} event
- * @param {string} event.param - comment
- *
- * @returns {Object} response
- * @returns {string} response.param - comment
- */
-exports.handler = async (event, context) => {
+const createHandler = (fn, name) => async (event,context) => {
     try {
-        
-        logger.debug('data-policy received event', {event,context})
+        logger.debug(`start:${name}`, {event,context,name})
+        event = await fn(event)
     } catch (error) {
-        logger.error('data-policy failed', {error, context})
+        logger.error(`error:${name}`, {error, event, context})
     }
-    logger.debug('data-policy response', event)
+    logger.info(`completed:${name}`, { name , event, context })
     return event
-};
+}
+
+exports.applyPolicy = createHandler(applyPolicy, 'apply-policy')
+exports.getPolicies = createHandler(getPolicies, 'get-policies')

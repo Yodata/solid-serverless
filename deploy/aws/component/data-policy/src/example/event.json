@@ -9,7 +9,7 @@
             "InlinePolicy": {
                 "processor": "Yodata",
                 "effect": "Transform",
-                "value": "{\"password\": \"$redact\"}"
+                "value": "{\"password\": {\"value\":\"[PASSWORD]\"}"
             }
         },
         "global": {
