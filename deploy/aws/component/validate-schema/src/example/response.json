@@ -1,5 +1,15 @@
 {
-    "Payload": {
-        "type": "validate-schemaResponse"
-    }
+    "object": {
+        "type": "test"
+    },
+    "schema": {
+        "properties": {
+            "test": {
+                "type": "string",
+                "const": "test"
+            }
+        }
+    },
+    "isValid": true,
+    "errors": null
 }

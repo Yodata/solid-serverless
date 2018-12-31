@@ -6,11 +6,11 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 5
     Runtime: nodejs8.10
     Environment:
       Variables:
-        NODE_ENV: dev
+        NODE_ENV: production
 
 Resources:
   'ValidateSchemaFunction':

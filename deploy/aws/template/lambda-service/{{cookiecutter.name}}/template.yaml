@@ -10,7 +10,7 @@ Globals:
     Runtime: nodejs8.10
     Environment:
       Variables:
-        NODE_ENV: dev
+        NODE_ENV: production
 
 Resources:
   '{{cookiecutter.resourceKey}}':

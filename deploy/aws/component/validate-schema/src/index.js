@@ -1,29 +1,26 @@
 const logger = require('@yodata/solid-serverless-logger').defaultLogger
-
+const Ajv = require('ajv')
 /**
  * what does your function do?
  * @param {object} event
- * @param {string} event.param - comment
- * 
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
- * @param {Object}   context
- * @param {string}   context.logGroupName - Cloudwatch Log Group name
- * @param {string}   context.logStreamName - Cloudwatch Log stream name.
- * @param {string}   context.functionName - Lambda function name.
- * @param {string}   context.memoryLimitInMB - Function memory.
- * @param {string}   context.functionVersion - Function version identifier.
- * @param {function} context.getRemainingTimeInMillis - Time in milliseconds before function times out.
- * @param {string}   context.awsRequestId - Lambda request ID.
- * @param {string}   context.invokedFunctionArn - Function ARN.
+ * @param {object} event.object - the item to be validated
+ * @param {object} event.schema - a validate json-schema (draft 7)
  *
- * @returns {Object} response
- * @returns {string} response.param - comment
+ * @returns {object} response
+ * @returns {boolean} response.isValid
+ * @returns {object} response.errors
  */
 exports.handler = async (event, context) => {
     try {
         logger.debug('validate-schema received event', {event,context})
+        const ajv = new Ajv()
+        const validate = ajv.compile(event.schema)
+        event.isValid = validate(event.object)
+        event.errors = validate.errors
     } catch (error) {
         logger.error('validate-schema failed', {error, context})
+        event.isValid = false
+        event.errors = error.message
     }
     logger.debug('validate-schema response', event)
     return event

@@ -3,5 +3,5 @@
 sam deploy \
 --capabilities CAPABILITY_IAM \
 --template-file template-package.yaml \
---stack-name dev.yodata.io-validate-schema \
+--stack-name validate-schema \
 --profile solid
