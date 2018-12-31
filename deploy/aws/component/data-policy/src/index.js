@@ -13,5 +13,6 @@ const createHandler = (fn, name) => async (event,context) => {
     return event
 }
 
+exports.handler = createHandler(async (event,context) => event, 'handler')
 exports.applyPolicy = createHandler(applyPolicy, 'apply-policy')
 exports.getPolicies = createHandler(getPolicies, 'get-policies')

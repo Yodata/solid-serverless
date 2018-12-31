@@ -12,21 +12,9 @@ const Transform = require('@yodata/transform')
 module.exports = async function ApplyDataPolicies(event, context) {
     let object = event.object
     let result = event.object
-    let policySet
     try {
-        policySet = await getPolicies(event)
-        policySet.forEach(policy => {
-            let processor = policy.processor
-            let policyValue = JSON.parse(policy.value)
-            switch(processor) {
-            case 'Yodata':
-                result = new Transform.Context(policyValue).map(result)
-                break
-            default:
-                logger.error(`data-policy:unknown-processor:${processor}`)
-            }
-            logger.debug('data-policy:result', {object,result,policyValue,processor})
-        })
+        let policySet = await getPolicies(event)
+        policySet.forEach(policy => {result = applyPolicy(result,policy)})
     } catch (error) {
         logger.error('error applying data polices', {error, event, context})
     }
@@ -34,3 +22,16 @@ module.exports = async function ApplyDataPolicies(event, context) {
     event.object = result
     return event
 }
+
+const applyPolicy = (object,policy) => {
+    let processor = policy.processor;
+    let policyValue = JSON.parse(policy.value);
+    switch (processor) {
+        case 'Yodata':
+            object = new Transform.Context(policyValue).map(object);
+            break;
+        default:
+            logger.error(`data-policy:unknown-processor:${processor}`);
+    }
+    return object
+};

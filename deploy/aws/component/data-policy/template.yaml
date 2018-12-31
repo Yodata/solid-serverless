@@ -4,6 +4,10 @@ Description: >
   data policy service
   serves functions: apply-policy get-policy
 
+Parameters:
+  clientid:
+    Type: String
+
 Globals:
   Function:
     Timeout: 10
@@ -13,14 +17,23 @@ Globals:
       domain: dev.yodata.io
     Environment:
       Variables:
-        NODE_ENV: production
+        NODE_ENV: development
         DOMAIN: dev.yodata.io
+        CLIENT_ID:
+          Ref: clientid
 
 Resources:
-  'ApplyPolicyFunction':
+  ApplyPolicyFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: index.applyPolicy
       FunctionName: 'apply-policy'
       AutoPublishAlias: next
+
+  GetPoliciesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.getPolicies
+      FunctionName: 'get-policies'

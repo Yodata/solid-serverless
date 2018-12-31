@@ -1,19 +1,18 @@
 {
     "object": {
         "type": "Forbidden",
-        "password": "[PASSWORD]",
-        "deleteme": "now you see me"
+        "password": "[PASSWORD]"
     },
     "policy": {
         "local": {
             "InlinePolicy": {
                 "processor": "Yodata",
                 "effect": "Transform",
-                "value": "{\"password\": {\"value\":\"[PASSWORD]\"}"
+                "value": "{\"password\": {\"value\":\"[PASSWORD]\"}}"
             }
         },
         "global": {
-            "DeleteMe": "https://dev.yodata.io/public/data-policy/DeleteMe"
+            "DeleteMe": "https://dev.yodata.io/public/test/RemotePolicy.json"
         }
     }
 }

@@ -6,19 +6,30 @@ Globals:
   Function:
     Environment:
       Variables:
+        CLIENT_ID:
+          Ref: clientid
         DOMAIN: dev.yodata.io
-        NODE_ENV: production
+        NODE_ENV: development
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless
       domain: dev.yodata.io
     Timeout: 10
+Parameters:
+  clientid:
+    Type: String
 Resources:
   ApplyPolicyFunction:
     Properties:
       AutoPublishAlias: next
-      CodeUri: s3://yodata-solid-serverless-data-policy/f5ab501d27546d509c2ea824775ada41
+      CodeUri: s3://yodata-solid-serverless-data-policy/3c9a0abcf2abe6fe0186a90d005e4586
       FunctionName: apply-policy
       Handler: index.applyPolicy
+    Type: AWS::Serverless::Function
+  GetPoliciesFunction:
+    Properties:
+      CodeUri: s3://yodata-solid-serverless-data-policy/3d0b44bdc9945587b39843c8555a2d21
+      FunctionName: get-policies
+      Handler: index.getPolicies
     Type: AWS::Serverless::Function
 Transform: AWS::Serverless-2016-10-31

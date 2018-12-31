@@ -17,6 +17,7 @@ describe('data-policy-apply-policy', () => {
             }
         }
         let response = await applyPolicy(event)
-        return expect(response.object).toMatchObject({password: '[PASSWORD]'})
+        expect(response.object).toHaveProperty('password', '[PASSWORD]')
+        return expect(response.object).not.toHaveProperty('deleteme')
     }) 
 })
