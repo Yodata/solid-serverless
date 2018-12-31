@@ -1,0 +1,26 @@
+{
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "value": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "DataPolicy"
+                },
+                "processor": {
+                    "type": "string",
+                    "enum": [
+                        "Yodata",
+                        "JsonSchema"
+                    ]
+                },
+                "value": {
+                    "type": "object"
+                }
+            }
+        }
+    }
+}
