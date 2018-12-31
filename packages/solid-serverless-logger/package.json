@@ -27,5 +27,8 @@
   },
   "dependencies": {
     "winston": "^3.1.0"
+  },
+  "devDependencies": {
+    "eslint-plugin-jest": "^22.1.2"
   }
 }
