@@ -4,7 +4,7 @@
   "description": "(alpha) solid-server implementation in aws and (mostly) lambda",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "xo"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,14 @@
   "devDependencies": {
     "aws-sdk": "^2.382.0",
     "jest": "^23.6.0",
-    "lerna": "^3.8.0"
+    "lerna": "^3.8.0",
+    "xo": "^0.23.0"
+  },
+  "xo": {
+    "space": true,
+    "semicolon": false,
+    "envs": [
+      "node"
+    ]
   }
 }
