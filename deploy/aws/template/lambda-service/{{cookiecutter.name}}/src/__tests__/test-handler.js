@@ -1,11 +1,11 @@
 const handler = require('..').handler
-const event = require('../../event.json')
-const response = require('../../response.json')
-const context = {}
 
 describe('Tests index', function () {
+
     test('verifies successful response', async () => {
-        const result = await handler(event, context)
+        const event = require('../example/event.json')
+        const response = require('../example/response.json')
+        const result = await handler(event)
         return expect(result).toMatchObject(response)
     });
 });
