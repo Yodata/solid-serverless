@@ -37,3 +37,10 @@ Resources:
       CodeUri: src/
       Handler: index.getPolicies
       FunctionName: 'get-policies'
+
+  SetPolicyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.setPolicy
+      FunctionName: 'set-policy'

@@ -1,10 +1,12 @@
 const logger = require('./logger')
 const client = require('./solid-client')
-const DOMAIN = process.env.DOMAIN
-const snakeCase = require('lodash/snakeCase')
 const defaults = require('lodash/defaults')
-
-
+const policyDefaults = {
+    '@context': 'https://dev.yodata.io/public/real_estate/context.jsonld',
+    type: 'DataPolicy',
+    processor: 'Yodata',
+    effect: 'Transform'
+}
 
 /**
  * saves policy to pod:public/data-policy/{name}
@@ -15,11 +17,17 @@ const defaults = require('lodash/defaults')
  * @returns {string} the policy iri
  */
 module.exports = async (event) => {
-    let policyName = snakeCase(event.name)
-    let policyValue = defaults()
-    const id = `https://${DOMAIN}/public/data-policy/${policyName}`
-}
-
-function isUri(value) {
-    return typeof value === 'string' && value.startsWith('http')
+    const DOMAIN = process.env.DOMAIN
+    const policyName = event.name
+    const policy = defaults(event.value, policyDefaults)
+    const body = JSON.stringify(policy)
+    const headers = {'Content-Type': 'application/ld+json'}
+    const iri = `https://${DOMAIN}/public/data-policy/${policyName}`
+    const result = await client.put(iri, {headers, body}).then(response => {
+        return iri
+    }).catch(error => {
+        logger.error(error.message, error)
+        return null
+    })
+    return result
 }
