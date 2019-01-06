@@ -1,5 +1,4 @@
-'use strict';
-
+'use strict'
 
 /**
  * @typedef AuthorizationType
@@ -14,16 +13,16 @@
  * Represents an ACL instance
  */
 class Authorization {
-    /** 
+	/**
      * Create an Authorziation
      * @param {AuthorizationType} object
     */
-    constructor(object = {}) {
-        this.agent = object.agent
-        this.accessTo = object.accessTo
-        this.mode = object.mode
-        this.scope = object.scope
-    }
+	constructor(object = {}) {
+		this.agent = object.agent
+		this.accessTo = object.accessTo
+		this.mode = object.mode
+		this.scope = object.scope
+	}
 }
 
-module.exports = Authorization;
+module.exports = Authorization

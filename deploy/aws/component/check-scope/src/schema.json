@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "definitions": {
+        "object": {
+            "type": "object",
+            "description": "the object to act upon"
+        },
+        "schema": {
+            "type": "object",
+            "description": "the schema to use for validaton"
+        },
+        "Request": {
+            "type": "object",
+            "required": [
+                "object",
+                "schema"
+            ],
+            "properties": {
+                "object": {
+                    "$ref": "#/definitions/object"
+                },
+                "schema": {
+                    "$ref": "#/definitions/schema"
+                }
+            }
+        },
+        "Response": {
+            "type": "object",
+            "required": [
+                "object",
+                "schema",
+                "isValid"
+            ],
+            "properties": {
+                "object": {
+                    "$ref": "#/definitions/object"
+                },
+                "schema": {
+                    "$ref": "#/definitions/schema"
+                },
+                "isValid": {
+                    "type": "boolean"
+                },
+                "errors": {
+                    "type": "array"
+                }
+            }
+        }
+    }
+}

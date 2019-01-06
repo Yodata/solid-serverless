@@ -1,11 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Yodata API middleware for {env}.yodata.me repository=yodata/solid-serverless/packages/api-middleware
-
-  '
+Description: Yodata API middleware for dev.yodata.io
 Globals:
   Function:
     Environment:
       Variables:
+        APPLY_POLICY_FUNCTION_NAME: apply-policy
         CHECK_SCOPE_FUNCTION_NAME: check-scope
         CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view
         DEFAULT_JSONLD_CONTEXT: https://dev.yodata.io/public/real-estate/context.json
@@ -14,24 +13,14 @@ Globals:
     Tags:
       app: solid-serverless
       component: api-middleware
-    Timeout: 3
-Outputs:
-  ApiMiddlewareFn:
-    Description: api-middleware service arn
-    Value:
-      Fn::GetAtt:
-      - ApiMiddlewareFn
-      - Arn
-  ApiMiddlewareFnIamRole:
-    Description: api-middleware service role
-    Value:
-      Fn::GetAtt:
-      - ApiMiddlewareFnRole
-      - Arn
+    Timeout: 5
 Resources:
   ApiMiddlewareFn:
+    Policies:
+    - AWSLambdaExecute
     Properties:
-      CodeUri: s3://yodata-solid-serverless-api-middleware/0e78db072a660defe824391115a345ca
+      AutoPublishAlias: next
+      CodeUri: s3://yodata-solid-serverless-api-middleware/497654364518fc190a6c2cdbbc24f9d4
       FunctionName: api-middleware
       Handler: index.handler
     Type: AWS::Serverless::Function

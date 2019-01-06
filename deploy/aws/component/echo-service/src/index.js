@@ -1,11 +1,11 @@
 const logger = require('@yodata/solid-serverless-logger').defaultLogger
 
 /**
- * what does your function do?
+ * What does your function do?
  * @param {object} event
  * @param {string} event.param - comment
- * 
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
+ *
+ * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
  * @param {Object}   context
  * @param {string}   context.logGroupName - Cloudwatch Log Group name
  * @param {string}   context.logStreamName - Cloudwatch Log stream name.
@@ -20,11 +20,11 @@ const logger = require('@yodata/solid-serverless-logger').defaultLogger
  * @returns {string} response.param - comment
  */
 exports.handler = async (event, context) => {
-    try {
-        logger.debug('echo-service received event', {event,context})
-    } catch (error) {
-        logger.error('echo-service failed', {error, context})
-    }
-    logger.debug('echo-service response', event)
-    return event
-};
+	try {
+		logger.debug('echo-service received event', {event, context})
+	} catch (error) {
+		logger.error('echo-service failed', {error, context})
+	}
+	logger.debug('echo-service response', event)
+	return event
+}

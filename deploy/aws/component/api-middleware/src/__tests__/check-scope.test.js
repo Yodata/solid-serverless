@@ -1,19 +1,27 @@
-const checkScope = require('../check-scope')
-const OLD_ENV = process.env
+/* eslint-disable no-undef */
 
-beforeEach(()=>{
-    jest.resetModules()
-    process.env = {...OLD_ENV}
-    process.env.CHECK_SCOPE_FUNCTION_NAME = 'check-scope'
-})
-afterEach(()=>{
-    process.env = OLD_ENV
-})
-test('check-scope', async () => {
-    let event = require('../example/scope-reject-event.json')
-    let expectedResponse = require('../example/scope-reject-response.json')
-    let result = await checkScope(event)
-    expect(result).toHaveProperty('response')
-    expect(result.response).toHaveProperty('status', '403')
-    return expect(result.response).toHaveProperty('end', true)
+const checkScope = require('../check-scope')
+
+describe('api-middleware.check-scope', () => {
+
+	test('allowed example/response', async () => {
+		const event = {
+			stage: 'request',
+			object: {type: 'dog'},
+			scope: {
+				noDogsAllowed: {
+					effect: 'Deny',
+					processor: 'Mingo',
+					condition: {
+						object: {
+							type: 'dog'
+						}
+					}
+				}
+			}
+		}
+		const result = await checkScope(event)
+		expect(result).toHaveProperty('object')
+		expect(result).toHaveProperty('isAllowed', false)
+	})
 })

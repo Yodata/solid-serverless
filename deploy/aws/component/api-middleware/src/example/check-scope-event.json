@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "body": "{\"type\": \"Dog\"}",
+        "rawHeaders": {
+            "content-type": [
+                "application/json"
+            ]
+        }
+    },
+    "scope": {
+        "OnlyDogs": "https://dev.yodata.io/public/named-scope/OnlyDogs"
+    }
+}

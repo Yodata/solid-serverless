@@ -1,0 +1,32 @@
+{
+    "contentType": "application/json",
+    "stage": "response",
+    "object": {
+        "password": "[PASSWORD]"
+    },
+    "hasData": true,
+    "request": {
+        "method": "GET"
+    },
+    "response": {
+        "headers": {
+            "Content-Type": [
+                "application/json"
+            ]
+        },
+        "body": "{\"password\":\"[PASSWORD]\"}"
+    },
+    "policy": {
+        "local": {
+            "RedactPassword": {
+                "effect": "Transform",
+                "processor": "Yodata",
+                "value": {
+                    "password": {
+                        "value": "[PASSWORD]"
+                    }
+                }
+            }
+        }
+    }
+}

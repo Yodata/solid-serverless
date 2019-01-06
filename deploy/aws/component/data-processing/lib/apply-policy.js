@@ -6,10 +6,10 @@
  * @returns {Object} - the event with object transformed
  */
 async function ApplyDataPolicies(event) {
-    if (event.object && event.object.hasOwnProperty('password')) {
-        event.object.password = '**REDACTED**'
-    }
-    return event
+	if (event.object && event.object.hasOwnProperty('password')) {
+		event.object.password = '**REDACTED**'
+	}
+	return event
 }
 
 exports.handler = ApplyDataPolicies

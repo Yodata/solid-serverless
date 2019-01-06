@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-module.exports = dataProcessing;
+module.exports = dataProcessing
 
 function dataProcessing() {
-    // TODO
+	// TODO
 }

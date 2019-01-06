@@ -4,13 +4,19 @@ Description: >
   check-scope
   validates event.object with event.scope, adding event.isValid {boolean}
 
+Parameters:
+  clientid:
+    Type: String
+
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 6
     Runtime: nodejs8.10
     Environment:
       Variables:
         NODE_ENV: dev
+        CLIENT_ID:
+          Ref: clientid
 
 Resources:
   'CheckScopeFunction':

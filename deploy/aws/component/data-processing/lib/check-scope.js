@@ -1,9 +1,9 @@
-const logger = require('./logger')
 const {AuthorizationScope} = require('@yodata/solid-tools')
 const ow = require('ow')
+const logger = require('./logger')
 
 /**
- * test scope on a request
+ * Test scope on a request
  * @name check-scope
  * @param {object} event
  * @param {object} event.request - http.request
@@ -14,10 +14,10 @@ const ow = require('ow')
  * @param {object} event.policy   - from {POD}/settings/yodata/policy
  * @async
  */
-exports.handler = async (event) => {
-    logger.debug('check-scope', event )
-    // ow(event, ow.object.hasKeys(['object','scope']))    
-    const scope = new AuthorizationScope(event.scope)
-    event.scopeIsAllowed = scope.isAllowed(event.object)
-    return event
+exports.handler = async event => {
+	logger.debug('check-scope', event)
+	// Ow(event, ow.object.hasKeys(['object','scope']))
+	const scope = new AuthorizationScope(event.scope)
+	event.scopeIsAllowed = scope.isAllowed(event.object)
+	return event
 }

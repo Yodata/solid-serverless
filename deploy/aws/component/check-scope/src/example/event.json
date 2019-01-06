@@ -1,0 +1,14 @@
+{
+    "object": {
+        "type": "dog"
+    },
+    "scope": {
+        "noDogs": {
+            "processor": "Mingo",
+            "effect": "Deny",
+            "condition": {
+                "type": "dog"
+            }
+        }
+    }
+}

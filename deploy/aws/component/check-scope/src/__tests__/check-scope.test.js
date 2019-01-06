@@ -1,29 +1,35 @@
-const handler = require('..').handler
-const Event = require('../../event.json')
-const Response = require('../../response.json')
-let event, context
+/* eslint-disable no-undef */
+const checkScope = require('../check-scope')
 
-describe('Tests index', function () {
+describe('check-scope', () => {
+	test('example event/response', async () => {
+		const event = require('../example/event.json')
+		const response = require('../example/response.json')
+		const result = await checkScope(event)
+		return expect(result).toEqual(response)
+	})
 
-    beforeEach(() => {
-        event = Object.assign({},Event)
-    })
-    
-    test('verifies successful response', async () => {
-        const result = await handler(event, context)
-        return expect(result).toHaveProperty('isAllowed')
-    });
+	test('middleware params', async () => {
+		const middlewareEvent = {
+			object: {
+				stage: 'request',
+				object: {
+					type: 'dog'
+				}
+			},
+			scope: {
+				noDogsAllowed: {
+					'processor': 'Mingo',
+					'effect': 'Deny',
+					'condition': {
+						object: {
+							type: 'dog'
+						}
+					}}
+			}
+		}
+		const result = await checkScope(middlewareEvent)
+		return expect(result).toHaveProperty('isAllowed', false)
+	})
 
-    test('empty scope is always allowed', async () => {
-        event.scope = {}
-        const result = await handler(event, context)
-        return expect(result).toHaveProperty('isAllowed', true)
-    })
-
-    test('missing .scope property is an error and not allowed', async () => {
-        delete event.scope
-        const result = await handler(event)
-        return expect(result).toHaveProperty('isAllowed', false)
-    })
-});
-
+})

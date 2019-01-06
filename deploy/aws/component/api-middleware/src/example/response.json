@@ -1,33 +1,30 @@
 {
     "request": {
-        "method": "GET",
-        "rawHeaders": {
-            "content-type": [
-                "application/json"
-            ],
-            "accept": [
-                "*/*"
-            ]
-        }
+        "method": "GET"
     },
     "response": {
-        "status": 200,
         "headers": {
-            "Content-Length": "131",
-            "Content-Type": "application/json"
+            "Content-Type": [
+                "application/json"
+            ]
         },
-        "body": "{\n\t\"type\": \"ForbiddenType\",\n\t\"name\": \"Response Batman\",\n\t\"email\": \"batman@example.com\",\n\t\"password\": \"same-password-i-use-for-every-account\"\n}"
+        "body": "{\"password\": \"secret\"}"
     },
-    "agent": "https://testuser.real-living.yodata.me/profile/card#me",
     "scope": {},
     "policy": {
         "local": {
-            "RedactEmailAddress": {
+            "RedactPassword": {
                 "type": "DataPolicy",
                 "processor": "Yodata",
                 "effect": "Transform",
-                "value": "{ \"emailAddress\": \"$redact\" }"
+                "condition": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
             }
         }
+    },
+    "stage": "response",
+    "hasData": true,
+    "contentType": "application/json",
+    "object": {
+        "password": "secret"
     }
 }

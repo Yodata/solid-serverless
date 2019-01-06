@@ -1,0 +1,26 @@
+{
+    "request": {
+        "method": "GET"
+    },
+    "response": {
+        "headers": {
+            "Content-Type": [
+                "application/json"
+            ]
+        },
+        "body": "{\"password\": \"test\"}"
+    },
+    "policy": {
+        "local": {
+            "RedactPassword": {
+                "effect": "Transform",
+                "processor": "Yodata",
+                "value": {
+                    "password": {
+                        "value": "[PASSWORD]"
+                    }
+                }
+            }
+        }
+    }
+}

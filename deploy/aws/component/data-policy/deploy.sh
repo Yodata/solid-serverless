@@ -5,4 +5,4 @@ sam deploy \
 --template-file template-package.yaml \
 --stack-name data-policy \
 --profile solid \
---parameter-overrides clientid=dave-admin
+--parameter-overrides clientid=$CLIENT_ID

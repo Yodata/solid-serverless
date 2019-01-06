@@ -5,15 +5,15 @@ const ID = process.env.WHOAMI || 'testuser'
 const client = require('./client')(ID)
 
 const KNOWN_SCOPES = {
-    'DogsOnly': {
-        processor: 'Mingo',
-        effect: 'Allow',
-        condition: {
-            type: 'Dog'
-        }
-    }
+	DogsOnly: {
+		processor: 'Mingo',
+		effect: 'Allow',
+		condition: {
+			type: 'Dog'
+		}
+	}
 }
 
-module.exports = async (scopeName) => {
-    return KNOWN_SCOPES[scopeName] || client.get(SCOPE_URI + scopeName)
+module.exports = async scopeName => {
+	return KNOWN_SCOPES[scopeName] || client.get(SCOPE_URI + scopeName)
 }

@@ -1,6 +1,6 @@
 {
     "object": {
-        "type": "test"
+        "type": "Test"
     },
     "schema": {
         "properties": {

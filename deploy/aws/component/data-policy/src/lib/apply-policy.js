@@ -1,37 +1,38 @@
+// @ts-check
+
+const Transform = require('@yodata/transform')
 const logger = require('./logger')
 const getPolicies = require('./get-policies')
-const Transform = require('@yodata/transform')
+const {reduce} = require('p-iteration')
 
 /**
  * Apply event.policy to event.object
- * @param {Object} event
- * @param {Object} event.object - the data to be transformed
- * @param {Object} event.policy - from pod:settings/yodata/data-policies.json
- * @returns {Object} - the event with object transformed
+ * @param {object} event
+ * @param {object} event.object - the data to be transformed
+ * @param {object} event.policy - from pod:settings/yodata/data-policies.json
+ * @returns {Promise<object>} - the event with object transformed
  */
 module.exports = async function ApplyDataPolicies(event, context) {
-    let object = event.object
-    let result = event.object
-    try {
-        let policySet = await getPolicies(event)
-        policySet.forEach(policy => {result = applyPolicy(result,policy)})
-    } catch (error) {
-        logger.error('error applying data polices', {error, event, context})
-    }
-    logger.info('apply-data-policy:result', {object,result})
-    event.object = result
-    return event
+	if (hasPolicy(event)) {
+		const policySet = await getPolicies(event)
+		event.object = await reduce(policySet, applyPolicy, event.object)
+	}
+	return event
 }
 
-const applyPolicy = (object,policy) => {
-    let processor = policy.processor;
-    let policyValue = JSON.parse(policy.value);
-    switch (processor) {
-        case 'Yodata':
-            object = new Transform.Context(policyValue).map(object);
-            break;
-        default:
-            logger.error(`data-policy:unknown-processor:${processor}`);
-    }
-    return object
-};
+const applyPolicy = (object, policy) => {
+	const processor = policy.processor
+	const policyValue = (typeof policy.value === 'string') ? JSON.parse(policy.value) : policy.value
+	switch (processor) {
+		case 'Yodata':
+			object = new Transform.Context(policyValue).map(object)
+			break
+		default:
+			logger.error(`data-policy:unknown-processor:${processor}`)
+	}
+	return object
+}
+
+const hasPolicy = (event) => {
+	return event && typeof event.object === 'object' && event.policy && typeof event.policy === 'object' && Object.keys(event.policy).length > 0
+}

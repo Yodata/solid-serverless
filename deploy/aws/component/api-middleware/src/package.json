@@ -1,16 +1,19 @@
 {
-  "name": "rl-fn-middleware",
-  "version": "0.0.1",
+  "name": "api-middleware",
+  "version": "0.0.2",
   "description": "process REflex/SOLID requests for Real Living",
-  "main": "src/middleware.js",
+  "main": "src/index.js",
   "repository": "https://github.com/yodata/real-living",
   "author": "yodaveduran <dave@yodata.io>",
   "license": "MIT",
   "dependencies": {
-    "@yodata/solid-serverless-logger": "^0.0.5",
+    "@yodata/solid-serverless-logger": "^0.0.6",
     "@yodata/solid-tools": "^0.0.5",
     "fast-json-stable-stringify": "^2.0.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "mime-types": "^2.1.21",
+    "p-iteration": "^1.1.7",
+    "type-is": "^1.6.16"
   },
   "scripts": {
     "test": "jest"

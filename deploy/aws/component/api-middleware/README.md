@@ -1,4 +1,4 @@
-# rl-middleware
+# api-middleware
 
 Receives an object representing the state of an http message { request, response, context }
 

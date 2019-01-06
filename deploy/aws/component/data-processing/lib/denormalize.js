@@ -7,6 +7,6 @@
  * @param {object} event.scope    - the ACL.scope
  * @param {object} event.policy   - from {POD}/settings/yodata/policy
  */
-exports.handler = async (event) => {
-    return event
+exports.handler = async event => {
+	return event
 }

@@ -24,23 +24,23 @@
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
 "@szmarczak/http-timer@^1.1.0":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.1.tgz#6402258dfe467532b26649ef076b4d11f74fb612"
-  integrity sha512-WljfOGkmSJe8SUkl+4TPvN2ec0dpUGVyfTBQLoXJUiILs+wBSc4Kvp2N3aAWE4VwwDSLGdmD3/bufS5BgZpVSQ==
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.2.tgz#b1665e2c461a2cd92f4c1bbf50d5454de0d4b421"
+  integrity sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@yodata/solid-serverless-logger@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.3.tgz#5049cf0bd2dddfd5e9c739bc989aa19bc3ab2c22"
-  integrity sha512-AdfJVQHVTom0/E2wD4t5N3zOLTWcppcZcCi4roE4cQ27Nk9/q/HxlO3obCsXfOScY7BIE3Alm0i7E3m2/iJvLA==
+"@yodata/solid-serverless-logger@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.6.tgz#a87b4fd30ee2f084759ae852e2a10b5bb6a508a1"
+  integrity sha512-uy8rMlz1gDm5FzhKBS5eTVR4Ktf0CSWqk9+HYFCG5hmjqvmnPQDOYwc8ynkoDviqQy/InnP5KbiLJRb7bJZ4nA==
   dependencies:
     winston "^3.1.0"
 
-"@yodata/solid-tools@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@yodata/solid-tools/-/solid-tools-0.0.5.tgz#dcf4f4d65536c9dd322e31023a6631cac70642ac"
-  integrity sha512-yyCdg5qWJmjIqR2qVesYFpUdrLhGHTgqlrOpLUTSyAJNDsehyR6badpP9G+/grz7sIFKTfoomOJINlaxsUZ88A==
+"@yodata/solid-tools@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@yodata/solid-tools/-/solid-tools-0.0.6.tgz#ccc59b36d26ad3b0764a0cc62d686599bdf3205e"
+  integrity sha512-BqqpILd4CKGxsI188y9WYO5c2f18GbqWXKhMVYqpRbNJvhKr5RI4io6RbPSjuIpIYgGIgIEbJq1R7QmNCQmDYw==
   dependencies:
     got "^9.5.0"
     mingo "^2.2.8"
@@ -2523,9 +2523,9 @@ mimic-response@^1.0.0, mimic-response@^1.0.1:
   integrity sha512-j5EctnkH7amfV/q5Hgmoal1g2QHFJRraOtmx0JpIqkxhBhI/lJSl1nMpQ45hVarwNETOoWEimndZ4QK0RHxuxQ==
 
 mingo@^2.2.8:
-  version "2.2.8"
-  resolved "https://registry.yarnpkg.com/mingo/-/mingo-2.2.8.tgz#2127f783c33ae40c69c9bf65953babf881b883f4"
-  integrity sha512-61ET/PK45Jm1yWfoiYL/9KBs/+66s4ctLJeMCnKgYJlrD46oqbIVnfm5RbDyqo9Gl19mzUUi4DDvTlMzirzKVw==
+  version "2.2.10"
+  resolved "https://registry.yarnpkg.com/mingo/-/mingo-2.2.10.tgz#4b96607f23a69f9d83f3bb9efbf1db607c9d8368"
+  integrity sha512-V2NKMKao/xcEZEMsdokjQ5+Ow58eWoDYOeYOqk6xOtJkCJjDMSTPRbNFtj/9RI87cxvIggUxep+/asE+djcMXQ==
 
 minimatch@^3.0.3, minimatch@^3.0.4:
   version "3.0.4"
@@ -2848,6 +2848,11 @@ p-finally@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/p-finally/-/p-finally-1.0.0.tgz#3fbcfb15b899a44123b34b6dcc18b724336a2cae"
   integrity sha1-P7z7FbiZpEEjs0ttzBi3JDNqLK4=
+
+p-iteration@^1.1.7:
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/p-iteration/-/p-iteration-1.1.7.tgz#9e71d79ede244b9f52592521f4487a56b6fb50fa"
+  integrity sha512-VsYvUPjm2edbKkX4QzlASC1qB2e4Z6IE9WPaRVHKwCtobmB6vfUcU9eBOwj1k5uMNi8O6w89QfsDatO5ePSjQg==
 
 p-limit@^1.1.0:
   version "1.3.0"

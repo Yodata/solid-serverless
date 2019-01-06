@@ -9,8 +9,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@yodata/solid-serverless-logger": "^0.0.3",
-    "@yodata/solid-tools": "^0.0.5"
+    "@yodata/solid-serverless-logger": "^0.0.6",
+    "@yodata/solid-tools": "^0.0.6",
+    "p-iteration": "^1.1.7"
   },
   "devDependencies": {
     "aws-sdk": "^2.382.0",

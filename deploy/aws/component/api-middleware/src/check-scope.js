@@ -1,22 +1,49 @@
-const AWS = require('aws-sdk')
-const lambda = new AWS.Lambda({region:'us-west-2'})
-const logger = require('./logger')
-const set = require('lodash/set')
+// @ts-check
+
+const logger = require('./lib/logger')
+const invoke = require('./lib/invoke-lambda-function')
+const getEnvValue = require('./lib/get-env-value')
+
+/**
+ * checks event using event.scope, adds event.isAllowed {boolean}
+ * @param {object} 	event
+ * @param {object} 	event.object
+ * @param {object} 	event.scope
+ * @param {boolean}	event.isAllowed
+ * @param {object}	[event.request]
+ * @param {object}	[event.response]
+ * @returns {Promise<object>}
+ */
+module.exports = async (event) => {
+	if (hasScope(event)) {
+		logger.debug('api-middleware:check-scope:received', {event})
+		const functionName = getEnvValue(event,'CHECK_SCOPE_FUNCTION_NAME', 'check-scope')
+		const params = getScopeParams(event)
+		event.isAllowed = await invoke(functionName,params).then(res => {
+			logger.debug('check-scope-response', res)
+			return res.isAllowed
+		})
+		if (event.isAllowed === false) {
+			event.response = {
+				status: '403',
+				statusCode: 403,
+				body: JSON.stringify({'error':'rejected by scope'}),
+				end: true
+			}
+		}
+	}
+	logger.debug('api-middleware:check-scope:result', {event})
+	return event
+}
+
+const getScopeParams = (event) => {
+	return {
+		object: event,
+		scope: event.scope
+	}
+}
 
 
-module.exports = async function checkScope(event) {
-  try {
-    const FunctionName = process.env.CHECK_SCOPE_FUNCTION_NAME
-    const Payload = JSON.stringify(event)
-    const response = await lambda.invoke({FunctionName, Payload, }).promise()
-    logger.debug('checkScope invoke response', response)
-    if (response.isAllowed === false) {
-      set(event, 'response.status', 403)
-      set(event, 'response.body', JSON.stringify({error: 'Request denied due to scope policy.'}))
-      set(event, 'response.end' , true)
-    }
-  } catch (error) {
-    logger.error('checkScope error', error)
-  }
-  return event
+const hasScope = (event) => {
+	return event && event.scope && typeof event.scope === 'object' && Object.keys(event.scope).length > 0
 }

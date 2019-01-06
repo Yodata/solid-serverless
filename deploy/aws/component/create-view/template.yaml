@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  create-view
+  apply event.scope to event.response.body
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: nodejs8.10
+    Tags:
+      app: solid-serverless
+      component: create-view-service
+    Environment:
+      Variables:
+        NODE_ENV: production
+
+Resources:
+  'CreateViewFunction':
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: index.handler
+      FunctionName: 'create-view'
+      AutoCreateAlias: next

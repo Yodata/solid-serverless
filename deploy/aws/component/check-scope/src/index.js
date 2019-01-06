@@ -1,5 +1,7 @@
-const logger = require('@yodata/solid-serverless-logger').defaultLogger
-const {AuthorizationScope} = require('@yodata/solid-tools')
+// @ts-check
+
+const logger = require('./lib/logger')
+const checkScope = require('./check-scope')
 
 /**
  * @typedef CheckScopeResponse
@@ -10,39 +12,26 @@ const {AuthorizationScope} = require('@yodata/solid-tools')
 
 /**
  * validates event.object with event.scope returning event.isAllowed {boolean}
- * @name check-scope
  * @param {object} event
  * @param {object} event.object   - data to be tested
  * @param {object} event.scope    - the ACL.scope value
+ * @param {boolean} [event.isAllowed]
+ * @returns {Promise<object>}
  * 
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
- * @param {Object}   context
- * @param {string}   context.logGroupName - Cloudwatch Log Group name
- * @param {string}   context.logStreamName - Cloudwatch Log stream name.
- * @param {string}   context.functionName - Lambda function name.
- * @param {string}   context.memoryLimitInMB - Function memory.
- * @param {string}   context.functionVersion - Function version identifier.
- * @param {function} context.getRemainingTimeInMillis - Time in milliseconds before function times out.
- * @param {string}   context.awsRequestId - Lambda request ID.
- * @param {string}   context.invokedFunctionArn - Function ARN.
- *
- * @returns {CheckScopeResponse}
+ * @example response
+ * {
+ *   object: {}
+ *   scope: {}
+ *   isValid: true
+ * }
  */
-exports.handler = async (event, context) => {
-    try {
-        logger.debug('check-scope recieved event ', event)
-        if (!event.scope) {
-            logger.error('event.scope undefined', event)
-            event.isAllowed = false
-        } else {
-            let scope = new AuthorizationScope(event.scope)
-            event.isAllowed = scope.isAllowed(event.object)
-        }
-    } catch (error) {
-        logger.error('check-scope error', {error, context})
-        //TODO: remove this in production
-        event.isAllowed = false
-    }
-    logger.debug('check-scope: event.isAllowed:', event.isAllowed)
-    return event
-};
+exports.handler = async (event) => {
+	try {
+		logger.debug('received-event', {event})
+		event = checkScope(event)
+	} catch (error) {
+		logger.error('error', {stack: error.stack})
+	}
+	logger.info('check-scope:response', {event})
+	return event	
+}

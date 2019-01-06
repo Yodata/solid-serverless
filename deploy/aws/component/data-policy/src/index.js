@@ -8,8 +8,7 @@ exports.applyPolicy = createHandler(applyPolicy, 'apply-policy')
 exports.getPolicies = createHandler(getPolicies, 'get-policies')
 exports.setPolicy = createHandler(setPolicy, 'set-policy')
 
-
-async function echoHandler(event,context) {
-    console.log({event,context})
-    return event
+async function echoHandler(event, context) {
+	console.log({event, context})
+	return event
 }

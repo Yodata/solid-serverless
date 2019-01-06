@@ -4,4 +4,5 @@ sam deploy \
 --capabilities CAPABILITY_IAM \
 --template-file template-package.yaml \
 --stack-name yodata-solid-serverless-check-scope \
---profile solid
+--profile solid \
+--parameter-overrides clientid=$CLIENT_ID
