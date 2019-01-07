@@ -1,14 +1,19 @@
 /* eslint-disable no-undef */
 const getEventData = require('../get-event-data')
 
-const createEvent = (phase, contentType, contentTypeValue, data) => ({
-	[phase]: {
-		headers: {
-			[contentType]: contentTypeValue
-		},
-		body: JSON.stringify(data)
-	}
-})
+
+
+const createEvent = (phase, contentType, contentTypeValue, data) => {
+	const body = new Buffer(JSON.stringify(data)).toString('base64')
+	return ({
+		[phase]: {
+			headers: {
+				[contentType]: contentTypeValue
+			},
+			body
+		}
+	})
+}
 
 describe('get-event-data', () => {
 

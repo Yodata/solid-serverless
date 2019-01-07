@@ -20,7 +20,7 @@ Resources:
     - AWSLambdaExecute
     Properties:
       AutoPublishAlias: next
-      CodeUri: s3://yodata-solid-serverless-api-middleware/25b4a7a28deadfd3c9e2a5d0fc4b78bb
+      CodeUri: s3://yodata-solid-serverless-api-middleware/a0abdd32318aa12abfc05d22f0212c62
       FunctionName: api-middleware
       Handler: index.handler
     Type: AWS::Serverless::Function
