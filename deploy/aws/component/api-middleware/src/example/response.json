@@ -8,7 +8,7 @@
                 "application/json"
             ]
         },
-        "body": "{\"password\": \"secret\"}"
+        "body": "eyJwYXNzd29yZCI6ICJzZWNyZXQifQ=="
     },
     "scope": {},
     "policy": {
@@ -25,6 +25,6 @@
     "hasData": true,
     "contentType": "application/json",
     "object": {
-        "password": "secret"
+        "password": "[PASSWORD]"
     }
 }
