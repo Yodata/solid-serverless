@@ -32,7 +32,7 @@ module.exports = async (event) => {
 			}
 		}
 	}
-	logger.debug('api-middleware:check-scope:result', event['object'])
+	logger.debug('api-middleware:check-scope:result', {event})
 	return event
 }
 

@@ -1,9 +1,18 @@
 const getHeader = require('./get-header-value')
 const typeis = require('type-is')
+const parse = require('parse-json')
 
 const parseBody = (req) => {
-	const buff = new Buffer(req.body,'base64').toString()
-	return JSON.parse(buff)
+	let body = req.body
+	let data
+	if (body.length === 0) {
+		return {}
+	}
+	if (req.isBase64Encoded) {
+		body = new Buffer(req.body,'base64').toString()
+	}
+	data = parse(body)
+	return data
 }
 
 /**

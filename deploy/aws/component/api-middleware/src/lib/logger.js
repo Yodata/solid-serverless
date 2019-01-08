@@ -1,6 +1,12 @@
 const winston = require('winston')
+const select = require('./select-properties')
+
+const formatRequest = winston.format(
+	select('event.request', 'method,headers,url,body')
+)
 
 const format = winston.format.combine(
+	formatRequest(),
 	winston.format.simple()
 )
 

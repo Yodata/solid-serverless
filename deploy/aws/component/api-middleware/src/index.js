@@ -25,7 +25,7 @@ exports.handler = async (event,context) => {
 	} catch (error) {
 		logger.error('api-middleware:error', {event,context,error})
 	}
-	logger.info('api-middleware:result', event)
+	logger.info('api-middleware:result', {event})
 	// @ts-ignore
 	return event
 }

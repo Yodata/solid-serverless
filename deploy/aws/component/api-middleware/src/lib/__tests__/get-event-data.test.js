@@ -2,7 +2,6 @@
 const getEventData = require('../get-event-data')
 
 
-
 const createEvent = (phase, contentType, contentTypeValue, data) => {
 	const body = new Buffer(JSON.stringify(data)).toString('base64')
 	return ({
@@ -10,7 +9,8 @@ const createEvent = (phase, contentType, contentTypeValue, data) => {
 			headers: {
 				[contentType]: contentTypeValue
 			},
-			body
+			body,
+			isBase64Encoded: true
 		}
 	})
 }

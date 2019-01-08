@@ -9,10 +9,11 @@
   "dependencies": {
     "@yodata/solid-serverless-logger": "^0.0.6",
     "@yodata/solid-tools": "^0.0.5",
-    "fast-json-stable-stringify": "^2.0.0",
+    "fast-safe-stringify": "^2.0.6",
     "lodash": "^4.17.11",
     "mime-types": "^2.1.21",
     "p-iteration": "^1.1.7",
+    "parse-json": "^4.0.0",
     "type-is": "^1.6.16"
   },
   "scripts": {

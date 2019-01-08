@@ -8,9 +8,19 @@
                 "application/json"
             ]
         },
-        "body": "eyJwYXNzd29yZCI6ICJzZWNyZXQifQ=="
+        "body": "{'password':'secret'}",
+        "isBase64Encoded": false
     },
-    "scope": {},
+    "scope": {
+        "NoDogsAllowed": {
+            "effect": "Deny",
+            "condition": {
+                "object": {
+                    "type": "Dog"
+                }
+            }
+        }
+    },
     "policy": {
         "local": {
             "RedactPassword": {

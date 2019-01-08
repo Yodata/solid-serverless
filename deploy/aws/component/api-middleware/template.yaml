@@ -11,6 +11,7 @@ Globals:
       component: api-middleware
     Environment:
       Variables:
+        DEBUG_LEVEL: info
         NODE_ENV: development
         CHECK_SCOPE_FUNCTION_NAME: check-scope
         CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view

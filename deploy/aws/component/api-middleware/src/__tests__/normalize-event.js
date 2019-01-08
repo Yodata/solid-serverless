@@ -7,7 +7,8 @@ const createRequest = (contentType,data) => {
 		headers: {
 			'content-type': contentType
 		},
-		body: new Buffer(JSON.stringify(data)).toString('base64')
+		body: new Buffer(JSON.stringify(data)).toString('base64'),
+		isBase64Encoded: true
 	}
 }
 
