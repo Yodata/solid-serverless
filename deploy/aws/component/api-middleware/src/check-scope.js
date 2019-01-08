@@ -24,15 +24,15 @@ module.exports = async (event) => {
 			return res.isAllowed
 		})
 		if (event.isAllowed === false) {
+			event.object = {'error':'rejected by scope'}
 			event.response = {
 				status: '403',
 				statusCode: 403,
-				body: JSON.stringify({'error':'rejected by scope'}),
 				end: true
 			}
 		}
 	}
-	logger.debug('api-middleware:check-scope:result', {event})
+	logger.debug('api-middleware:check-scope:result', event['object'])
 	return event
 }
 

@@ -18,14 +18,14 @@ const processRequest = require('./process-request')
  * @param {object} [event.response]
  * @returns {Promise<ApiMiddlewareResponse>}
  */
-exports.handler = async event => {
+exports.handler = async (event,context) => {
 	try {
-		logger.debug('api-middleware:event-received', {event})
+		logger.debug('api-middleware:event-received', {event,context})
 		event = await processRequest(event)
 	} catch (error) {
-		logger.error(error.message, {stack: error.stack})
+		logger.error('api-middleware:error', {event,context,error})
 	}
-	logger.info('api-middleware:result', {event})
+	logger.info('api-middleware:result', event)
 	// @ts-ignore
 	return event
 }

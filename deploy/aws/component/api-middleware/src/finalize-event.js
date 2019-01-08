@@ -19,8 +19,7 @@ module.exports = (event) => {
 			req.body = encode(event.object)
 			break
 		}
-		logger.info('finalize request', {req})
 	}
-	
+	logger.debug('finalize-event.object', event.object)
 	return event
 }

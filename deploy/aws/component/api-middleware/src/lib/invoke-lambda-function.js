@@ -29,8 +29,7 @@ const invokeLambdaFunction = async (FunctionName, event, lambdaConfig) => {
 		logger.error('InvokeLambdaFunction:UnhandledError', {error, event})
 		response = Object.assign(event, {error: error.message})
 	}
-	logger.debug(`response type = ${typeof response}`)
-	logger.debug('InvokeLambdaFunction:result', {response})
+	logger.debug('InvokeLambdaFunction:result', response)
 	return response
 }
 

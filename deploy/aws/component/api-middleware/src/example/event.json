@@ -17,7 +17,7 @@
                 "type": "DataPolicy",
                 "processor": "Yodata",
                 "effect": "Transform",
-                "condition": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
+                "value": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
             }
         }
     }

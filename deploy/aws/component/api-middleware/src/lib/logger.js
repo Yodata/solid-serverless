@@ -1,2 +1,18 @@
-const logger = require('@yodata/solid-serverless-logger').defaultLogger
-module.exports = logger
+const winston = require('winston')
+
+const format = winston.format.combine(
+	winston.format.simple()
+)
+
+const transports = [
+	new winston.transports.Console()
+]
+
+const level = process.env.DEBUG_LEVEL || process.env.NODE_ENV === 'production' ? 'info' : 'debug'
+
+const defaultOptions = {format, transports, level}
+
+const defaultLogger = winston.createLogger(defaultOptions)
+
+module.exports = defaultLogger
+
