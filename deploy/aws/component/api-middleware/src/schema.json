@@ -1,0 +1,77 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "definitions": {
+        "HttpRequest": {
+            "@type": "http:Request",
+            "type": "object",
+            "$comment": "An HTTP request.",
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "GET",
+                        "POST",
+                        "PATCH",
+                        "PUT",
+                        "DELETE",
+                        "HEAD",
+                        "OPTIONS"
+                    ]
+                },
+                "headers": {
+                    "type": "object"
+                },
+                "body": {
+                    "type": "string",
+                    "contentEncoding": "Base64"
+                }
+            }
+        },
+        "HttpResponse": {
+            "@type": "http:Response",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "number",
+                    "minimum": 100,
+                    "maximum": 599
+                },
+                "statusCode": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "object",
+                    "properties": {
+                        "content-type": {
+                            "type": "string",
+                            "examples": [
+                                "application/json",
+                                "application/ld+json",
+                                "text/turtle"
+                            ]
+                        }
+                    }
+                },
+                "body": {
+                    "type": "string"
+                },
+                "isBase64Encoded": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ApiEvent": {
+            "properties": {
+                "request": {
+                    "$ref": "#/definitions/HttpRequest"
+                },
+                "response": {
+                    "$ref": "#/definitions/HttpResponse"
+                },
+                "scope": {
+                    "type": "object"
+                }
+            }
+        }
+    }
+}

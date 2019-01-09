@@ -21,7 +21,7 @@ module.exports = async function ApplyDataPolicies(event, context) {
 }
 
 const applyPolicy = (object, policy) => {
-	const processor = policy.processor
+	const processor = policy.processor || 'Yodata'
 	const policyValue = (typeof policy.value === 'string') ? JSON.parse(policy.value) : policy.value
 	switch (processor) {
 		case 'Yodata':

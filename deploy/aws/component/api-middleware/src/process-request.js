@@ -4,13 +4,11 @@ const {reduce} = require('p-iteration')
 const normalize = require('./normalize-event')
 const checkScope = require('./check-scope')
 const applyPolicy = require('./apply-policy')
-const finalize = require('./finalize-event')
 
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
 	applyPolicy,
-	finalize
 ]
 
 const handler = (event, fn) => {

@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@yodata/solid-serverless-logger": "^0.0.6",
+    "@yodata/solid-serverless-logger": "^0.0.7",
     "@yodata/solid-tools": "^0.0.6",
     "p-iteration": "^1.1.7"
   },

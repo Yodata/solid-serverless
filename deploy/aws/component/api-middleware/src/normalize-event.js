@@ -1,5 +1,6 @@
 // @ts-check
 
+const logger = require('./lib/logger')
 const getHeaders = require('./lib/get-headers')
 const getHeader = require('./lib/get-header-value')
 const getData = require('./lib/get-event-data')
@@ -29,11 +30,12 @@ module.exports = (event) => {
 	event.stage = event.response ? 'response' : 'request'
 	const req = event[event.stage]
 	// normalize headers
-	if (!req.headers && req.rawHeaders) {
+	if (req && !req.headers && req.rawHeaders) {
 		req.headers = getHeaders(req)
 	}
 	event.hasData = hasData(req)
 	event.contentType = getHeader(req,'content-type')
 	event.object = getData(event)
+	logger.debug('normalize-event:result', {event})
 	return event
 }

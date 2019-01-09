@@ -14,12 +14,14 @@ module.exports = (event) => {
 		switch(typeis.is(contentType,['json','+json'])) {
 		case 'json':
 			req.body = encode(event.object)
+			req.isBase64Encoded = true
 			break
 		case 'application/ld+json':
 			req.body = encode(event.object)
+			req.isBase64Encoded = true
 			break
 		}
 	}
-	logger.debug('finalize-event.object', event.object)
+	logger.debug('finalize-event.object', {event})
 	return event
 }

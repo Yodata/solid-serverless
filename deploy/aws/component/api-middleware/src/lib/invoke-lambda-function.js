@@ -1,6 +1,6 @@
 // @ts-check
-const logger = require('./logger')
 const {Lambda} = require('aws-sdk')
+const stringify = require('fast-safe-stringify').default
 
 const defaultLambdaConfig = {
 	region: 'us-west-2'
@@ -14,23 +14,19 @@ const defaultLambdaConfig = {
  * @returns {Promise<object>} returns the InvokeResponse.Payload
  */
 const invokeLambdaFunction = async (FunctionName, event, lambdaConfig) => {
-	let response
-	try {
-		const config = Object.assign(defaultLambdaConfig, lambdaConfig)
-		const lambda = new Lambda(config)
-		const Payload = JSON.stringify(event)
-		const lambdaResponse = await lambda.invoke({FunctionName, Payload}).promise()
-		if (functionError(lambdaResponse)) {
-			logger.error('InvokeLambdaFunction:Error', lambdaResponse)
-		}
-		response = lambdaResponse.Payload
-		response = JSON.parse(response)
-	} catch (error) {
-		logger.error('InvokeLambdaFunction:UnhandledError', {error, event})
-		response = Object.assign(event, {error: error.message})
+	const config = Object.assign(defaultLambdaConfig, lambdaConfig)
+	const lambda = new Lambda(config)
+	const Payload = stringify(event)
+	const lambdaResponse = await lambda.invoke({FunctionName, Payload}).promise()
+	if (functionError(lambdaResponse)) {
+		let message = lambdaResponse.Payload.toString()
+		let error = new Error(message)
+		error.name = `INVOKE_ERROR:${FunctionName}`
+		throw error
+	} else {
+		let payload = lambdaResponse.Payload.toString()
+		return JSON.parse(payload)
 	}
-	logger.debug('InvokeLambdaFunction:result', response)
-	return response
 }
 
 const functionError = response => {

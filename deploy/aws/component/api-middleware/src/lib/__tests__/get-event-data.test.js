@@ -34,4 +34,12 @@ describe('get-event-data', () => {
 		const event = createEvent('request','CONTENT-TYPE','application/ld+json',data)
 		expect(getEventData(event)).toEqual(data)
 	})
+
+	test('unencoded response.body', () => {
+		const data = {type:'response-data'}
+		const event = createEvent('response','Content-Type','application/json',data)
+		event.response.body = JSON.stringify(data)
+		event.response.isBase64Encoded = false
+		expect(getEventData(event)).toEqual(data)
+	})
 })

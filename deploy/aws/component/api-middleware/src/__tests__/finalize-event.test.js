@@ -20,8 +20,9 @@ describe('finalize-event', () => {
 		const event = createEvent('request','content-type','application/json', beforeData)
 		event.hasData = true
 		event.object = afterData
-		const result = finalize(event)
-		expect(result).toHaveProperty('request')
-		expect(result.request).toHaveProperty('body',encode(afterData))
+		const next = finalize(event)
+		expect(next).toHaveProperty('request')
+		expect(next.request).toHaveProperty('body',encode(afterData))
+		expect(next.request).toHaveProperty('isBase64Encoded', true)
 	})
 })

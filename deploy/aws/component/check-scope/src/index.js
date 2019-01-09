@@ -25,12 +25,12 @@ const checkScope = require('./check-scope')
  *   isValid: true
  * }
  */
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
 	try {
-		logger.debug('received-event', {event})
+		logger.debug('received-event', {event, context})
 		event = checkScope(event)
 	} catch (error) {
-		logger.error('error', {stack: error.stack})
+		logger.error('error', {event,error})
 	}
 	logger.info('check-scope:response', {event})
 	return event	

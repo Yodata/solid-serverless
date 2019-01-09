@@ -2,7 +2,7 @@ const winston = require('winston')
 const select = require('./select-properties')
 
 const formatRequest = winston.format(
-	select('event.request', 'method,headers,url,body')
+	select('event.request', 'method,headers,url,body,isBase64Encoded')
 )
 
 const format = winston.format.combine(

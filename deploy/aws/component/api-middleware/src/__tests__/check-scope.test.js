@@ -11,7 +11,6 @@ describe('api-middleware.check-scope', () => {
 			scope: {
 				noDogsAllowed: {
 					effect: 'Deny',
-					processor: 'Mingo',
 					condition: {
 						object: {
 							type: 'dog'
@@ -21,7 +20,6 @@ describe('api-middleware.check-scope', () => {
 			}
 		}
 		const result = await checkScope(event)
-		expect(result).toHaveProperty('object')
 		expect(result).toHaveProperty('isAllowed', false)
 	})
 })

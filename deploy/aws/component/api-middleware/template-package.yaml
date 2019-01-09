@@ -7,7 +7,7 @@ Globals:
         APPLY_POLICY_FUNCTION_NAME: apply-policy
         CHECK_SCOPE_FUNCTION_NAME: check-scope
         CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view
-        DEBUG_LEVEL: info
+        DEBUG_LEVEL: debug
         DEFAULT_JSONLD_CONTEXT: https://dev.yodata.io/public/real-estate/context.json
         NODE_ENV: development
     Runtime: nodejs8.10
@@ -21,7 +21,7 @@ Resources:
     - AWSLambdaExecute
     Properties:
       AutoPublishAlias: next
-      CodeUri: s3://yodata-solid-serverless-api-middleware/505c573929c10a3b1f3d820e1ad0cd14
+      CodeUri: s3://yodata-solid-serverless-api-middleware/d71ae28b1753ea720a09352e626d3d8f
       FunctionName: api-middleware
       Handler: index.handler
     Type: AWS::Serverless::Function

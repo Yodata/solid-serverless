@@ -20,7 +20,7 @@ module.exports = async (event) => {
 		const functionName = getEnvValue(event,'CHECK_SCOPE_FUNCTION_NAME', 'check-scope')
 		const params = getScopeParams(event)
 		event.isAllowed = await invoke(functionName,params).then(res => {
-			logger.debug('check-scope-response', res)
+			logger.debug('check-scope-response', {res})
 			return res.isAllowed
 		})
 		if (event.isAllowed === false) {

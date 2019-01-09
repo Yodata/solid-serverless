@@ -1,7 +1,4 @@
 {
-    "request": {
-        "method": "GET"
-    },
     "response": {
         "headers": {
             "Content-Type": [
