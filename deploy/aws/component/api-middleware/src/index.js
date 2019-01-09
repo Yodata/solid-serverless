@@ -2,6 +2,7 @@
 
 const logger = require('./lib/logger')
 const processRequest = require('./process-request')
+const finalize = require('./finalize-event')
 
 /**
  * @typedef ApiMiddlewareResponse
@@ -36,6 +37,7 @@ exports.handler = async (event,context) => {
 			}
 		}
 	} finally {
+		event = finalize(event)
 		logger.info('api-middleware:result', {event})
 	}
 	// @ts-ignore
