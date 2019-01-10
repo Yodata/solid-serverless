@@ -24,11 +24,11 @@ const applyPolicy = (object, policy) => {
 	const processor = policy.processor || 'Yodata'
 	const policyValue = (typeof policy.value === 'string') ? JSON.parse(policy.value) : policy.value
 	switch (processor) {
-		case 'Yodata':
-			object = new Transform.Context(policyValue).map(object)
-			break
-		default:
-			logger.error(`data-policy:unknown-processor:${processor}`)
+	case 'Yodata':
+		object = new Transform.Context(policyValue).map(object)
+		break
+	default:
+		logger.error(`data-policy:unknown-processor:${processor}`)
 	}
 	return object
 }

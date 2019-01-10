@@ -8,7 +8,7 @@
   "dependencies": {
     "@yodata/solid-serverless-logger": "^0.0.6",
     "@yodata/solid-tools": "^0.0.6",
-    "@yodata/transform": "^0.2.7",
+    "@yodata/transform": "^0.2.8",
     "debug": "^4.1.1",
     "kind-of": "^6.0.2",
     "lodash": "^4.17.11",
