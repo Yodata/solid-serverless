@@ -1,6 +1,10 @@
 {
     "contentType": "application/json",
     "hasData": true,
+    "isAllowed": true,
+    "object": {
+        "password": "[PASSWORD]"
+    },
     "policy": {
         "local": {
             "RedactPassword": {
@@ -15,13 +19,13 @@
         "method": "GET"
     },
     "response": {
-        "body": "{'password':'secret'}",
+        "body": "eyJwYXNzd29yZCI6IltQQVNTV09SRF0ifQ==",
         "headers": {
             "Content-Type": [
                 "application/json"
             ]
         },
-        "isBase64Encoded": false
+        "isBase64Encoded": true
     },
     "scope": {
         "NoDogsAllowed": {

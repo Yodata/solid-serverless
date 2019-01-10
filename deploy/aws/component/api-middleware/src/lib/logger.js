@@ -14,7 +14,7 @@ const transports = [
 	new winston.transports.Console()
 ]
 
-const level = process.env.DEBUG_LEVEL || process.env.NODE_ENV === 'production' ? 'info' : 'debug'
+const level = process.env.DEBUG_LEVEL || 'info'
 
 const defaultOptions = {format, transports, level}
 

@@ -1,3 +1,6 @@
 #!/bin/bash
+# . invoke [EventPath]
 
-sam local invoke -e src/example/event.json
+EventPath=${1:-src/example/event.json}
+
+sam local invoke -e $EventPath

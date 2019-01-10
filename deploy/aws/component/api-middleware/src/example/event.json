@@ -8,7 +8,7 @@
                 "application/json"
             ]
         },
-        "body": "{\"password\":\"secret\"}",
+        "body": "{\"password\": \"secret\"}",
         "isBase64Encoded": false
     },
     "scope": {

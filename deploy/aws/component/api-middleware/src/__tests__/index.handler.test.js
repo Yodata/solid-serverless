@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const handler = require('..').handler
+const getData = require('../lib/get-event-data')
 
 describe('api-middleware', () => {
 	
@@ -10,11 +11,17 @@ describe('api-middleware', () => {
 		return expect(response).toBeInstanceOf(Promise)
 	})
 
-	test('example event/response', async () => {
+	test('example event/response', () => {
 		const event = require('../example/event.json')
-		const expectedResponse = require('../example/response.json')
+		const response = require('../example/response.json')
+		return expect(handler(event)).resolves.toEqual(response)
+	})
+
+	test('parses uri object keys', async () => {
+		const event = require('../example/test-event.json')
+		const data = getData(event)
 		const response = await handler(event)
-		return expect(response).toEqual(expectedResponse)
+		return expect(response.object).toEqual(data)
 	})
 })
 
