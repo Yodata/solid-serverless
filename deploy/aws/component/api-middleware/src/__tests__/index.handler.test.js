@@ -14,7 +14,7 @@ describe('api-middleware', () => {
 	test('example event/response', () => {
 		const event = require('../example/event.json')
 		const response = require('../example/response.json')
-		return expect(handler(event)).resolves.toEqual(response)
+		expect(handler(event)).resolves.toEqual(response)
 	})
 
 	test('parses uri object keys', async () => {

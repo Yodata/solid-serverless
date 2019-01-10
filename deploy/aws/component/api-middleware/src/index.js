@@ -6,11 +6,11 @@ const finalize = require('./finalize-event')
 
 /**
  * @typedef ApiMiddlewareResponse
- * @property {object}  request  - httpRequest object
- * @property {object}  response	- httpResponse
- * @property {string}  stage 	- request | resposne
- * @property {boolean} hasData
- * @property {object}  object 	- JSON.parse of the response or request.body
+ * @property {object}  request  - HttpRequest object
+ * @property {object}  [response]	- HttpResponse object
+ * @property {string}  [stage] - request/response
+ * @property {boolean} [hasData] - true if the event includes JSON data
+ * @property {object}  [object] - JSON.parse of the response or request.body
  */
 
 /**
@@ -21,11 +21,12 @@ const finalize = require('./finalize-event')
  * @returns {Promise<ApiMiddlewareResponse>}
  */
 exports.handler = async (event,context) => {
-	logger.debug('api-middleware:event-received', {event,context})
+	logger.debug('event-received', event)
+	logger.debug('event-context', context)
 	try {
 		event = await processRequest(event)
 	} catch (error) {
-		logger.error('api-middleware:error', {event,context,error})
+		logger.error(`ERROR:${error.message}`,{error})
 		event.response = {
 			status: 500,
 			statusCode: '500',
@@ -36,10 +37,8 @@ exports.handler = async (event,context) => {
 				'message': error.message
 			}
 		}
-	} finally {
-		event = finalize(event)
-		logger.info('api-middleware:result', {event})
-	}
-	// @ts-ignore
+	} 
+	event = finalize(event)
+	logger.info('api-middleware:result', {event})
 	return event
 }

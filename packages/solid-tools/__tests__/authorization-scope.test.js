@@ -38,4 +38,18 @@ describe('@yodata/authorization-scope', () => {
 		const scope = new Scope({})
 		return expect(scope.isAllowed({type: 'anything'})).toBeTruthy()
 	})
+
+	test('example', () => {
+		const scope = new Scope({effect: 'Deny', condition: {
+			object: {
+				type: 'dog'
+			}
+		}})
+		const event = {
+			object: {
+				type: 'dog'
+			}
+		}
+		expect(scope.isAllowed(event)).toBeFalsy()
+	})
 })
