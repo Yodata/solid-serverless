@@ -1,13 +1,20 @@
 {
     "object": {
-        "type": "dog"
+        "type": "ApiResponse",
+        "request": {},
+        "response": {},
+        "object": {
+            "type": "dog"
+        }
     },
     "scope": {
         "noDogs": {
             "processor": "Mingo",
             "effect": "Deny",
             "condition": {
-                "type": "dog"
+                "object": {
+                    "type": "dog"
+                }
             }
         }
     }

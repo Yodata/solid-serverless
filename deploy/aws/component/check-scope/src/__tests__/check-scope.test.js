@@ -2,11 +2,11 @@
 const checkScope = require('../check-scope')
 
 describe('check-scope', () => {
-	test('example event/response', async () => {
+
+	test('example event/response', () => {
 		const event = require('../example/event.json')
 		const response = require('../example/response.json')
-		const result = await checkScope(event)
-		return expect(result).toEqual(response)
+		return expect(checkScope(event)).resolves.toEqual(response)
 	})
 
 	test('middleware params', async () => {
