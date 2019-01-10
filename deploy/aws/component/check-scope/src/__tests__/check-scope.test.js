@@ -32,4 +32,28 @@ describe('check-scope', () => {
 		return expect(result).toHaveProperty('isAllowed', false)
 	})
 
+	test('checkScope', async () => {
+		let event = {
+			object: {
+				object: {
+					type: 'ForbiddenType',
+					comment: 'Expect result.isAllowed to be false'
+				}
+			},
+			scope: {
+				PublicDataOnly: {
+					effect: 'Deny',
+					processor: 'Mingo',
+					condition: {
+						object: {
+							type: 'ForbiddenType'
+						}
+					}
+				}
+			}
+		}
+		let result = await checkScope(event)
+		return expect(result).toHaveProperty('isAllowed', false)
+	})
+
 })

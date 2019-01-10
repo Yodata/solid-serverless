@@ -4,37 +4,31 @@ const logger = require('./lib/logger')
 const checkScope = require('./check-scope')
 
 /**
- * @typedef CheckScopeResponse
- * @property {object} object - the tested value
- * @property {object} scope - the scope used to test the object
- * @property {boolean} isAllowed - true if allowed
- */
-
-/**
  * validates event.object with event.scope returning event.isAllowed {boolean}
  * @param {object} event
  * @param {object} event.object   - data to be tested
  * @param {object} event.scope    - the ACL.scope value
  * @param {boolean} [event.isAllowed]
- * @returns {Promise<object>}
+ * @returns {Promise<CheckScopeResponse>}
  * 
- * @example response
- * {
- *   object: {}
- *   scope: {}
- *   isValid: true
- * }
+ * @typedef CheckScopeResponse
+ * @property {object} object
+ * @property {object} scope
+ * @property {object} result
+ * @property {boolean} result.isAllowed
+ * @property {object} [error]
  */
 exports.handler = async (event, context) => {
+	logger.debug('check-scope:received', event)
+	logger.debug('check-scope:context', context)
+	let response
 	try {
-		logger.debug('check-scope:received', {event, context})
-		let result = await checkScope(event)
-		event.isAllowed = result.isAllowed
+		response = await checkScope(event)
 	} catch (error) {
 		logger.error('check-scope:error', {error})
-		event.object = error
-		event.isAllowed = false
+		response = {error}
+	} finally {
+		logger.debug('check-scope:response', response)
 	}
-	logger.info('check-scope:response', {event})
-	return event	
+	return response
 }

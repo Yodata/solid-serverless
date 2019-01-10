@@ -9,14 +9,14 @@ Globals:
 Resources:
   checkScope:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-processing-service/e60587e7afc8bcc3dedd9ee5ce534d09
+      CodeUri: s3://yodata-solid-serverless-data-processing-service/ddf745564fa6c1389c53e84aa7bd4cd1
       Description: Validates data with ACL.scope and data policies, returns a ValidateAction
       FunctionName: data-processing-service-check-scope
       Handler: check-scope.handler
     Type: AWS::Serverless::Function
   createView:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-processing-service/f045759b0af17c73408a407e18ffe671
+      CodeUri: s3://yodata-solid-serverless-data-processing-service/6c2eb53f30be0ac1da533de08ad0bc13
       Description: Applies data policies and ACL.scope to create consumer specific
         views of data
       FunctionName: data-processing-service-create-view
