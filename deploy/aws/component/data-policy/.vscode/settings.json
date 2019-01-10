@@ -1,0 +1,4 @@
+{
+    "jest.rootPath": "src/",
+    "jest.pathToJest": "/usr/local/bin/jest"
+}
