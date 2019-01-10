@@ -25,3 +25,4 @@ Resources:
       CodeUri: src/
       Handler: index.handler
       FunctionName: 'check-scope'
+      Description: validates event.object with event.scope, adding event.isValid {boolean}
