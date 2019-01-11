@@ -2,7 +2,7 @@
 const compileScope = require('../compile-scope')
 jest.mock('../lib/solid-client.js')
 
-describe('get-policies unit tests', () => {
+describe('compile-scope', () => {
 
 	test('returns an array of scopes', async () => {
 		const scope = {
@@ -40,7 +40,15 @@ describe('get-policies unit tests', () => {
 	test('remote errors return {}', () => {
 		expect.assertions(1)
 		const scope = {a: 'http://error'}
-		return expect(compileScope({scope})).resolves.toEqual([{}])
+		return expect(compileScope({scope})).resolves.toEqual([{
+			id: 'http://error',
+			error: {
+				name: 'FETCH_REMOTE_SCOPE_ERROR',
+				message: 'http://error'
+			},
+			effect: 'Deny',
+			condition: {}
+		}])
 	})
 })
 

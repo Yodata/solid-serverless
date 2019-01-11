@@ -5,12 +5,18 @@ const client = require('./lib/solid-client')
 const entries = require('lodash/entries')
 const {map} = require('p-iteration')
 
+/**
+ * @param {object} event
+ * @param {object} event.scope
+ * @returns {Promise<object[]>} array of scope entries
+ */
 module.exports = async function compileScope(event) {
 	const scope = event.scope || {}
 	const scopeEntries = entries(scope)
 	return map(scopeEntries,processScopeEntry)
 }
 
+// eslint-disable-next-line no-unused-vars
 const processScopeEntry = async ([key, value]) => {
 	return isUri(value) ? fetchRemoteScope(value) : value
 }
@@ -22,7 +28,15 @@ const fetchRemoteScope = async (uri) => {
 		})
 		.catch(error => {
 			logger.error('fetch-remote-scope:error', {uri,error})
-			return {}
+			return {
+				id: uri,
+				error: {
+					name: 'FETCH_REMOTE_SCOPE_ERROR',
+					message: error.message
+				},
+				effect: 'Deny',
+				condition: {}
+			}
 		})
 }
 

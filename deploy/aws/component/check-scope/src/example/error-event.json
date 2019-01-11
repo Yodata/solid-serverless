@@ -1,0 +1,157 @@
+{
+    "object": {
+        "request": {
+            "id": "79b9a9e1-9f79-48fc-a2fa-e308646c781a",
+            "timestamp": {
+                "seconds": 1547243107,
+                "nanos": 841000000
+            },
+            "security": {
+                "agent": "https://testuser.dev.yodata.io/profile/card#me",
+                "isAdmin": false,
+                "isDefaultAllowed": false,
+                "allowedModes": [
+                    "Read",
+                    "Write",
+                    "Append",
+                    "Control"
+                ]
+            },
+            "url": "https://testuser.dev.yodata.io/test/scopes/.acl",
+            "target": {
+                "id": "https://testuser.dev.yodata.io/test/scopes/.acl",
+                "host": "testuser.dev.yodata.io",
+                "path": "/test/scopes/.acl",
+                "accessType": "Read"
+            },
+            "acl": {
+                "default": {
+                    "modes": [
+                        "Read",
+                        "Write",
+                        "Append"
+                    ],
+                    "scope": {
+                        "PublicDataOnly": "https://real-livng.yodata.me/public/scope#PublicDataOnly"
+                    }
+                },
+                "entities": {
+                    "https://testapp.dev.yodata.io/profile/card#me": {
+                        "modes": [
+                            "Read",
+                            "Write",
+                            "Append"
+                        ],
+                        "scope": {
+                            "PublicDataOnly": {
+                                "effect": "Deny",
+                                "condition": {
+                                    "object": {
+                                        "type": "ForbiddenType"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "patterns": {
+                    "%BASE_URL%/profile/card#me": {
+                        "modes": [
+                            "Read",
+                            "Write",
+                            "Append",
+                            "Control"
+                        ],
+                        "scope": {}
+                    }
+                }
+            },
+            "method": "GET",
+            "rawHeaders": {
+                "x-amzn-trace-id": [
+                    "Root=1-5c390e63-d2c369a8b35eeb1371bd0fd3"
+                ],
+                "x-forwarded-proto": [
+                    "https"
+                ],
+                "x-api-key": [
+                    "testuser"
+                ],
+                "postman-token": [
+                    "ebe73dc1-6953-4391-8c7d-f444b7a97991"
+                ],
+                "host": [
+                    "testuser.dev.yodata.io"
+                ],
+                "x-forwarded-port": [
+                    "443"
+                ],
+                "x-forwarded-for": [
+                    "73.189.108.108"
+                ],
+                "cache-control": [
+                    "no-cache"
+                ],
+                "accept-encoding": [
+                    "gzip, deflate"
+                ],
+                "user-agent": [
+                    "PostmanRuntime/7.6.0"
+                ],
+                "accept": [
+                    "*/*"
+                ]
+            },
+            "parameters": {
+                "*": [
+                    "test/scopes/.acl"
+                ]
+            },
+            "body": "",
+            "policy": {
+                "local": {
+                    "RedactPassword": {
+                        "type": "DataPolicy",
+                        "processor": "Yodata",
+                        "effect": "Transform",
+                        "value": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
+                    }
+                }
+            },
+            "isBase64Encoded": true,
+            "headers": {
+                "x-amzn-trace-id": "Root=1-5c390e63-d2c369a8b35eeb1371bd0fd3",
+                "x-forwarded-proto": "https",
+                "x-api-key": "testuser",
+                "postman-token": "ebe73dc1-6953-4391-8c7d-f444b7a97991",
+                "host": "testuser.dev.yodata.io",
+                "x-forwarded-port": "443",
+                "x-forwarded-for": "73.189.108.108",
+                "cache-control": "no-cache",
+                "accept-encoding": "gzip, deflate",
+                "user-agent": "PostmanRuntime/7.6.0",
+                "accept": "*/*"
+            }
+        },
+        "agent": "https://testuser.dev.yodata.io/profile/card#me",
+        "scope": {
+            "PublicDataOnly": "https://real-livng.yodata.me/public/scope#PublicDataOnly"
+        },
+        "policy": {
+            "local": {
+                "RedactPassword": {
+                    "type": "DataPolicy",
+                    "processor": "Yodata",
+                    "effect": "Transform",
+                    "value": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
+                }
+            }
+        },
+        "stage": "request",
+        "hasData": false,
+        "object": null
+    },
+    "scope": {
+        "PublicDataOnly": "https://real-livng.yodata.me/public/scope#PublicDataOnly"
+    }
+}

@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const checkScope = require('../check-scope')
+jest.mock('../lib/solid-client.js')
 
 describe('check-scope', () => {
 
@@ -32,27 +33,63 @@ describe('check-scope', () => {
 		return expect(result).toHaveProperty('isAllowed', false)
 	})
 
-	test('checkScope', async () => {
-		let event = {
-			object: {
-				object: {
-					type: 'ForbiddenType',
-					comment: 'Expect result.isAllowed to be false'
-				}
-			},
-			scope: {
-				PublicDataOnly: {
-					effect: 'Deny',
-					processor: 'Mingo',
-					condition: {
-						object: {
-							type: 'ForbiddenType'
-						}
-					}
-				}
+	test('deny', async () => {
+		const object = {type:'test'}
+		const scope = {test: {
+			effect: 'Deny',
+			condition: {
+				type: 'test'
 			}
-		}
-		let result = await checkScope(event)
+		}}
+		let result = await checkScope({object, scope})
+		return expect(result).toHaveProperty('isAllowed', false)
+	})
+
+	test('allow', async () => {
+		const object = {type:'test'}
+		const scope = {test: {
+			effect: 'Allow',
+			condition: {
+				type: 'test'
+			}
+		}}
+		let result = await checkScope({object, scope})
+		return expect(result).toHaveProperty('isAllowed', true)
+	})
+
+	test('remote.allow', async () => {
+		const object = {type:'test'}
+		const scope = {'allow': 'http://allow'}
+		let result = await checkScope({object, scope})
+		return expect(result).toHaveProperty('isAllowed', true)
+	})
+
+	test('remote.deny', async () => {
+		const object = {type:'test'}
+		const scope = {'allow': 'http://deny'}
+		let result = await checkScope({object, scope})
+		return expect(result).toHaveProperty('isAllowed', false)
+	})
+
+	test('remote.error', async () => {
+		const object = {type:'test'}
+		const scope = {'error': 'http://error'}
+		let result = await checkScope({object, scope})
+		expect(result).toHaveProperty('error')
+		return expect(result).toHaveProperty('isAllowed', false)
+	})
+
+	test('remote.error + allow', async () => {
+		const object = {type:'test'}
+		const scope = {'error': 'http://error', allow: 'http://allow'}
+		let result = await checkScope({object, scope})
+		return expect(result).toHaveProperty('isAllowed', true)
+	})
+
+	test('remote.error + deny', async () => {
+		const object = {type:'test'}
+		const scope = {'error': 'http://error', allow: 'http://deny'}
+		let result = await checkScope({object, scope})
 		return expect(result).toHaveProperty('isAllowed', false)
 	})
 
