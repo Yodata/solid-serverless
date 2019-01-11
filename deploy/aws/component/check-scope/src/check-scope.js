@@ -5,16 +5,17 @@ const { some } = require('p-iteration')
 
 const checkScope = async (event) => {
 	const scopeList = await compileScope(event.scope)
-	const object = event.object
-	logger.debug('check-scope:object', object)
 	logger.debug('compile-scope:response', {scopeList})
-	event.isAllowed = await some(scopeList,(scope)=> {
-		let test = new AuthorizationScope(scope)
-		let isAllowed = test.isAllowed(object)
-		logger.debug('check-scope:item:result', {scope,isAllowed})
-	})
-	logger.debug('check-scope:response', event)
+	event.isAllowed = await some(scopeList,testScopeEntry(event.object))
+	logger.debug('check-scope:result', {isAllowed: event.isAllowed})
 	return event
+}
+
+const testScopeEntry = (object) => async (scope) => {
+	const validator = new AuthorizationScope(scope)
+	const isAllowed = validator.isAllowed(object)
+	logger.debug('test-scope-entry:result', {object,scope,isAllowed})
+	return isAllowed
 }
 
 module.exports = checkScope

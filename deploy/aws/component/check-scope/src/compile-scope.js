@@ -5,39 +5,25 @@ const client = require('./lib/solid-client')
 const entries = require('lodash/entries')
 const {map} = require('p-iteration')
 
-/**
- * returns an iterable set from a scope Map, resolving and fetching remote scopes by uri
- * @async
- * @param {object} event
- * @returns {Promise<Array>}
- */
 module.exports = async function compileScope(event) {
-	const eventScope = event.scope || {}
-	let result = []
-	try {
-		const scopeSet = entries(eventScope)
-		result = await map(scopeSet,([scopeName, value]) => {
-			if (isUri(value)) {
-				value = client.get(value, {json: true})
-					.then(response => {
-						return response.body
-					})
-					.catch(error => {
-						logger.error('fetch-remote-scope:error', {scopeName, value, error})
-						// deny if remote-scope not available
-						return {
-							effect: 'Deny',
-							condition: {}
-						}
-					})
-			}
-			return value
+	const scope = event.scope || {}
+	const scopeEntries = entries(scope)
+	return map(scopeEntries,processScopeEntry)
+}
+
+const processScopeEntry = async ([key, value]) => {
+	return isUri(value) ? fetchRemoteScope(value) : value
+}
+
+const fetchRemoteScope = async (uri) => {
+	return client.get(uri, {json: true})
+		.then(res => {
+			return res.body
 		})
-	} catch (error) {
-		logger.error('compile-scope:fatal-error', {error})
-		throw error
-	}
-	return result
+		.catch(error => {
+			logger.error('fetch-remote-scope:error', {uri,error})
+			return {}
+		})
 }
 
 function isUri(value) {
