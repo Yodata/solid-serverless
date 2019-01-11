@@ -30,10 +30,10 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@yodata/solid-serverless-logger@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.7.tgz#20b184e0d8437fec60361e24110d507f353dc261"
-  integrity sha512-rmWmEfWepbH4ofMSAL8q3tWBjOqCOrCtcBtNmiAUvtz9H9OYmBnnq0X4sJezx3AkIb6M/uKx7r9m3dTRQx9C7Q==
+"@yodata/solid-serverless-logger@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.8.tgz#ee2287d8860adce4cc3846b2f2de1311cc858fc1"
+  integrity sha512-m1eb6whaO1dkjXJlueDScbPuVLAWpLhA302JpZPHE/wbhRl4Xt+rPRzf76zKw9oodhiUS2BGoiL8UWzGtHcItA==
   dependencies:
     winston "^3.1.0"
 

@@ -9,7 +9,8 @@ Globals:
       Variables:
         CLIENT_ID:
           Ref: clientid
-        NODE_ENV: dev
+        DEBUG_LEVEL: debug
+        NODE_ENV: production
     Runtime: nodejs8.10
     Timeout: 6
 Parameters:
@@ -18,7 +19,7 @@ Parameters:
 Resources:
   CheckScopeFunction:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-check-scope/3a3d87d1318d0ca76bba8b3f9bfe36f2
+      CodeUri: s3://yodata-solid-serverless-check-scope/55b18c9f1c84b3fd590d110eb8a66bf7
       Description: validates event.object with event.scope, adding event.isValid {boolean}
       FunctionName: check-scope
       Handler: index.handler
