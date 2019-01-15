@@ -14,4 +14,10 @@ describe('check-scope.handler', () => {
 		}
 		return expect(handler({object,scope})).resolves.toHaveProperty('isAllowed', false)
 	})
+
+
+	test('error.event.response', async () => {
+		const event = require('../example/error-event.json')
+		return expect(handler(event)).resolves.toHaveProperty('isAllowed',false)
+	})
 })

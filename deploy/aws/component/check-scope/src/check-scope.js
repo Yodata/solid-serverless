@@ -16,14 +16,15 @@ const checkScope = async (event) => {
 }
 
 const testScopeEntry = (event) => async (scope, index) => {
-	const object = event.object
-	if (scope.error) {
-		logger.error('scope-error', {error: scope.error})
-		event.error = Array.isArray(event.error) ? event.error.concat(scope.error) : [scope.error]
+	const {object} = event
+	const {error} = scope
+	if (error) {
+		logger.error('scope-error', {error})
+		event.error = Array.isArray(event.error) ? event.error.concat(error) : [error]
 	}
 	const validator = new AuthorizationScope(scope)
 	const isAllowed = validator.isAllowed(object)
-	logger.debug('test-scope-entry', {index,scope,isAllowed,error: scope.error})
+	logger.debug('test-scope-entry', {index,scope,isAllowed,object})
 	return isAllowed
 }
 
