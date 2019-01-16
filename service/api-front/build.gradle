@@ -1,5 +1,3 @@
-group = 'io.yodata.solid'
-
 buildscript {
     repositories {
         jcenter()
@@ -44,7 +42,7 @@ String propValue(String propName, String defValue) {
     if (value == null || value.isEmpty())
         return defValue
     else
-        return propName
+        return value
 }
 
 String getBuildVersion() {
@@ -61,7 +59,7 @@ String gitVersion() {
         commandLine = ['git', 'describe', '--tags', '--always', '--dirty']
         standardOutput = out
     }
-    return out.toString().replace(System.lineSeparator(), '');
+    return out.toString().replace(System.lineSeparator(), '')
 }
 
 def dockerImageName = propValue('docker.image.name', project.name)

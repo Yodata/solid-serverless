@@ -15,9 +15,9 @@ import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class StoreEventProcessor implements RequestStreamHandler {
+public class LambdaStoreEventProcessor implements RequestStreamHandler {
 
-    private final Logger log = LoggerFactory.getLogger(StoreEventProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(LambdaStoreEventProcessor.class);
     private final GenericProcessor p = new GenericProcessor();
 
     @Override
