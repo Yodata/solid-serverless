@@ -1,6 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-sam build && sam package \
---output-template-file template-package.yaml \
---s3-bucket yodata-solid-serverless-api-middleware \
---profile solid
+sam deploy \
+--capabilities CAPABILITY_IAM \
+--template-file template-package.yaml \
+--stack-name {{cookiecutter.stackName}} \
+--profile {{cookiecutter.awsProfileName}}
+--s3-bucket yodata-$AWS_PROFILE-api-middleware \
+

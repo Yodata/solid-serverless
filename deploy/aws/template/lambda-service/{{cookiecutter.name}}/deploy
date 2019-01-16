@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 sam deploy \
 --capabilities CAPABILITY_IAM \

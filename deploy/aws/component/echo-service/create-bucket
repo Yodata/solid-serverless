@@ -1,4 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env node
+const inquirer = require('inquirer')
+const sh = require('shelljs')
 
-aws s3 mb s3://dev-yodata-io-echo-service --profile solid
+inquirer.prompt([
+	{
+		name: 'profile',
+		message: 'aws profile?',
+		default: process.env.AWS_PROFILE
+	}
+]).then(data => {
+	sh.exec(`aws s3 mb s3://dev-yodata-io-echo-service --profile ${data.profile}`)
+})
 

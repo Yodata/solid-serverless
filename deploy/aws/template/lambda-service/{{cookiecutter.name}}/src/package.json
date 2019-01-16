@@ -6,7 +6,7 @@
   "author": "{{cookiecutter.author}}",
   "license": "MIT",
   "dependencies": {
-    "@yodata/solid-serverless-logger": "^0.0.3"
+    "@yodata/solid-serverless-logger": "^0.0.8"
   },
   "scripts": {
     "test": "jest"

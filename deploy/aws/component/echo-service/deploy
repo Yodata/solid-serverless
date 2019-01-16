@@ -1,7 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env node
+const inquirer = require('inquirer')
+const sh = require('shelljs')
 
-sam deploy \
---capabilities CAPABILITY_IAM \
---template-file template-package.yaml \
---stack-name dev-yodata-io-echo-service \
---profile solid
+inquirer.prompt([
+	{
+		name: 'profile',
+		message: 'aws profile?',
+		default: process.env.AWS_PROFILE
+	}
+]).then(data => {
+	sh.exec(`
+    sam deploy \
+    --capabilities CAPABILITY_IAM \
+    --template-file template-package.yaml \
+    --stack-name dev-yodata-io-echo-service \
+    --profile ${data.profile}
+    `)
+})

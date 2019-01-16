@@ -1,7 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'echo-service returns event
-
-  '
+Description: 'echo-service returns event'
 Globals:
   Function:
     Environment:

@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # . invoke [FunctionName] [EventPath]
 
 FunctionName=${1:-EchoService}
 EventPath=${2:-src/example/event.json}
 
+sam local invoke $FunctionName -e $EventPath
 sam local invoke $FunctionName -e $EventPath

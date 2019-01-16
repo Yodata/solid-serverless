@@ -22,19 +22,19 @@ Resources:
   ApplyPolicyFunction:
     Properties:
       AutoPublishAlias: next
-      CodeUri: s3://yodata-solid-serverless-data-policy/76591ab66c7af5e165bb032b11aa81f5
+      CodeUri: s3://yodata-rl-data-policy/726a7f537307464b78a3658e24dabc4a
       FunctionName: apply-policy
       Handler: index.applyPolicy
     Type: AWS::Serverless::Function
   GetPoliciesFunction:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-policy/a2a8cec792af82cefb94286a5499b642
+      CodeUri: s3://yodata-rl-data-policy/262db74ff4e85667eb7af43c2d7efe54
       FunctionName: get-policies
       Handler: index.getPolicies
     Type: AWS::Serverless::Function
   SetPolicyFunction:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-policy/77d6678c767bd5afb9aef715a02125fd
+      CodeUri: s3://yodata-rl-data-policy/35091f9385c02247d7fede043f20b808
       FunctionName: set-policy
       Handler: index.setPolicy
     Type: AWS::Serverless::Function

@@ -28,5 +28,9 @@
     "eslint-plugin-jest": "^22.1.2",
     "jest": "^23.6.0",
     "lerna": "^3.8.0"
+  },
+  "dependencies": {
+    "inquirer": "^6.2.1",
+    "shelljs": "^0.8.3"
   }
 }
