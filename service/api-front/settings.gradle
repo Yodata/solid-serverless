@@ -1,0 +1,6 @@
+rootProject.name = 'api-front'
+
+include(':sdk')
+project(':sdk').projectDir = file('../../packages/solid-server-java-sdk')
+include(':aws-sdk')
+project(':aws-sdk').projectDir = file('../../packages/solid-server-aws-java-sdk')

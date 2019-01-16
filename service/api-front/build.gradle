@@ -1,0 +1,81 @@
+group = 'io.yodata.solid'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
+    }
+}
+
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'io.yodata.ldp.solid.server.undertow.UndertowSolidServer'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile project(':aws-sdk')
+    compile 'org.slf4j:slf4j-simple:1.7.25'
+    compile 'io.undertow:undertow-core:2.0.15.Final'
+
+    testCompile 'junit:junit:4.12'
+}
+
+shadowJar {
+    baseName = project.name
+    classifier = null
+    version = null
+}
+
+/*
+ * Custom build process
+ */
+
+String propValue(String propName, String defValue) {
+    String value = findProperty(propName)
+    if (value == null || value.isEmpty())
+        return defValue
+    else
+        return propName
+}
+
+String getBuildVersion() {
+    String version = System.getenv('SOLID_SERVER_AWS_FRONTD_BUILD_VERSION')
+    if (version == null || version.size() == 0) {
+        version = gitVersion()
+    }
+    return version
+}
+
+String gitVersion() {
+    ByteArrayOutputStream out = new ByteArrayOutputStream()
+    exec {
+        commandLine = ['git', 'describe', '--tags', '--always', '--dirty']
+        standardOutput = out
+    }
+    return out.toString().replace(System.lineSeparator(), '');
+}
+
+def dockerImageName = propValue('docker.image.name', project.name)
+def dockerImageTag = propValue('docker.image.tag', getBuildVersion())
+def dockerImage = dockerImageName + ':' + dockerImageTag
+def dockerImageLatest = dockerImageName + ':latest'
+
+
+task dockerBuild(type: Exec, dependsOn: shadowJar) {
+    commandLine 'docker', 'build', '-t', dockerImage, project.rootDir
+}
+
+task dockerTagLatest(type: Exec) {
+    commandLine 'docker', 'tag', dockerImage, dockerImageLatest
+}
+
+task dockerBuildLatest(dependsOn: [ dockerBuild, dockerTagLatest ]) {}

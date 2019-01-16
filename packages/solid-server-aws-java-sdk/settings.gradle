@@ -1,0 +1,4 @@
+rootProject.name = 'solid-server-aws-java-sdk'
+
+include(':sdk')
+project(':sdk').projectDir = file('../solid-server-java-sdk')

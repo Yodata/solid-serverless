@@ -1,0 +1,14 @@
+apply plugin: 'java-library'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    api 'org.apache.commons:commons-lang3:3.8.1'
+    api 'commons-io:commons-io:2.6'
+    api 'commons-codec:commons-codec:1.10'
+    api 'com.google.code.gson:gson:2.8.5'
+
+    testImplementation 'junit:junit:4.12'
+}
