@@ -4,7 +4,8 @@
   "description": "(alpha) solid-server implementation in aws and (mostly) lambda",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "commit": "npx git-cz"
   },
   "repository": {
     "type": "git",
