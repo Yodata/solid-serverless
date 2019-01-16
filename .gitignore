@@ -219,5 +219,3 @@ fabric.properties
 # End of https://www.gitignore.io/api/macos,linux,node,visualstudiocode,webstorm
 
 .aws-sam/
-
-deploy/aws/component/api-middleware/.aws-sam
