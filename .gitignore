@@ -219,3 +219,4 @@ fabric.properties
 # End of https://www.gitignore.io/api/macos,linux,node,visualstudiocode,webstorm
 
 .aws-sam/
+/.idea

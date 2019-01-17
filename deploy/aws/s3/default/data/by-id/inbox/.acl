@@ -1,0 +1,17 @@
+{
+  "patterns": {
+    "%BASE_URL%/profile/card#me": {
+      "modes": [
+        "Read",
+        "Write",
+        "Append",
+        "Control"
+      ]
+    }
+  },
+  "default": {
+    "modes": [
+      "Append"
+    ]
+  }
+}

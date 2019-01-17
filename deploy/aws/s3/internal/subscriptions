@@ -1,0 +1,10 @@
+[
+  {
+    "object":"/inbox/",
+    "target":"aws-sqs://sqs.<REGION>.amazonaws.com/<ACCOUNT_ID>/solid-server-inbox-store-events"
+  },
+  {
+    "object":"/outbox/",
+    "target":"aws-sqs://sqs.<REGION>.amazonaws.com/<ACCOUNT_ID>/solid-server-outbox-store-events"
+  }
+]

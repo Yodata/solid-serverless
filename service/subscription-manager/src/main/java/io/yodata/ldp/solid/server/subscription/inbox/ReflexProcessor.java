@@ -31,6 +31,8 @@ public class ReflexProcessor implements Consumer<InboxService.Wrapper> {
     public void accept(InboxService.Wrapper c) {
         log.info("Processing REflex Message {}", c.ev.getId());
 
+        // FIXME re-enable!
+        /*
         log.info("Normalizing event");
         TransformMessage msg = new TransformMessage();
         msg.setSecurity(c.ev.getRequest().getSecurity());
@@ -45,6 +47,7 @@ public class ReflexProcessor implements Consumer<InboxService.Wrapper> {
         data.addProperty("sameAs", c.ev.getId());
 
         c.message = data;
+        */
 
         Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/reflex/");
 

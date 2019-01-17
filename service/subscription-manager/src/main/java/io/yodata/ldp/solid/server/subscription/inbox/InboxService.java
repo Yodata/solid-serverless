@@ -64,7 +64,7 @@ public class InboxService {
             consumer.accept(c);
             log.info("Processing of inbox event finished");
         } catch (RuntimeException e) {
-            log.warn("Error when processing inbox event: {}", e.getMessage());
+            log.warn("Error when processing inbox event: {}", e.getMessage(), e);
             throw e;
         }
     }
