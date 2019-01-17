@@ -19,7 +19,7 @@ Parameters:
 Resources:
   CheckScopeFunction:
     Properties:
-      CodeUri: s3://yodata-rl-check-scope/4e3c3f047727989d5f005fdb030f735e
+      CodeUri: s3://yodata-hsf-check-scope/7c84ed2674f9dd44cdb4b37e061d4137
       Description: validates event.object with event.scope, adding event.isValid {boolean}
       FunctionName: check-scope
       Handler: index.handler

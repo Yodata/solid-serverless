@@ -14,17 +14,17 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@yodata/solid-serverless-logger@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.6.tgz#a87b4fd30ee2f084759ae852e2a10b5bb6a508a1"
-  integrity sha512-uy8rMlz1gDm5FzhKBS5eTVR4Ktf0CSWqk9+HYFCG5hmjqvmnPQDOYwc8ynkoDviqQy/InnP5KbiLJRb7bJZ4nA==
+"@yodata/solid-serverless-logger@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@yodata/solid-serverless-logger/-/solid-serverless-logger-0.0.8.tgz#ee2287d8860adce4cc3846b2f2de1311cc858fc1"
+  integrity sha512-m1eb6whaO1dkjXJlueDScbPuVLAWpLhA302JpZPHE/wbhRl4Xt+rPRzf76zKw9oodhiUS2BGoiL8UWzGtHcItA==
   dependencies:
     winston "^3.1.0"
 
-"@yodata/solid-tools@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@yodata/solid-tools/-/solid-tools-0.0.5.tgz#dcf4f4d65536c9dd322e31023a6631cac70642ac"
-  integrity sha512-yyCdg5qWJmjIqR2qVesYFpUdrLhGHTgqlrOpLUTSyAJNDsehyR6badpP9G+/grz7sIFKTfoomOJINlaxsUZ88A==
+"@yodata/solid-tools@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@yodata/solid-tools/-/solid-tools-0.0.8.tgz#99272460ba69c29eb6141af23fe18ef1beffa6c4"
+  integrity sha512-7645c7Q9Sy1CacwijfU9hgrdR4gfY8vf6V5z8XIhcg800YvCI8C6LuI24WOsumeZYw9AbxnrU9KHOSuOkvpYEQ==
   dependencies:
     got "^9.5.0"
     mingo "^2.2.8"
