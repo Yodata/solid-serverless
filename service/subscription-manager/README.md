@@ -52,7 +52,10 @@ AWS SDK/CLI are set, like `AWS_PROFILE` and `AWS_REGION`.
 ### From jar
 There are no `main()` entry point. The components can only run as AWS Lambdas.
 
+## Deploy
+
 ### AWS
+
 Required permissions for each component:
 - Lambda
   - `lambda:InvokeFunction`
