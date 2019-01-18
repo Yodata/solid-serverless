@@ -1,0 +1,30 @@
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'idea'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+
+dependencies {
+    compile project(':sdk')
+    compile project(':aws-sdk')
+    compile 'org.slf4j:slf4j-simple:1.7.25'
+    compile 'com.amazonaws:aws-lambda-java-core:1.2.0'
+}
+
+shadowJar {
+    classifier = null
+    version = null
+}

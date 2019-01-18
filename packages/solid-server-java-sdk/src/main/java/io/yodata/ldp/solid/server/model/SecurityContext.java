@@ -15,7 +15,7 @@ public class SecurityContext {
     private String instrument;
     private boolean isAdmin;
     private boolean isDefaultAllowed;
-    private List<AclMode> allowedModes = new ArrayList<>();
+    private transient List<AclMode> allowedModes = new ArrayList<>();
 
     public boolean isAnonymous() {
         return Optional.ofNullable(isAnonymous).orElseGet(() -> Objects.isNull(agent) && Objects.isNull(instrument));
