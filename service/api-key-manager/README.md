@@ -37,11 +37,20 @@ Input is a JSON object of the following example format:
   }
 }
 ```
-
 - `type`: *Required* - Must be `CreateAction`
 - `object`: *Required*
   - `agent`: *Optional* - IRI of the agent
   - `instrument`: *Required* - IRI of the instrument
+
+---
+
+Output is a JSON object of the following format:
+```json
+{
+  "id": "abcdefghij123456"
+}
+```
+- `id`: ID of the key which was created.
 
 ### Update
 *To be implemented*
