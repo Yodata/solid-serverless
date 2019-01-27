@@ -1,30 +1,22 @@
-const logger = require('@yodata/solid-serverless-logger').defaultLogger
+const logger = console.log
+const createView = require('./lib/create-view')
 
 /**
- * What does your function do?
+ * transforms event.object with event.context (a @yodata/transform.Context)
  * @param {object} event
- * @param {string} event.param - comment
- *
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html
- * @param {Object}   context
- * @param {string}   context.logGroupName - Cloudwatch Log Group name
- * @param {string}   context.logStreamName - Cloudwatch Log stream name.
- * @param {string}   context.functionName - Lambda function name.
- * @param {string}   context.memoryLimitInMB - Function memory.
- * @param {string}   context.functionVersion - Function version identifier.
- * @param {function} context.getRemainingTimeInMillis - Time in milliseconds before function times out.
- * @param {string}   context.awsRequestId - Lambda request ID.
- * @param {string}   context.invokedFunctionArn - Function ARN.
- *
- * @returns {Object} response
- * @returns {string} response.param - comment
+ * @param {object} event.object - the data to be transformed
+ * @param {object} event.context - the context definition object
+ * @returns {Promise<object>} - event.object (transformed)
  */
 exports.handler = async (event, context) => {
+	logger.debug('event-received', event)
+	let result = event.object
 	try {
-		logger.debug('create-view received event', {event, context})
+		// result = createView(event)
+		result = event.object
 	} catch (error) {
-		logger.error('create-view failed', {error, context})
+		logger.error('error', {error, context})
 	}
-	logger.debug('create-view response', event)
-	return event
+	logger.debug('result', result)
+	result
 }
