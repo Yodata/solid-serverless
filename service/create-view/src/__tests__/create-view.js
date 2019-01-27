@@ -4,8 +4,8 @@ const response = require('../../response.json')
 
 const context = {}
 
-describe('Tests index', () => {
-	test('verifies successful response', async () => {
+describe('create-view', () => {
+	test('example event/response', async () => {
 		const result = await handler(event, context)
 		return expect(result).toMatchObject(response)
 	})

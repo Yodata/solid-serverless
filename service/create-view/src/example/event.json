@@ -1,3 +1,23 @@
 {
-    "type": "create-view"
+    "object": {
+        "@context": "http://schema.org",
+        "@type": "AskAction",
+        "agent": {
+            "@type": "Person",
+            "name": "Bob",
+            "email": "user@example.com"
+        },
+        "recipient": {
+            "@type": "RealEstateAgent",
+            "@id": "https://465156.ds.bhhsresource.com/profile/card#me"
+        }
+    },
+    "context": {
+        "email": "emailAddres",
+        "@view": {
+            "type": "'Lead'",
+            "object": "agent",
+            "user": "recipient.@id"
+        }
+    }
 }

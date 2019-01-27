@@ -1,6 +1,6 @@
-# lambda-service
+# solid-serverless/create-view
 
-what does it do?
+Applys a JSON transformation to event.object
 
 ```bash
 .

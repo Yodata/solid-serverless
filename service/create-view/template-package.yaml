@@ -15,7 +15,7 @@ Globals:
 Resources:
   CreateViewFunction:
     Properties:
-      CodeUri: s3://dev-yodata-io-create-view/c523dade2c71cc2b0281d49c36d75546
+      CodeUri: s3://dev-yodata-io-create-view/fcc1fa7aa13d57038945e6199504c4d2
       FunctionName: create-view
       Handler: index.handler
     Type: AWS::Serverless::Function
