@@ -7,9 +7,9 @@ const getEnvValue = require('./lib/get-env-value')
 /**
  * Apply data policies
  * @param {object} event
- * @param {object} event.request
- * @param {object} [event.response]
- * @param {object} event.object
+ * @param {object} event.request - the HTTP.Request
+ * @param {object} [event.response] - HTTP.Response
+ * @param {object} event.object - the data in JSON format to be applied
  * @param {object} [event.policy]
  */
 module.exports = async (event) => {
