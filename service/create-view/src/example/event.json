@@ -13,11 +13,10 @@
         }
     },
     "context": {
-        "email": "emailAddres",
         "@view": {
             "type": "'Lead'",
-            "object": "agent",
-            "user": "recipient.@id"
+            "lead": "agent",
+            "user": "recipient.'@id'"
         }
     }
 }

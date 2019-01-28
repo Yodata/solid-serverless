@@ -1,5 +1,9 @@
 {
-    "Payload": {
-        "type": "create-viewResponse"
-    }
+    "type": "Lead",
+    "lead": {
+        "@type": "Person",
+        "email": "user@example.com",
+        "name": "Bob"
+    },
+    "user": "https://465156.ds.bhhsresource.com/profile/card#me"
 }

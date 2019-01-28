@@ -13,8 +13,8 @@ exports.handler = async (event, context) => {
 	logger.debug('event-received', event)
 	let result = event.object
 	try {
-		// result = createView(event)
-		result = event.object
+		result = createView(event)
+		// result = event.object
 	} catch (error) {
 		logger.error('error', {error, context})
 	}
