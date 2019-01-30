@@ -34,19 +34,19 @@ public class GenericHandler {
     }
 
     public Response get(Request in) {
-        throw new ForbiddenException("This request is not allowed");
+        throw new ForbiddenException("This method is not allowed");
     }
 
     public Response delete(Request in) {
-        throw new ForbiddenException("This request is not allowed");
+        throw new ForbiddenException("This method is not allowed");
     }
 
     public Response post(Request in) {
-        throw new ForbiddenException("This request is not allowed");
+        throw new ForbiddenException("This method is not allowed");
     }
 
     public Response put(Request in) {
-        throw new ForbiddenException("This request is not allowed");
+        throw new ForbiddenException("This method is not allowed");
     }
 
 }

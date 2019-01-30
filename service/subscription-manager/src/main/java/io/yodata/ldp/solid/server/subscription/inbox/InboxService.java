@@ -23,10 +23,10 @@ public class InboxService {
     private final Logger log = LoggerFactory.getLogger(InboxService.class);
 
     private Map<String, Consumer<Wrapper>> typeProcessors;
-    private ReflexProcessor reflexProcessor;
+    private NormalizationProcessor normalizeProcessor;
 
     public InboxService() {
-        reflexProcessor = new ReflexProcessor();
+        normalizeProcessor = new NormalizationProcessor();
 
         typeProcessors = new HashMap<>();
         typeProcessors.put("Authorization", new AuthorizationProcessor());
@@ -56,7 +56,7 @@ public class InboxService {
         Consumer<Wrapper> consumer = typeProcessors.get(type);
         if (Objects.isNull(consumer)) {
             log.info("No processor for type {}, using REflex processor", type);
-            consumer = reflexProcessor;
+            consumer = normalizeProcessor;
         }
 
         log.info("Using processor {} for type {}", consumer.getClass().getCanonicalName(), type);
