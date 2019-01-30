@@ -63,11 +63,13 @@ public class GenericProcessor {
         log.info("Processing {} subscription(s)", subs.size());
 
         for (Subscription sub : subs) {
-            log.info("Processing subscription ID {} on target {}", sub.getId(), target.getPath());
+            log.info("Processing subscription ID {} on target {}", sub.getId(), target.toString());
 
             URI subTarget = URI.create(sub.getObject());
             String host = subTarget.getHost();
-            if (StringUtils.isNotBlank(host)) {
+            if (StringUtils.isBlank(host)) {
+                log.info("No host specified");
+            } else {
                 if (host.startsWith("*.")) {
                     host = host.substring(1);
                     if (!target.getHost().endsWith(host)) {

@@ -10,6 +10,8 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AWSTransformService implements TransformService {
 
@@ -17,13 +19,14 @@ public class AWSTransformService implements TransformService {
     private String lName;
 
     public AWSTransformService() {
-        lName = EnvUtils.get("TRANSFORM_AWS_LAMBDA_NAME");
+        lName = EnvUtils.find("TRANSFORM_AWS_LAMBDA_NAME").orElse("create-view");
         lambda = AWSLambdaClientBuilder.defaultClient();
     }
 
     @Override
     public JsonObject transform(TransformMessage message) {
         String payload = GsonUtil.toJson(message);
+
         InvokeRequest req = new InvokeRequest();
         req.setFunctionName(lName);
         req.setPayload(payload);
@@ -34,7 +37,7 @@ public class AWSTransformService implements TransformService {
             throw new RuntimeException("Normalization service returned an error: " + GsonUtil.toJson(body));
         }
 
-        return GsonUtil.getObj(body, "object");
+        return body;
     }
 
 }

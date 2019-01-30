@@ -55,7 +55,7 @@ public class InboxService {
         String type = GsonUtil.findString(c.message, "type").orElse("");
         Consumer<Wrapper> consumer = typeProcessors.get(type);
         if (Objects.isNull(consumer)) {
-            log.info("No processor for type {}, using REflex processor", type);
+            log.info("No processor for type {}, using normalization processor", type);
             consumer = normalizeProcessor;
         }
 
