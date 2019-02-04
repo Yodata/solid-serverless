@@ -33,13 +33,15 @@ The following environment variables are used:
 | `IN_MIDDLEWARE_LAMBDA`      | Yes         | *None*                 | `lambdaName`                         |
 | `OUT_MIDDLEWARE_LAMBDA`     | Yes         | *None*                 | `lambdaName`                         |
 | `EVENT_STORE_SNS_TOPIC_ARN` | Yes         | *None*                 | `arn:aws:sns:region:12345:topicName` |
+| `TRANSFORM_AWS_LAMBDA_NAME` | Yes         | *None*                 | `lambdaName`                         |
 | `S3_BUCKET_NAME`            | *See below* | *None*                 | `bucketName`                         |
 | `S3_BUCKET_NAMES`           | *See below* | `["{S3_BUCKET_NAME}"]` | `["bucketName1","bucketName2"]`      |
 
-- `IN_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on requests
-- `OUT_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on responses
-- `EVENT_STORE_SNS_TOPIC_ARN`: SNS Topic ARN where storage events will be sent for components like the subscription manager
-- `S3_BUCKET_NAME`: Name of the S3 bucket where data is stored
+- `IN_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on requests.
+- `OUT_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on responses.
+- `EVENT_STORE_SNS_TOPIC_ARN`: SNS Topic ARN where storage events will be sent for components like the subscription manager.
+- `TRANSFORM_AWS_LAMBDA_NAME`: Lambda name for creating event views if a scope is present.
+- `S3_BUCKET_NAME`: Name of the S3 bucket where data is stored.
 - `S3_BUCKET_NAMES`: If the data need to be replicated in several S3 buckets, this accepts a JSON array of S3 bucket names.
   The first bucket in the array will be considered as the main one and used for read operations.
 

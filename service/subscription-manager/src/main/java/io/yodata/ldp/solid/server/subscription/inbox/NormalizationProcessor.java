@@ -9,45 +9,46 @@ import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.Target;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
+import io.yodata.ldp.solid.server.model.transform.TransformService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-public class ReflexProcessor implements Consumer<InboxService.Wrapper> {
+public class NormalizationProcessor implements Consumer<InboxService.Wrapper> {
 
-    private final Logger log = LoggerFactory.getLogger(ReflexProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(NormalizationProcessor.class);
 
     private ContainerHandler storeHandler;
-    private AWSTransformService transform;
+    private TransformService transform;
 
-    public ReflexProcessor() {
+    public NormalizationProcessor() {
         storeHandler = new ContainerHandler(S3Store.getDefault());
         transform = new AWSTransformService();
     }
 
     @Override
     public void accept(InboxService.Wrapper c) {
-        log.info("Processing REflex Message {}", c.ev.getId());
+        if (Objects.isNull(c.scope) || c.scope.keySet().isEmpty()) {
+            log.info("Skipping message normalization: no scope");
+        } else {
+            log.info("Normalizing event {}", c.ev.getId());
 
-        // FIXME re-enable!
-        /*
-        log.info("Normalizing event");
-        TransformMessage msg = new TransformMessage();
-        msg.setSecurity(c.ev.getRequest().getSecurity());
-        msg.setScope(c.scope);
-        msg.setPolicy(S3Store.getDefault().getPolicies(c.ev.getRequest().getTarget().getId()));
-        msg.setObject(c.message);
-        JsonObject data = transform.transform(msg);
-        if (data.keySet().isEmpty()) {
-            log.info("Transform returned an empty object, skipping");
-            return;
+            TransformMessage msg = new TransformMessage();
+            msg.setSecurity(c.ev.getRequest().getSecurity());
+            msg.setScope(c.scope);
+            msg.setPolicy(S3Store.getDefault().getPolicies(c.ev.getRequest().getTarget().getId()));
+            msg.setObject(c.message);
+            JsonObject data = transform.transform(msg);
+            if (data.keySet().isEmpty()) {
+                log.info("Transform returned an empty object, skipping");
+                return;
+            }
+
+            c.message = data;
         }
-        data.addProperty("sameAs", c.ev.getId());
-
-        c.message = data;
-        */
 
         Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/reflex/");
 

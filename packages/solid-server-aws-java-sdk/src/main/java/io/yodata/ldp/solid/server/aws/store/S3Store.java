@@ -70,6 +70,8 @@ public class S3Store {
 
     private final Logger log = LoggerFactory.getLogger(S3Store.class);
 
+    private static final Type subListType = new TypeToken<List<Subscription>>() {}.getType();
+
     AmazonS3 s3;
     List<String> buckets;
     EventBus evBus;
@@ -268,14 +270,13 @@ public class S3Store {
         log.info("Getting internal subscriptions");
         List<Subscription> subs = new ArrayList<>();
 
-        Type collectionType = new TypeToken<List<Subscription>>() {}.getType();
         String intPath = "internal/subscriptions";
         getFile(intPath).ifPresent(obj -> {
             log.info("Got internal subscriptions");
-            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), collectionType);
+            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
             int i = 1;
             for (Subscription sub : list) {
-                sub.setId(intPath + "#" + i);
+                sub.setId(intPath + "#internal-" + i);
                 subs.add(sub);
                 i++;
             }
@@ -284,20 +285,34 @@ public class S3Store {
         return subs;
     }
 
-    public List<Subscription> getEntitySubscriptions(URI entity) {
-        Type collectionType = new TypeToken<List<Subscription>>() {
-        }.getType();
+    public List<Subscription> getGlobalSubscriptions() {
+        log.info("Getting global subscriptions");
+        List<Subscription> subs = new ArrayList<>();
+        String entPath = "global/subscriptions";
+        getFile(entPath).ifPresent(obj -> {
+            log.info("Got global subscriptions");
+            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
+            int i = 1;
+            for (Subscription sub : list) {
+                sub.setId(entPath + "#global-" + i);
+                subs.add(sub);
+                i++;
+            }
+        });
+        return subs;
+    }
 
+    public List<Subscription> getEntitySubscriptions(URI entity) {
         String host = entity.getHost();
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
         String entPath = "entities/" + host + "/subscriptions";
         getFile(entPath).ifPresent(obj -> {
             log.info("Got external subscriptions");
-            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), collectionType);
+            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
             int i = 1;
             for (Subscription sub : list) {
-                sub.setId(entPath + "#" + i);
+                sub.setId(entPath + "#entity-" + i);
                 subs.add(sub);
                 i++;
             }
@@ -307,7 +322,9 @@ public class S3Store {
 
     public List<Subscription> getSubscriptions(URI entity) {
         log.info("Getting all subscriptions for {}", entity);
-        return CollectionUtils.mergeLists(getInternalSubscriptions(), getEntitySubscriptions(entity));
+        return CollectionUtils.mergeLists(
+                CollectionUtils.mergeLists(getInternalSubscriptions(), getGlobalSubscriptions()),
+                getEntitySubscriptions(entity));
     }
 
     public void setEntitySubscriptions(URI entity, List<Subscription> subs) {

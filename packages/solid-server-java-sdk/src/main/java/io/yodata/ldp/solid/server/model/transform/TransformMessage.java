@@ -13,6 +13,7 @@ public class TransformMessage {
     private Policies policy = new Policies();
     private JsonElement scope;
     private JsonObject object;
+    private JsonObject context;
 
     public void setSecurity(SecurityContext sc) {
         setInstrument(sc.getInstrument());
@@ -57,6 +58,14 @@ public class TransformMessage {
 
     public void setObject(JsonObject object) {
         this.object = object;
+    }
+
+    public JsonObject getContext() {
+        return context;
+    }
+
+    public void setContext(JsonObject context) {
+        this.context = context;
     }
 
 }
