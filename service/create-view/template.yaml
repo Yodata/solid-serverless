@@ -6,7 +6,7 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 5
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless
@@ -22,3 +22,4 @@ Resources:
       CodeUri: src/
       Handler: index.handler
       FunctionName: 'create-view'
+      Description: ({object, context} => createView(context).map(object))

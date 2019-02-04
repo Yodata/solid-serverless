@@ -1,6 +1,5 @@
-#! /usr/local/bin/bash
-
-sam build && sam package \
---output-template-file template-package.yaml \
---s3-bucket dev-yodata-io-create-view \
---profile solid
+#!/usr/bin/env bash
+echo 'NOT IMPLEMENTED SEE EXAMPLE'
+# sam build && sam package \
+# --output-template-file template-package.yaml \
+# --s3-bucket dev-yodata-io-create-view

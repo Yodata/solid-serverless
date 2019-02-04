@@ -1,7 +1,6 @@
 #!/bin/bash
-
-sam deploy \
---capabilities CAPABILITY_IAM \
---template-file template-package.yaml \
---stack-name dev-yodata-io-create-view \
---profile solid
+echo 'NOT IMPLEMENTED SEE EXAMPLE'
+# sam deploy \
+# --capabilities CAPABILITY_IAM \
+# --template-file template-package.yaml \
+# --stack-name create-view

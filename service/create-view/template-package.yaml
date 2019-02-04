@@ -11,11 +11,12 @@ Globals:
     Tags:
       app: solid-serverless
       component: create-view-service
-    Timeout: 3
+    Timeout: 5
 Resources:
   CreateViewFunction:
     Properties:
-      CodeUri: s3://dev-yodata-io-create-view/fcc1fa7aa13d57038945e6199504c4d2
+      CodeUri: s3://dev-yodata-io-create-view/ffe138f74c86737428326e01167575df
+      Description: ({object, context} => createView(context).map(object))
       FunctionName: create-view
       Handler: index.handler
     Type: AWS::Serverless::Function

@@ -1,5 +1,5 @@
 // @ts-check
-const logger = console
+const logger = require('./lib/logger')
 const createView = require('./lib/create-view')
 
 /**
@@ -13,11 +13,11 @@ exports.handler = async (event, context) => {
 	logger.debug('event-received', event)
 	let result = event.object
 	try {
-		result = createView(event)
+		result = await createView(event)
 		// result = event.object
 	} catch (error) {
 		logger.error('error', {error, context})
 	}
-	logger.debug('result', result)
+	logger.info('create-view', {event,result})
 	return result
 }
