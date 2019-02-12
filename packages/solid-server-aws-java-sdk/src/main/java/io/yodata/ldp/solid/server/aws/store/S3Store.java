@@ -277,6 +277,7 @@ public class S3Store {
             int i = 1;
             for (Subscription sub : list) {
                 sub.setId(intPath + "#internal-" + i);
+                sub.setNeedsContext(true);
                 subs.add(sub);
                 i++;
             }
@@ -295,6 +296,7 @@ public class S3Store {
             int i = 1;
             for (Subscription sub : list) {
                 sub.setId(entPath + "#global-" + i);
+                sub.setNeedsContext(true);
                 subs.add(sub);
                 i++;
             }
@@ -306,8 +308,8 @@ public class S3Store {
         String host = entity.getHost();
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
-        String entPath = "entities/" + host + "/subscriptions";
-        getFile(entPath).ifPresent(obj -> {
+        String entPath = "/settings/subscriptions";
+        getEntityFile(entity, entPath).ifPresent(obj -> {
             log.info("Got external subscriptions");
             List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
             int i = 1;

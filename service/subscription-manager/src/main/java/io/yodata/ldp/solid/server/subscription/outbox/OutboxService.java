@@ -52,7 +52,7 @@ public class OutboxService {
         log.info("Push content: {}", dataRaw);
 
         try {
-            URI inboxUri = new URIBuilder().setPath("/inbox/").build();
+            URI inboxUri = new URIBuilder(subscriber).setPath("/inbox/").build();
             log.info("Discovery inbox");
             URI subUri = URI.create(subscriber);
             HttpGet profileReq = new HttpGet(subUri);
@@ -88,12 +88,11 @@ public class OutboxService {
                 int sc = res.getStatusLine().getStatusCode();
                 if (sc < 200 || sc >= 300) {
                     log.error("Unable to send notification | sc: {}", sc);
-                    JsonObject error = GsonUtil.parseObj(res.getEntity().getContent());
-                    System.out.println(GsonUtil.getPretty().toJson(error));
+                    log.error("Error: {}", res.getEntity().getContent());
                     throw new RuntimeException("Status code when sending to " + inboxUri.toString() + ": " + sc);
                 }
 
-                log.info("Notification was successfully sent");
+                log.info("Notification was successfully sent to {}", inboxUri);
             } catch (IOException e) {
                 log.error("Unable to send notification due to I/O error", e);
                 throw new RuntimeException("Unable to send notification to " + inboxUri.toString(), e);

@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.subscription.outbox.OutboxService;
+import io.yodata.ldp.solid.server.subscription.pusher.Pusher;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +15,11 @@ import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class LambdaOutboxProcessor extends OutboxService implements RequestStreamHandler {
+public class LambdaPusherProcessor implements RequestStreamHandler {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaOutboxProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaInboxProcessor.class);
+
+    private final Pusher pusher = new Pusher();
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
@@ -25,7 +27,7 @@ public class LambdaOutboxProcessor extends OutboxService implements RequestStrea
         try {
             handleRequest(GsonUtil.parseObj(raw));
         } catch (JsonSyntaxException | IllegalStateException | IllegalArgumentException e) {
-            log.error("Invalid JSON object received: {}", raw, e);
+            log.error("Invalid JSON object received: {}", raw);
         }
     }
 
@@ -51,6 +53,12 @@ public class LambdaOutboxProcessor extends OutboxService implements RequestStrea
                 }
             });
         }
+    }
+
+    private void process(JsonObject command) {
+        JsonObject data = GsonUtil.getObj(command, "object");
+        String target = GsonUtil.getStringOrThrow(command, "target");
+        pusher.send(data, target);
     }
 
 }
