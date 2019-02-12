@@ -6,6 +6,7 @@ import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.model.Event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class OutboxService {
 
@@ -50,9 +52,35 @@ public class OutboxService {
         log.info("Push content: {}", dataRaw);
 
         try {
-            // FIXME we should auto-discover the inbox instead of hardcoding
-            URI id = new URIBuilder(URI.create(subscriber)).setPath("/inbox/").build();
-            HttpPost req = new HttpPost(id);
+            URI inboxUri = new URIBuilder().setPath("/inbox/").build();
+            log.info("Discovery inbox");
+            URI subUri = URI.create(subscriber);
+            HttpGet profileReq = new HttpGet(subUri);
+            try (CloseableHttpResponse profileRes = client.execute(profileReq)) {
+                int sc = profileRes.getStatusLine().getStatusCode();
+                if (sc != 200) {
+                    log.info("No profile info. Status code: {}", sc);
+                } else {
+                    JsonObject body = GsonUtil.parseObj(profileRes.getEntity().getContent());
+                    Optional<String> profileInboxUri = GsonUtil.findString(body, "inbox");
+                    if (profileInboxUri.isPresent()) {
+                        try {
+                            inboxUri = new URI(profileInboxUri.get());
+                            log.info("Found advertised inbox URI: {}", inboxUri.toString());
+                        } catch (URISyntaxException e) {
+                            log.warn("Invalid advertised Inbox URI: {}", profileInboxUri.get());
+                        }
+                    } else {
+                        log.info("No advertised Inbox URI found, using default");
+                    }
+                }
+            } catch (IOException e) {
+                log.warn("Unable to discover inbox location due to I/O Error: {}", e.getMessage());
+                log.debug("Exception stacktrace", e);
+                log.warn("Using default inbox location: {}", inboxUri.toString());
+            }
+
+            HttpPost req = new HttpPost(inboxUri);
             req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
             req.setHeader("X-API-Key", "yodata-reflex"); // FIXME need to find a good solution
             req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
@@ -62,13 +90,13 @@ public class OutboxService {
                     log.error("Unable to send notification | sc: {}", sc);
                     JsonObject error = GsonUtil.parseObj(res.getEntity().getContent());
                     System.out.println(GsonUtil.getPretty().toJson(error));
-                    throw new RuntimeException("Status code when sending to " + id.toString() + ": " + sc);
+                    throw new RuntimeException("Status code when sending to " + inboxUri.toString() + ": " + sc);
                 }
 
                 log.info("Notification was successfully sent");
             } catch (IOException e) {
                 log.error("Unable to send notification due to I/O error", e);
-                throw new RuntimeException("Unable to send notification to " + id.toString(), e);
+                throw new RuntimeException("Unable to send notification to " + inboxUri.toString(), e);
             }
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);

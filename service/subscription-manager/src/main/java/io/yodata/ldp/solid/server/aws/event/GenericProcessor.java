@@ -76,6 +76,11 @@ public class GenericProcessor {
                         log.info("Subscription ID {} does not match the object host pattern, skipping", sub.getId());
                         continue;
                     }
+
+                    if (target.getHost().equalsIgnoreCase(subTarget.getHost())) {
+                        log.info("Subscription target host is the same as event source host. Not allowing with a wildcard subscription");
+                        continue;
+                    }
                 } else {
                     if (!StringUtils.equals(target.getHost(), host)) {
                         log.info("Subscription ID {} does not match the object host, skipping", sub.getId());
@@ -89,24 +94,25 @@ public class GenericProcessor {
                 continue;
             }
 
+            if (!action.getObject().isPresent()) {
+                log.info("Object is not present in the event: Fetching data from store to process");
+                Optional<S3Object> obj = store.getEntityFile(id);
+                if (!obj.isPresent()) {
+                    log.info("We got a notification about {} which doesn't exist anymore, skipping filtering", id);
+                    action.setObject(new JsonObject());
+                } else {
+                    action.setObject(GsonUtil.parseObj(obj.get().getObjectContent()));
+                }
+            }
+
             if (Objects.nonNull(sub.getScope())) {
                 log.info("Subscription has a scope, processing");
-                JsonObject rawData = action.getObject().orElseGet(() -> {
-                    log.info("Object is not present in the event: Fetching data from store to process");
-                    Optional<S3Object> obj = store.getEntityFile(id);
-                    if (!obj.isPresent()) {
-                        log.info("We got a notification about {} which doesn't exist anymore, skipping filtering", id);
-                        return new JsonObject();
-                    } else {
-                        return GsonUtil.parseObj(obj.get().getObjectContent());
-                    }
-                });
                 TransformMessage msg = new TransformMessage();
                 msg.setSecurity(action.getRequest().getSecurity());
                 msg.setScope(action.getRequest().getScope());
                 msg.setPolicy(store.getPolicies(id));
-                msg.setObject(rawData);
-                rawData = transform.transform(msg);
+                msg.setObject(action.getObject().get());
+                JsonObject rawData = transform.transform(msg);
                 if (rawData.keySet().isEmpty()) {
                     log.info("Transform removed all data, not sending notification");
                     continue;
