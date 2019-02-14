@@ -1,12 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  create-view
-  apply event.scope to event.response.body
+Description: create-view-service
 
 Globals:
   Function:
-    Timeout: 5
+    Timeout: 6
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless

@@ -1,46 +1,24 @@
 # solid-serverless/create-view
 
-Applys a JSON transformation to event.object
+## deployment
 
-## Lambda Payload
+```bash
+# bundle the current code version
+> sam build
 
-```json
-// ./src/example/event.json
-{
-    "object": {
-        "@context": "http://schema.org",
-        "@type": "AskAction",
-        "agent": {
-            "@type": "Person",
-            "name": "Bob",
-            "email": "user@example.com"
-        },
-        "recipient": {
-            "@type": "RealEstateAgent",
-            "@id": "https://465156.ds.bhhsresource.com/profile/card#me"
-        }
-    },
-    "context": {
-        "@view": {
-            "type": "'Lead'",
-            "lead": "agent",
-            "user": "recipient.'@id'"
-        }
-    }
-}
+# update the bundle to s3 using the given aws_profile
+# <aws_profile_name> must match the one used to create the bucket
+# hsf | rl | solid
+> source package <aws_profile_name>
+
+# deploy the service
+# <aws_profile_name> must match the one used to create the bucket
+# hsf | rl | solid
+> source deploy <aws_profile_name>
 ```
 
-## Result
+## test
 
-```json
-// ./src/example/response.json
-{
-    "type": "Lead",
-    "lead": {
-        "@type": "Person",
-        "email": "user@example.com",
-        "name": "Bob"
-    },
-    "user": "https://465156.ds.bhhsresource.com/profile/card#me"
-}
+```bash
+> jest create-view
 ```

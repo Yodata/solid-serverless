@@ -1,6 +1,10 @@
-#!/bin/bash
-echo 'NOT IMPLEMENTED SEE EXAMPLE'
-# sam deploy \
-# --capabilities CAPABILITY_IAM \
-# --template-file template-package.yaml \
-# --stack-name create-view
+#!/usr/bin/env bash
+# usage: source package <aws_profile>
+# profile should be one of hsf | rl | solid
+
+profile=$1
+
+AWS_PROFILE=$profile sam deploy \
+--capabilities CAPABILITY_IAM \
+--template-file template-package.yaml \
+--stack-name create-view

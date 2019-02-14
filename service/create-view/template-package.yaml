@@ -15,7 +15,7 @@ Globals:
 Resources:
   CreateViewFunction:
     Properties:
-      CodeUri: s3://dev-yodata-io-create-view/ffe138f74c86737428326e01167575df
+      CodeUri: s3://yodata-rl-create-view-service/4acc87082d67f59cafbd598c7d2e4815
       Description: ({object, context} => createView(context).map(object))
       FunctionName: create-view
       Handler: index.handler

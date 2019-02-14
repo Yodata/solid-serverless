@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-echo 'NOT IMPLEMENTED SEE EXAMPLE'
-# sam build && sam package \
-# --output-template-file template-package.yaml \
-# --s3-bucket dev-yodata-io-create-view
+# usage: source package <aws_profile>
+# profile should be one of hsf | rl | solid
+
+profile=$1
+bucket=yodata-$profile-create-view-service
+
+AWS_PROFILE=$profile sam package \
+--output-template-file template-package.yaml \
+--s3-bucket "$bucket"
