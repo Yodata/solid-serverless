@@ -1,12 +1,6 @@
 package io.yodata.ldp.solid.server.aws.event;
 
-import com.amazonaws.services.lambda.AWSLambda;
-import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
-import com.amazonaws.services.lambda.model.InvokeRequest;
-import com.amazonaws.services.lambda.model.InvokeResult;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
@@ -15,14 +9,12 @@ import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.Event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
+import io.yodata.ldp.solid.server.subscription.pusher.LambdaPusher;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -33,20 +25,16 @@ public class GenericProcessor {
 
     private final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
-    private AmazonSQS sqs;
-    private AWSLambda lambda;
-
     private S3Store store;
     private ContainerHandler storeHandler;
     private AWSTransformService transform;
+    private LambdaPusher pusher;
 
     public GenericProcessor() {
         this.store = S3Store.getDefault();
         this.storeHandler = new ContainerHandler(store);
         this.transform = new AWSTransformService();
-
-        this.sqs = AmazonSQSClientBuilder.defaultClient();
-        this.lambda = AWSLambdaClientBuilder.defaultClient();
+        this.pusher = new LambdaPusher();
     }
 
     public void handleEvent(JsonObject event) {
@@ -76,6 +64,11 @@ public class GenericProcessor {
                         log.info("Subscription ID {} does not match the object host pattern, skipping", sub.getId());
                         continue;
                     }
+
+                    if (target.getHost().equalsIgnoreCase(subTarget.getHost())) {
+                        log.info("Subscription target host is the same as event source host. Not allowing with a wildcard subscription");
+                        continue;
+                    }
                 } else {
                     if (!StringUtils.equals(target.getHost(), host)) {
                         log.info("Subscription ID {} does not match the object host, skipping", sub.getId());
@@ -89,24 +82,25 @@ public class GenericProcessor {
                 continue;
             }
 
+            if (!action.getObject().isPresent()) {
+                log.info("Object is not present in the event: Fetching data from store to process");
+                Optional<S3Object> obj = store.getEntityFile(id);
+                if (!obj.isPresent()) {
+                    log.info("We got a notification about {} which doesn't exist anymore, skipping filtering", id);
+                    action.setObject(new JsonObject());
+                } else {
+                    action.setObject(GsonUtil.parseObj(obj.get().getObjectContent()));
+                }
+            }
+
             if (Objects.nonNull(sub.getScope())) {
                 log.info("Subscription has a scope, processing");
-                JsonObject rawData = action.getObject().orElseGet(() -> {
-                    log.info("Object is not present in the event: Fetching data from store to process");
-                    Optional<S3Object> obj = store.getEntityFile(id);
-                    if (!obj.isPresent()) {
-                        log.info("We got a notification about {} which doesn't exist anymore, skipping filtering", id);
-                        return new JsonObject();
-                    } else {
-                        return GsonUtil.parseObj(obj.get().getObjectContent());
-                    }
-                });
                 TransformMessage msg = new TransformMessage();
                 msg.setSecurity(action.getRequest().getSecurity());
                 msg.setScope(action.getRequest().getScope());
                 msg.setPolicy(store.getPolicies(id));
-                msg.setObject(rawData);
-                rawData = transform.transform(msg);
+                msg.setObject(action.getObject().get());
+                JsonObject rawData = transform.transform(msg);
                 if (rawData.keySet().isEmpty()) {
                     log.info("Transform removed all data, not sending notification");
                     continue;
@@ -154,47 +148,27 @@ public class GenericProcessor {
                         .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Data was saved at {}", eventId);
             } else {
-                log.info("Subscription is internal, sending full version to endpoint");
-                send(GsonUtil.get().toJsonTree(action).getAsJsonObject(), sub.getTarget());
+                log.info("Subscription is internal");
+
+                JsonObject notification = new JsonObject();
+                if (sub.needsContext()) {
+                    log.info("Context is needed, sending full version to endpoint");
+                    notification = GsonUtil.get().toJsonTree(action).getAsJsonObject();
+                } else {
+                    log.info("Context is not needed, sending content only");
+
+                    if (action.getObject().isPresent()) {
+                        notification = action.getObject().get();
+                    } else {
+                        log.warn("No content, sending empty object");
+                    }
+                }
+
+                pusher.send(notification, sub.getTarget());
             }
         }
 
         log.info("All subscriptions processed");
-    }
-
-    public void send(JsonObject data, String targetRaw) {
-        try {
-            URI target = URI.create(targetRaw);
-            if (StringUtils.equals("aws-sqs", target.getScheme())) {
-                String queueUrl = new URIBuilder(target).setScheme("https").build().toURL().toString();
-                sqs.sendMessage(queueUrl, GsonUtil.toJson(data));
-                log.info("Event dispatched to SQS queue {}", queueUrl);
-            } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
-                String lName = target.getAuthority();
-                InvokeRequest i = new InvokeRequest();
-                i.setFunctionName(lName);
-                i.setPayload(GsonUtil.toJson(data));
-                InvokeResult r = lambda.invoke(i);
-                int statusCode = r.getStatusCode();
-                String functionError = r.getFunctionError();
-                if (statusCode != 200 || StringUtils.isNotEmpty(functionError)) {
-                    throw new RuntimeException("Error when calling lambda " + lName + " | Status code: " + statusCode + " | Error: " + functionError);
-                }
-                log.info("Lambda {} was successfully called", lName);
-            } else if (StringUtils.equals(target.getScheme(), "aws-s3")) {
-                throw new RuntimeException("AWS S3 is not implemented as subscription target");
-            } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
-                throw new RuntimeException("HTTP is not implemented as subscription target");
-            } else {
-                throw new RuntimeException("Scheme " + target.getScheme() + " is not supported");
-            }
-        } catch (IllegalArgumentException e) {
-            log.error("Target destination is not understood: {}", targetRaw);
-        } catch (URISyntaxException e) {
-            log.error("Cannot build URI", e);
-        } catch (MalformedURLException e) {
-            log.error("Cannot build URL", e);
-        }
     }
 
 }

@@ -16,7 +16,6 @@ repositories {
     jcenter()
 }
 
-
 dependencies {
     compile project(':aws-sdk')
     compile 'org.slf4j:slf4j-simple:1.7.25'
@@ -30,6 +29,9 @@ dependencies {
     compile 'com.amazonaws:aws-java-sdk-s3:1.11.460'
     compile 'com.amazonaws:aws-java-sdk-sqs:1.11.460'
     compile 'com.amazonaws:aws-java-sdk-lambda:1.11.460'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'com.github.tomakehurst:wiremock:2.8.0'
 }
 
 shadowJar {

@@ -34,6 +34,7 @@ The following environment variables are used:
 | `OUT_MIDDLEWARE_LAMBDA`     | Yes         | *None*                 | `lambdaName`                         |
 | `EVENT_STORE_SNS_TOPIC_ARN` | Yes         | *None*                 | `arn:aws:sns:region:12345:topicName` |
 | `TRANSFORM_AWS_LAMBDA_NAME` | Yes         | *None*                 | `lambdaName`                         |
+| `PUSHER_LAMBDA_NAME`        | Yes         | *None*                 | `lambdaName`                         |
 | `S3_BUCKET_NAME`            | *See below* | *None*                 | `bucketName`                         |
 | `S3_BUCKET_NAMES`           | *See below* | `["{S3_BUCKET_NAME}"]` | `["bucketName1","bucketName2"]`      |
 
@@ -41,6 +42,7 @@ The following environment variables are used:
 - `OUT_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on responses.
 - `EVENT_STORE_SNS_TOPIC_ARN`: SNS Topic ARN where storage events will be sent for components like the subscription manager.
 - `TRANSFORM_AWS_LAMBDA_NAME`: Lambda name for creating event views if a scope is present.
+- `PUSHER_LAMBDA_NAME`: Lambda name for performing the push operation to the various targets.
 - `S3_BUCKET_NAME`: Name of the S3 bucket where data is stored.
 - `S3_BUCKET_NAMES`: If the data need to be replicated in several S3 buckets, this accepts a JSON array of S3 bucket names.
   The first bucket in the array will be considered as the main one and used for read operations.
@@ -69,6 +71,9 @@ Required permissions for each component:
   - `s3:DeleteObject`
 - SNS
   - `sns:Publish`
+- SQS
+  - `sqs:SendMessageBatch`
+  - `sqs:SendMessage`
   
 #### Store event processor
 - Runtime: `Java 8`
@@ -85,5 +90,11 @@ Required permissions for each component:
 #### Outbox processor
 - Runtime: `Java 8`
 - Handler: `LambdaOutboxProcessor::handleRequest`
+- Memory: 128MB minimum, 192MB recommended
+- Timeout: 1 min
+
+#### Push processor
+- Runtime: `Java 8`
+- Handler: `LambdaPusherProcessor::handleRequest`
 - Memory: 128MB minimum, 192MB recommended
 - Timeout: 1 min
