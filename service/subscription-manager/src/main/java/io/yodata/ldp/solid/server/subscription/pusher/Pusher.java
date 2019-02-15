@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 
 public class Pusher {
 
@@ -29,9 +31,14 @@ public class Pusher {
         try {
             URI target = URI.create(targetRaw);
             if (StringUtils.equals("aws-sqs", target.getScheme())) {
-                String queueUrl = new URIBuilder(target).setScheme("https").build().toURL().toString();
-                sqs.sendMessage(queueUrl, GsonUtil.toJson(data));
-                log.info("Event dispatched to SQS queue {}", queueUrl);
+                SendMessageRequest req = new SendMessageRequest();
+                req.setQueueUrl(new URIBuilder(target).setScheme("https").build().toURL().toString());
+                if (StringUtils.endsWith(req.getQueueUrl(), ".fifo")) {
+                    req.setMessageGroupId("default");
+                }
+                req.setMessageBody(GsonUtil.toJson(data));
+                sqs.sendMessage(req);
+                log.info("Event dispatched to SQS queue {}", req.getQueueUrl());
             } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
                 String lName = target.getAuthority();
                 InvokeRequest i = new InvokeRequest();

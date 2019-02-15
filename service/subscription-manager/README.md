@@ -3,6 +3,9 @@
 - [Requirements](#requirements)
 - [Build](#build)
 - [Run](#run)
+- [Configuration](#configuration)
+  - [Format](#format)
+  - [Files](#files)
 
 ## Overview
 This is the Subscription manager for the Solid server, handling storage events, processing the inbox and pushing to subscribers.  
@@ -98,3 +101,91 @@ Required permissions for each component:
 - Handler: `LambdaPusherProcessor::handleRequest`
 - Memory: 128MB minimum, 192MB recommended
 - Timeout: 1 min
+
+## Configuration
+### Format
+A subscription has the following structure:
+```json
+{
+  "id": "<ID of the subscription>",
+  "agent": "<IRI of who subscribed>",
+  "object": "<URI of the resource to match>",
+  "target": "<URI of where the notification should be sent>",
+  "scope": {
+      "smth": "smth"
+  },
+  "needContext": false
+}
+```
+`id` is optional and will be automatic generated at runtime. If set, it must be unique across the whole installation.
+It is currently only used for logging purposes.
+
+---
+
+`agent` is the LinkedData IRI of the entity that subscribed and should received the notification.
+It is optional if `target` is set. If not, the actual target of notifications will be auto-discovered using the inbox mechanism.
+
+---
+
+`object` is the URI to match on. This can have various format, depending on how the level where the subscriptions are stored.
+
+Examples of valid URIs:
+- `/inbox/`
+- `https://*.pods.example.org/inbox/`
+
+---
+
+`target` is the actual endpoint to be used when sending notifications and will overwrite any discovery mechanism used for `agent`.
+
+The following schemes are available:
+- `http` (will use `POST`)
+- `https` (will use `POST`)
+- `aws-sqs` (If FIFO, must have content deduplication enabled)
+- `aws-lambda`
+
+Example of valid URIs:
+- `https://example.org/path/to/receicinv/endpoint`
+- `aws-sqs://sqs.us-east-2.amazonaws.com/123456789012/MyQueue`
+- `aws-lambda://lambdaName`
+
+---
+
+`scope` is the scope that should be applied to this subscription.
+
+---
+
+`needContext` is a basic filter to remove personal/confidential/credentials data from the raw store event that triggered
+the subscription. It is `false` by default and will strip out those values.
+
+### Files
+#### Pod-specific
+Pod-specific subscriptions are stored at `/settings/subscriptions` and can be modified by the pod owner directly.
+
+The file format is as follow:
+```json
+{
+  "items": [
+    {
+      "id": "First subscription"
+    },
+    {
+      "id": "Second subscription"
+    }
+  ]
+}
+```
+
+Specific restrictions on those subscriptions:
+- for `object`, only the URI path is matched and the rest is ignored as it is already scoped to the pod.
+
+Example of a simple subscription that redirects all inbox events to a SQS queue:
+```json
+{
+  "items": [
+    {
+      "object": "/inbox/",
+      "target": "aws-sqs://sqs.us-east-2.amazonaws.com/123456789012/MyQueue"
+    }
+  ]
+}
+```

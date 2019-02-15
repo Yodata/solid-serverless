@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -93,8 +94,10 @@ public class OutboxService {
                 }
 
                 log.info("Notification was successfully sent to {}", inboxUri);
+            } catch (UnknownHostException e) {
+                log.warn("Unable to send notification, will NOT retry: Unknown host: {}", e.getMessage());
             } catch (IOException e) {
-                log.error("Unable to send notification due to I/O error", e);
+                log.error("Unable to send notification due to I/O error, will retry", e);
                 throw new RuntimeException("Unable to send notification to " + inboxUri.toString(), e);
             }
         } catch (URISyntaxException e) {

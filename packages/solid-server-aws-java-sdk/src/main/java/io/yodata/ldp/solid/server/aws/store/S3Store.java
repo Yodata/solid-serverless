@@ -269,20 +269,8 @@ public class S3Store {
     public List<Subscription> getInternalSubscriptions() {
         log.info("Getting internal subscriptions");
         List<Subscription> subs = new ArrayList<>();
-
         String intPath = "internal/subscriptions";
-        getFile(intPath).ifPresent(obj -> {
-            log.info("Got internal subscriptions");
-            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
-            int i = 1;
-            for (Subscription sub : list) {
-                sub.setId(intPath + "#internal-" + i);
-                sub.setNeedsContext(true);
-                subs.add(sub);
-                i++;
-            }
-        });
-
+        getFile(intPath).ifPresent(obj -> subs.addAll(extractSubs(intPath, obj)));
         return subs;
     }
 
@@ -290,17 +278,7 @@ public class S3Store {
         log.info("Getting global subscriptions");
         List<Subscription> subs = new ArrayList<>();
         String entPath = "global/subscriptions";
-        getFile(entPath).ifPresent(obj -> {
-            log.info("Got global subscriptions");
-            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
-            int i = 1;
-            for (Subscription sub : list) {
-                sub.setId(entPath + "#global-" + i);
-                sub.setNeedsContext(true);
-                subs.add(sub);
-                i++;
-            }
-        });
+        getFile(entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj)));
         return subs;
     }
 
@@ -309,16 +287,29 @@ public class S3Store {
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
         String entPath = "/settings/subscriptions";
-        getEntityFile(entity, entPath).ifPresent(obj -> {
-            log.info("Got external subscriptions");
-            List<Subscription> list = GsonUtil.parse(obj.getObjectContent(), subListType);
+        getEntityFile(entity, entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj)));
+        return subs;
+    }
+
+    public List<Subscription> extractSubs(String path, S3Object obj) {
+        List<Subscription> subs = new ArrayList<>();
+        try (S3ObjectInputStream is = obj.getObjectContent()) {
+            JsonElement el = GsonUtil.parse(IOUtils.toString(is, StandardCharsets.UTF_8));
+            if (el.isJsonObject()) {
+                el = el.getAsJsonObject().get("items");
+            }
+            List<Subscription> list = GsonUtil.get().fromJson(el, subListType);
             int i = 1;
             for (Subscription sub : list) {
-                sub.setId(entPath + "#entity-" + i);
+                if (StringUtils.isBlank(sub.getId())) {
+                    sub.setId(path + "#entity-" + i);
+                }
                 subs.add(sub);
                 i++;
             }
-        });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return subs;
     }
 
