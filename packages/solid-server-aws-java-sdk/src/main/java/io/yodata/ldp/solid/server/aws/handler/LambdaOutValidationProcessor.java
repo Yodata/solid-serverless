@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.model.Exchange;
 import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;
@@ -33,6 +34,11 @@ public abstract class LambdaOutValidationProcessor extends LambdaValidationProce
     }
 
     protected Response process(Exchange ex) {
+        if (!StringUtils.startsWith(ex.getResponse().getContentType(), MimeTypes.APPLICATION_JSON)) {
+            log.info("Response is not of Content-Type {}, skipping middleware", MimeTypes.APPLICATION_JSON);
+            return ex.getResponse();
+        }
+
         log.info("Exchange {}: Response validation: start", ex.getRequest().getId());
         log.info("Using lambda {}", getLambdaName());
 

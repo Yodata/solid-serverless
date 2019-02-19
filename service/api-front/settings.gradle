@@ -1,4 +1,4 @@
-rootProject.name = 'api-front'
+rootProject.name = 'solid-server-api-front'
 
 include(':sdk')
 project(':sdk').projectDir = file('../../packages/solid-server-java-sdk')
