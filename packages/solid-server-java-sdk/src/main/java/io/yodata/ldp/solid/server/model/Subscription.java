@@ -19,7 +19,7 @@ public class Subscription {
     // If this subscription should be the only one doing the work
     private boolean isExclusive;
 
-    private boolean needsContext;
+    private Boolean needsContext;
 
     public String getId() {
         return id;
@@ -69,7 +69,7 @@ public class Subscription {
         isExclusive = exclusive;
     }
 
-    public boolean needsContext() {
+    public Boolean needsContext() {
         return needsContext;
     }
 

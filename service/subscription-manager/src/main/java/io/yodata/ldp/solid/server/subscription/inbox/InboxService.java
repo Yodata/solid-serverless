@@ -29,7 +29,12 @@ public class InboxService {
         normalizeProcessor = new NormalizationProcessor();
 
         typeProcessors = new HashMap<>();
-        typeProcessors.put("Authorization", new AuthorizationProcessor());
+        typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor());
+
+        AppAuthProcessor p = new AppAuthProcessor();
+        for (String type : AppAuthProcessor.Types) {
+            typeProcessors.put(type, p);
+        }
     }
 
     public void process(JsonObject eventJson) {

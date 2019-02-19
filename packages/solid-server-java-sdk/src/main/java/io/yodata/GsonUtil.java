@@ -130,6 +130,14 @@ public class GsonUtil {
         return parse(s, JsonObject.class);
     }
 
+    public static Optional<JsonObject> tryParseObj(String s) {
+        try {
+            return Optional.ofNullable(parseObj(s));
+        } catch (RuntimeException e) {
+            return Optional.empty();
+        }
+    }
+
     public static <T> T parse(byte[] data, Class<T> type) {
         return parse(new String(data, StandardCharsets.UTF_8), type);
     }

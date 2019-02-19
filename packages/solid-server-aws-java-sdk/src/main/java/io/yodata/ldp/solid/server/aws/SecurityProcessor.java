@@ -17,7 +17,16 @@ import java.util.Objects;
 
 public class SecurityProcessor {
 
-    private final Logger log = LoggerFactory.getLogger(SecurityProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(SecurityProcessor.class);
+    private static SecurityProcessor o;
+
+    public synchronized static SecurityProcessor getDefault() {
+        if (Objects.isNull(o)) {
+            o = new SecurityProcessor(S3Store.getDefault());
+        }
+
+        return o;
+    }
 
     private S3Store store;
 

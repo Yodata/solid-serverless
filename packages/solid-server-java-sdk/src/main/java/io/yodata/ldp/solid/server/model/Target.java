@@ -6,7 +6,15 @@ import java.util.regex.Pattern;
 public class Target {
 
     public static Target forPath(Target t, String path) {
-        return new Target(t.getId().resolve(path));
+        Target tNew = forPath(t.getId(), path);
+        tNew.setAccessType(t.getAccessType());
+        return tNew;
+    }
+
+    public static Target forPath(URI base, String path) {
+        Target t = new Target(base.resolve(path));
+        t.setAccessType(AclMode.Read);
+        return t;
     }
 
     protected URI id;

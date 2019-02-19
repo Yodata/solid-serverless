@@ -25,7 +25,7 @@ public class ResourceHandler extends GenericHandler {
     private ResourceStoreProcessor storeProc;
 
     public ResourceHandler() {
-        this(new S3Store());
+        this(S3Store.getDefault());
     }
 
     public ResourceHandler(S3Store store) {

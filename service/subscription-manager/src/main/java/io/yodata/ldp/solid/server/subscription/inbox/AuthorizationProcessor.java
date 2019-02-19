@@ -18,14 +18,16 @@ import java.util.stream.Stream;
 
 public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
 
+    public static final String Type = "Authorization";
+
     private final Logger log = LoggerFactory.getLogger(AuthorizationProcessor.class);
 
     private S3Store store;
     private SecurityProcessor sec;
 
     public AuthorizationProcessor() {
-        store = new S3Store();
-        sec = new SecurityProcessor(store);
+        store = S3Store.getDefault();
+        sec = SecurityProcessor.getDefault();
     }
 
     @Override

@@ -147,6 +147,10 @@ public class S3Store {
         }
     }
 
+    public Optional<String> findEntityData(URI entity, String path) {
+        return getEntityFile(entity, path).map(this::getData);
+    }
+
     public Then<String> ensureNotExisting(String path) {
         if (exists(path)) {
             throw new RuntimeException("S3 object at " + path + " already exists");
@@ -270,7 +274,7 @@ public class S3Store {
         log.info("Getting internal subscriptions");
         List<Subscription> subs = new ArrayList<>();
         String intPath = "internal/subscriptions";
-        getFile(intPath).ifPresent(obj -> subs.addAll(extractSubs(intPath, obj)));
+        getFile(intPath).ifPresent(obj -> subs.addAll(extractSubs(intPath, obj, true)));
         return subs;
     }
 
@@ -278,7 +282,7 @@ public class S3Store {
         log.info("Getting global subscriptions");
         List<Subscription> subs = new ArrayList<>();
         String entPath = "global/subscriptions";
-        getFile(entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj)));
+        getFile(entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj, true)));
         return subs;
     }
 
@@ -287,11 +291,11 @@ public class S3Store {
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
         String entPath = "/settings/subscriptions";
-        getEntityFile(entity, entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj)));
+        getEntityFile(entity, entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj, false)));
         return subs;
     }
 
-    public List<Subscription> extractSubs(String path, S3Object obj) {
+    public List<Subscription> extractSubs(String path, S3Object obj, boolean needContext) {
         List<Subscription> subs = new ArrayList<>();
         try (S3ObjectInputStream is = obj.getObjectContent()) {
             JsonElement el = GsonUtil.parse(IOUtils.toString(is, StandardCharsets.UTF_8));
@@ -303,6 +307,9 @@ public class S3Store {
             for (Subscription sub : list) {
                 if (StringUtils.isBlank(sub.getId())) {
                     sub.setId(path + "#entity-" + i);
+                    if (Objects.isNull(sub.needsContext())) {
+                        sub.setNeedsContext(needContext);
+                    }
                 }
                 subs.add(sub);
                 i++;
@@ -585,6 +592,15 @@ public class S3Store {
         boolean exists = exists(s3Path);
         save(in.getContentType().orElse("application/octet-stream"), in.getBody(), s3Path);
         return exists;
+    }
+
+    public boolean saveEntityData(URI entity, String path, JsonElement el) {
+        Target t = new Target(entity.resolve(path));
+        Request in = new Request();
+        in.setTarget(t);
+        in.setBody(el);
+        in.setTimestamp(Instant.now());
+        return save(in);
     }
 
     public void delete(Request in) {
