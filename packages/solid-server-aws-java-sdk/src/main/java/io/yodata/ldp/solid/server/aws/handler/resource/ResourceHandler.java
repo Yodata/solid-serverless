@@ -88,6 +88,8 @@ public class ResourceHandler extends GenericHandler {
             return ex.getResponse();
         }
 
+        addIdIfPossible(in, in.getTarget().getId().toString());
+
         ex.setResponse(storeProc.put(in));
         ex.setResponse(outCheck.put(ex));
         return ex.getResponse();

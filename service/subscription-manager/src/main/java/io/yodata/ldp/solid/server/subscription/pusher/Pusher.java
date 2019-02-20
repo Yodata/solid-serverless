@@ -17,14 +17,37 @@ import org.slf4j.LoggerFactory;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 public class Pusher {
 
+    private static class LazyLoadProvider<T> implements Supplier<T> {
+
+        private Supplier<T> builder;
+        private T obj;
+
+        private LazyLoadProvider(Supplier<T> builder) {
+            this.builder = builder;
+        }
+
+        @Override
+        public T get() {
+            synchronized (this) {
+                if (Objects.isNull(obj)) {
+                    obj = builder.get();
+                }
+            }
+
+            return obj;
+        }
+
+    }
+
     private static final Logger log = LoggerFactory.getLogger(Pusher.class);
 
-    private AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
-    private AWSLambda lambda = AWSLambdaClientBuilder.defaultClient();
+    private Supplier<AmazonSQS> sqs = new LazyLoadProvider<>(AmazonSQSClientBuilder::defaultClient);
+    private Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
 
     public void send(JsonObject data, String targetRaw) {
         log.info("Sending data to {}: {}", targetRaw, data);
@@ -37,14 +60,14 @@ public class Pusher {
                     req.setMessageGroupId("default");
                 }
                 req.setMessageBody(GsonUtil.toJson(data));
-                sqs.sendMessage(req);
+                sqs.get().sendMessage(req);
                 log.info("Event dispatched to SQS queue {}", req.getQueueUrl());
             } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
                 String lName = target.getAuthority();
                 InvokeRequest i = new InvokeRequest();
                 i.setFunctionName(lName);
                 i.setPayload(GsonUtil.toJson(data));
-                InvokeResult r = lambda.invoke(i);
+                InvokeResult r = lambda.get().invoke(i);
                 int statusCode = r.getStatusCode();
                 String functionError = r.getFunctionError();
                 if (statusCode != 200 || StringUtils.isNotEmpty(functionError)) {

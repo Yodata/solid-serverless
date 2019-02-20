@@ -9,6 +9,7 @@ import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.Event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
+import io.yodata.ldp.solid.server.model.transform.TransformService;
 import io.yodata.ldp.solid.server.subscription.pusher.LambdaPusher;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,11 +24,11 @@ import java.util.Optional;
 
 public class GenericProcessor {
 
-    private final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
     private S3Store store;
     private ContainerHandler storeHandler;
-    private AWSTransformService transform;
+    private TransformService transform;
     private LambdaPusher pusher;
 
     public GenericProcessor() {
@@ -118,18 +119,11 @@ public class GenericProcessor {
                     continue;
                 }
 
-                // We rebuild the event with only the fields we want
+                // We a Notification event
                 JsonObject notification = new JsonObject();
-                notification.addProperty(ActionPropertyKey.Type.getId(), action.getType());
-                notification.addProperty(ActionPropertyKey.Id.getId(), action.getId());
+                notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
                 notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
-
-                // We add the relevant agent and instrument info from the request
-                action.getRequest().getSecurity().getAgent()
-                        .ifPresent(agent -> notification.addProperty(ActionPropertyKey.Agent.getId(), agent));
-                notification.addProperty(ActionPropertyKey.Instrument.getId(), action.getRequest().getSecurity().getInstrument());
-
-                // We add the data type
+                notification.addProperty(ActionPropertyKey.Instrument.getId(), target.resolve("/profile/card#me").toString());
                 notification.addProperty(ActionPropertyKey.Target.getId(), id.toString());
                 action.getObject().ifPresent(obj -> notification.add(ActionPropertyKey.Object.getId(), obj));
 

@@ -14,13 +14,13 @@ import java.util.function.Consumer;
 
 public class InboxService {
 
+    private static final Logger log = LoggerFactory.getLogger(InboxService.class);
+
     public static class Wrapper {
         public JsonObject message;
         public JsonObject scope;
         public StorageAction ev;
     }
-
-    private final Logger log = LoggerFactory.getLogger(InboxService.class);
 
     private Map<String, Consumer<Wrapper>> typeProcessors;
     private NormalizationProcessor normalizeProcessor;

@@ -20,7 +20,7 @@ public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
 
     public static final String Type = "Authorization";
 
-    private final Logger log = LoggerFactory.getLogger(AuthorizationProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthorizationProcessor.class);
 
     private S3Store store;
     private SecurityProcessor sec;

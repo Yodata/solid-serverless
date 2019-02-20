@@ -31,11 +31,10 @@ public class NormalizationProcessor implements Consumer<InboxService.Wrapper> {
 
     @Override
     public void accept(InboxService.Wrapper c) {
+        log.info("Normalizing event {}", c.ev.getId());
         if (Objects.isNull(c.scope) || c.scope.keySet().isEmpty()) {
             log.info("Skipping message normalization: no scope");
         } else {
-            log.info("Normalizing event {}", c.ev.getId());
-
             TransformMessage msg = new TransformMessage();
             msg.setSecurity(c.ev.getRequest().getSecurity());
             msg.setScope(c.scope);
@@ -50,8 +49,9 @@ public class NormalizationProcessor implements Consumer<InboxService.Wrapper> {
             c.message = data;
         }
 
-        Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/reflex/");
+        c.message.addProperty("sameAs", c.ev.getId());
 
+        Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/");
         Request r = new Request();
         r.setMethod("POST");
         r.setTarget(target);

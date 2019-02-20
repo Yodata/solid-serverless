@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+JAR_NAME="subscription-manager.jar"
+
+./gradlew shadowJar
+aws s3 cp "build/libs/$JAR_NAME" "s3://$1/"
+
+aws lambda update-function-code --function-name solid-server-store-event-processor --s3-bucket "$1" --s3-key "$JAR_NAME" > /dev/null
+aws lambda update-function-code --function-name solid-server-inbox-processor --s3-bucket "$1" --s3-key "$JAR_NAME" > /dev/null
+aws lambda update-function-code --function-name solid-server-outbox-processor --s3-bucket "$1" --s3-key "$JAR_NAME" > /dev/null
+aws lambda update-function-code --function-name solid-server-push-processor --s3-bucket "$1" --s3-key "$JAR_NAME" > /dev/null
+
+echo "Lambdas updated"

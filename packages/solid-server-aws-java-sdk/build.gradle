@@ -1,9 +1,10 @@
 apply plugin: 'java-library'
 
+group = 'io.yodata.solid-server'
+
 repositories {
     jcenter()
 }
-
 
 dependencies {
     api project(':sdk')

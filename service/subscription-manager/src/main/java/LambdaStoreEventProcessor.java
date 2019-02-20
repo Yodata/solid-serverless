@@ -17,7 +17,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class LambdaStoreEventProcessor implements RequestStreamHandler {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaStoreEventProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaStoreEventProcessor.class);
+
     private final GenericProcessor p = new GenericProcessor();
 
     @Override
@@ -30,7 +31,7 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
         }
     }
 
-    public void handleRequest(JsonObject obj) {
+    private void handleRequest(JsonObject obj) {
         if (!obj.has("Records")) { // This is not from SNS/SQS
             log.info("This is a regular message");
             p.handleEvent(obj);
