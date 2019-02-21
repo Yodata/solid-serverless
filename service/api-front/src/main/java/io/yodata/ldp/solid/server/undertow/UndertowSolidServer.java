@@ -4,6 +4,7 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
+import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.UndertorwRequest;
@@ -26,7 +27,7 @@ public class UndertowSolidServer {
 
         ContainerHandler folder = new ContainerHandler();
         ResourceHandler file = new ResourceHandler();
-        SecurityProcessor auth = new SecurityProcessor();
+        SecurityProcessor auth = new SecurityProcessor(S3Store.getDefault());
 
         Undertow.builder().addHttpListener(9000, "0.0.0.0").setHandler(Handlers.routing()
                 .get("/status", exchange -> {

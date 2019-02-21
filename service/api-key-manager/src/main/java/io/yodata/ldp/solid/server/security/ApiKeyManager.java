@@ -3,6 +3,7 @@ package io.yodata.ldp.solid.server.security;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.SecurityContext;
+import io.yodata.ldp.solid.server.model.Store;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Optional;
@@ -10,13 +11,9 @@ import java.util.Optional;
 // FIXME this should really be in the SDK
 public class ApiKeyManager {
 
-    private S3Store store;
+    private Store store;
 
-    public ApiKeyManager() {
-        this(S3Store.getDefault());
-    }
-
-    public ApiKeyManager(S3Store store) {
+    public ApiKeyManager(Store store) {
         this.store = store;
     }
 
@@ -30,7 +27,7 @@ public class ApiKeyManager {
     }
 
     public Optional<SecurityContext> find(String key) {
-        return store.getData(getPath(key)).map(v -> GsonUtil.parse(v, SecurityContext.class));
+        return store.findForApiKey(key);
     }
 
     public String addKey(String key, SecurityContext sc) {
@@ -44,10 +41,6 @@ public class ApiKeyManager {
         }
 
         store.save(getPath(key), GsonUtil.get().toJsonTree(sc));
-    }
-
-    public void deleteKey(String key) {
-        store.delete(getPath(key));
     }
 
 }

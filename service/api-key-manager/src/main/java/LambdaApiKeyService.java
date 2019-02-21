@@ -2,6 +2,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.security.ApiKeyAction;
 import io.yodata.ldp.solid.server.security.ApiKeyManager;
 import org.apache.commons.io.IOUtils;
@@ -14,7 +15,7 @@ public class LambdaApiKeyService implements RequestStreamHandler {
     private ApiKeyManager mgr;
 
     public LambdaApiKeyService() {
-        this.mgr = new ApiKeyManager();
+        this.mgr = new ApiKeyManager(S3Store.getDefault());
     }
 
     @Override

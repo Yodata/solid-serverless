@@ -26,13 +26,13 @@ public class GenericProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
-    private S3Store store;
+    private Store store;
     private ContainerHandler storeHandler;
     private TransformService transform;
     private LambdaPusher pusher;
 
-    public GenericProcessor() {
-        this.store = S3Store.getDefault();
+    public GenericProcessor(Store store) {
+        this.store = store;
         this.storeHandler = new ContainerHandler(store);
         this.transform = new AWSTransformService();
         this.pusher = new LambdaPusher();
@@ -85,12 +85,12 @@ public class GenericProcessor {
 
             if (!action.getObject().isPresent()) {
                 log.info("Object is not present in the event: Fetching data from store to process");
-                Optional<S3Object> obj = store.getEntityFile(id);
+                Optional<String> obj = store.findEntityData(id, id.getPath());
                 if (!obj.isPresent()) {
                     log.info("We got a notification about {} which doesn't exist anymore, skipping filtering", id);
                     action.setObject(new JsonObject());
                 } else {
-                    action.setObject(GsonUtil.parseObj(obj.get().getObjectContent()));
+                    action.setObject(GsonUtil.parseObj(obj.get()));
                 }
             }
 

@@ -130,13 +130,13 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
     }
 
-    private S3Store store;
+    private Store store;
     private ContainerHandler storeMgr;
     private ResourceHandler fileMgr;
     private SecurityProcessor sec;
 
-    public AppAuthProcessor() {
-        store = S3Store.getDefault();
+    public AppAuthProcessor(Store store) {
+        this.store = store;
         storeMgr = new ContainerHandler(store);
         fileMgr = new ResourceHandler(store);
         sec = SecurityProcessor.getDefault();
@@ -156,6 +156,15 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         switch (data[0]) {
             case "profile":
                 scope.setPath("/profile/");
+                break;
+            case "contact":
+                scope.setPath("/event/");
+                break;
+            case "lead":
+                scope.setPath("/event/");
+                break;
+            case "website":
+                scope.setPath("/event/");
                 break;
             default:
                 throw new IllegalArgumentException(data[0]);
@@ -245,22 +254,19 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
             try {
                 Scope scope = parse(raw);
                 Target aclTarget =  Target.forPath(pod, scope.getPath());
-                store.getEntityAcl(aclTarget, false)
-                        .ifPresent(acl -> {
-                            log.info("We have an ACL to check at {}", aclTarget.getPath());
-                            acl.getEntity(newAction.getObject()).ifPresent(entry -> {
-                                log.info("We have an ACL entry for {}", newAction.getObject());
-                                if (!entry.getModes().contains(scope.getMode())) {
-                                    log.info("Adding ACL mode {}", scope.getMode());
-                                    entry.getModes().add(scope.getMode());
-                                    acl.getEntities().put(newAction.getObject(), entry);
-                                    store.setEntityAcl(aclTarget, acl);
-                                    log.info("ACL updated at {}", aclTarget.getPath());
-                                } else {
-                                    log.info("Entity {} already has {} access", newAction.getObject(), scope.getMode());
-                                }
-                            });
-                        });
+                Acl acl = store.getEntityAcl(aclTarget).orElseGet(Acl::forInit);
+                Acl.Entry entry = acl.computeEntity(newAction.getObject());
+                entry.setScope(toAdd);
+                if (!entry.getModes().contains(scope.getMode())) {
+                    log.info("Adding ACL mode {}", scope.getMode());
+                    entry.getModes().add(scope.getMode());
+                } else {
+                    log.info("Entity {} already has {} access", newAction.getObject(), scope.getMode());
+                }
+
+                acl.getEntities().put(newAction.getObject(), entry);
+                store.setEntityAcl(aclTarget, acl);
+                log.info("ACL updated at {}", aclTarget.getPath());
 
                 if (scope.isSubscribe()) {
                     log.info("Scope is also subscription, adding to pod");
@@ -366,7 +372,6 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         pod.setAccessType(AclMode.Control);
 
         try {
-            sec.authorize(request.getSecurity(), Target.forPath(pod, "/"));
             JsonObject items = store.findEntityData(pod.getId(), "/settings/auth/entities")
                     .flatMap(GsonUtil::tryParseObj)
                     .flatMap(obj -> GsonUtil.findObj(obj, "items"))

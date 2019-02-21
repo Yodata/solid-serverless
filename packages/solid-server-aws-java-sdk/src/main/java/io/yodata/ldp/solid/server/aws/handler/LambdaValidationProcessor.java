@@ -13,7 +13,7 @@ public class LambdaValidationProcessor {
         JsonObject exJson = GsonUtil.makeObj(ex);
         r.getSecurity().getAgent().ifPresent(v -> exJson.addProperty("agent", v));
         exJson.addProperty("instrument", r.getSecurity().getInstrument());
-        exJson.add("scope", r.getScope());
+        exJson.add("scope", GsonUtil.asArray(r.getScope()));
         exJson.add("policy", GsonUtil.makeObj(S3Store.getDefault().getPolicies(r.getTarget().getId())));
         return exJson;
     }

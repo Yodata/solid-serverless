@@ -32,7 +32,7 @@ public class NormalizationProcessor implements Consumer<InboxService.Wrapper> {
     @Override
     public void accept(InboxService.Wrapper c) {
         log.info("Normalizing event {}", c.ev.getId());
-        if (Objects.isNull(c.scope) || c.scope.keySet().isEmpty()) {
+        if (Objects.isNull(c.scope) || c.scope.isEmpty()) {
             log.info("Skipping message normalization: no scope");
         } else {
             TransformMessage msg = new TransformMessage();

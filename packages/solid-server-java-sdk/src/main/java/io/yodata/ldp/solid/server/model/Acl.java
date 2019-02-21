@@ -1,6 +1,5 @@
 package io.yodata.ldp.solid.server.model;
 
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.*;
@@ -11,6 +10,14 @@ public class Acl {
         return new Acl();
     }
 
+    public static Acl forInit() {
+        Entry entry = new Entry();
+        entry.setModes(Arrays.asList(AclMode.Read, AclMode.Write, AclMode.Append, AclMode.Control));
+        Acl acl = new Acl();
+        acl.getPatterns().put("%BASE_URL%/profile/card#me", entry);
+        return acl;
+    }
+
     public static Acl forDefaultAllowed() {
         Acl acl = new Acl();
         acl.getDef().setModes(Collections.singletonList(AclMode.Append));
@@ -19,14 +26,14 @@ public class Acl {
 
     public static Acl forAdmin() {
         Acl acl = new Acl();
-        acl.getDef().setModes(Arrays.asList(AclMode.values()));
+        acl.getDef().setModes(Arrays.asList(AclMode.Read, AclMode.Write, AclMode.Append, AclMode.Control));
         return acl;
     }
 
     public static class Entry {
 
         private List<AclMode> modes = new ArrayList<>();
-        private JsonObject scope = new JsonObject();
+        private List<String> scope = new ArrayList<>();
 
         public List<AclMode> getModes() {
             return modes;
@@ -40,11 +47,11 @@ public class Acl {
             modes.add(mode);
         }
 
-        public JsonObject getScope() {
+        public List<String> getScope() {
             return scope;
         }
 
-        public void setScope(JsonObject scope) {
+        public void setScope(List<String> scope) {
             this.scope = scope;
         }
 

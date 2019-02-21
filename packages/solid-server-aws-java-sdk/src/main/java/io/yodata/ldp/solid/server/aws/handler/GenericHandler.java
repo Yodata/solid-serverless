@@ -9,6 +9,7 @@ import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.Exchange;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.Store;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +20,9 @@ public class GenericHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GenericHandler.class);
 
-    protected S3Store store;
+    protected Store store;
 
-    public GenericHandler(S3Store store) {
+    public GenericHandler(Store store) {
         this.store = store;
     }
 

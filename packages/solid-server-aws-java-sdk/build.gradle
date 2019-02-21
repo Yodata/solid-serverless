@@ -12,8 +12,6 @@ dependencies {
     api 'com.amazonaws:aws-java-sdk-sns:1.11.460'
     api 'com.amazonaws:aws-java-sdk-lambda:1.11.460'
 
-    implementation 'org.slf4j:slf4j-api:1.7.25'
-
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }

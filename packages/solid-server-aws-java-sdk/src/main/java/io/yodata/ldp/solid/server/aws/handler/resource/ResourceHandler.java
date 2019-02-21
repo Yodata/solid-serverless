@@ -7,10 +7,7 @@ import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
 import io.yodata.ldp.solid.server.aws.handler.ResponseCheckProcessor;
 import io.yodata.ldp.solid.server.aws.handler.resource.input.ResourceRequestCheckProcessor;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
-import io.yodata.ldp.solid.server.model.Acl;
-import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.notification.EventBus;
 
 import java.net.URI;
@@ -28,7 +25,7 @@ public class ResourceHandler extends GenericHandler {
         this(S3Store.getDefault());
     }
 
-    public ResourceHandler(S3Store store) {
+    public ResourceHandler(Store store) {
         super(store);
         this.inCheck = new ResourceRequestCheckProcessor();
         this.outCheck = new ResponseCheckProcessor();

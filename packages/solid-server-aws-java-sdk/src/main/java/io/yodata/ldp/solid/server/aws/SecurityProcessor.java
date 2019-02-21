@@ -5,6 +5,7 @@ import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.exception.UnauthorizedException;
 import io.yodata.ldp.solid.server.model.Acl;
 import io.yodata.ldp.solid.server.model.SecurityContext;
+import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.Target;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -28,17 +29,22 @@ public class SecurityProcessor {
         return o;
     }
 
-    private S3Store store;
+    private final Store store;
 
-    public SecurityProcessor() {
-        this(S3Store.getDefault());
-    }
-
-    public SecurityProcessor(S3Store store) {
+    public SecurityProcessor(Store store) {
         this.store = store;
     }
 
     public SecurityContext authenticate(Map<String, List<String>> headers) {
+        List<String> instruments = headers.getOrDefault("X-YoData-Instrument".toLowerCase(), Collections.emptyList());
+        if (!instruments.isEmpty()) {
+            SecurityContext sc = new SecurityContext();
+            sc.setInstrument(instruments.get(0));
+            sc.setAdmin(false);
+            sc.setDefaultAllowed(false);
+            return sc;
+        }
+
         List<String> keys = headers.getOrDefault("x-api-key", Collections.emptyList());
         if (keys.isEmpty()) {
             log.info("API Key: <Not provided>");

@@ -1,17 +1,16 @@
 package io.yodata.ldp.solid.server.model.transform;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 
-import java.util.Objects;
+import java.util.List;
 
 public class TransformMessage {
 
     private String agent;
     private String instrument;
     private Policies policy = new Policies();
-    private JsonElement scope;
+    private List<String> scope;
     private JsonObject object;
     private JsonObject context;
 
@@ -44,11 +43,11 @@ public class TransformMessage {
         this.policy = policy;
     }
 
-    public JsonElement getScope() {
+    public List<String> getScope() {
         return scope;
     }
 
-    public void setScope(JsonElement scope) {
+    public void setScope(List<String> scope) {
         this.scope = scope;
     }
 

@@ -7,6 +7,7 @@ repositories {
 }
 
 dependencies {
+    api 'org.slf4j:slf4j-api:1.7.25'
     api 'org.apache.commons:commons-lang3:3.8.1'
     api 'commons-io:commons-io:2.6'
     api 'commons-codec:commons-codec:1.10'

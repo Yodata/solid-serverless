@@ -13,6 +13,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+group = 'io.yodata.solid-server'
 mainClassName = 'io.yodata.ldp.solid.server.undertow.UndertowSolidServer'
 
 repositories {

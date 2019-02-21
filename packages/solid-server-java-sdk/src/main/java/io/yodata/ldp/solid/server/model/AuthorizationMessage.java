@@ -10,7 +10,7 @@ public class AuthorizationMessage {
     private String agent;
     private String accessTo;
     private List<String> mode;
-    private JsonObject scope;
+    private List<String> scope;
 
     public String getType() {
         return type;
@@ -44,11 +44,11 @@ public class AuthorizationMessage {
         this.mode = mode;
     }
 
-    public JsonObject getScope() {
+    public List<String> getScope() {
         return scope;
     }
 
-    public void setScope(JsonObject scope) {
+    public void setScope(List<String> scope) {
         this.scope = scope;
     }
 }

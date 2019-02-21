@@ -1,18 +1,12 @@
 package io.yodata.ldp.solid.server.aws.handler.container;
 
-import com.google.gson.JsonElement;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.aws.handler.GenericHandler;
 import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
 import io.yodata.ldp.solid.server.aws.handler.ResponseCheckProcessor;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
-import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.notification.EventBus;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +26,7 @@ public class ContainerHandler extends GenericHandler {
         this(S3Store.getDefault());
     }
 
-    public ContainerHandler(S3Store store) {
+    public ContainerHandler(Store store) {
         super(store);
 
         this.inCheck = new RequestCheckProcessor();

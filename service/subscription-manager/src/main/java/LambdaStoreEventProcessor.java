@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.event.GenericProcessor;
+import io.yodata.ldp.solid.server.aws.store.S3Store;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaStoreEventProcessor.class);
 
-    private final GenericProcessor p = new GenericProcessor();
+    private final GenericProcessor p = new GenericProcessor(S3Store.getDefault());
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {

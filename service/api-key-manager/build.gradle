@@ -2,6 +2,8 @@ apply plugin: 'java'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'idea'
 
+group = 'io.yodata.solid-server'
+
 buildscript {
     repositories {
         jcenter()
@@ -18,9 +20,11 @@ repositories {
 
 
 dependencies {
+    compile 'org.slf4j:slf4j-simple:1.7.25'
+    
     compile project(':sdk')
     compile project(':aws-sdk')
-    compile 'org.slf4j:slf4j-simple:1.7.25'
+    
     compile 'com.amazonaws:aws-lambda-java-core:1.2.0'
 }
 

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.model.Event.StorageAction;
+import io.yodata.ldp.solid.server.model.Target;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -83,7 +84,8 @@ public class OutboxService {
 
             HttpPost req = new HttpPost(inboxUri);
             req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
-            req.setHeader("X-API-Key", "yodata-reflex"); // FIXME need to find a good solution
+            // FIXME need to find a good solution
+            req.setHeader("X-YoData-Instrument", Target.forPath(URI.create(action.getTarget()), "/profile/card#me").getId().toString());
             req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
             try (CloseableHttpResponse res = client.execute(req)) {
                 int sc = res.getStatusLine().getStatusCode();

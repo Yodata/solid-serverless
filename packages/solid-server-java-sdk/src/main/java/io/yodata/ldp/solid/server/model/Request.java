@@ -112,7 +112,7 @@ public class Request {
         return Optional.ofNullable(acl).orElseGet(Acl::forNone);
     }
 
-    public JsonObject getScope() {
+    public List<String> getScope() {
         return getAcl().computeEntity(getSecurity().getIdentity()).getScope();
     }
 
