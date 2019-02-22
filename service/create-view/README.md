@@ -7,14 +7,15 @@
 > sam build
 
 # update the bundle to s3 using the given aws_profile
-# <aws_profile_name> must match the one used to create the bucket
-# hsf | rl | solid
-> source package <aws_profile_name>
+# <account_name> must match one of hsf | rl | solid
+#
+> source package <account_name>
 
 # deploy the service
-# <aws_profile_name> must match the one used to create the bucket
-# hsf | rl | solid
-> source deploy <aws_profile_name>
+# <account_name> must match one of hsf | rl | solid
+#
+> source deploy <account_name>
+
 ```
 
 ## test
@@ -22,3 +23,5 @@
 ```bash
 > jest create-view
 ```
+
+todo: update readme on service scripts to this content.

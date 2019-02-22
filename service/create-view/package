@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
-# usage: source package <aws_profile>
-# profile should be one of hsf | rl | solid
 
-profile=$1
-bucket=yodata-$profile-create-view-service
+# todo: update all the service package scripts to this template
+# -----------------------------------------------------------
+# Usage: IMPORTANT !!!
+#
+#    Make sure your AWS_PROFILE is set to the right account!
+#
+#    > export AWS_PROFILE=<profile_name>
+#
+#    or for the one command only
+#
+#    > AWS_PROFILE=<profile_name> source package <account>
+#
+#    ACCOUNT NAMES ARE: | hsf | rl | solid |
+# -----------------------------------------------------------
 
-AWS_PROFILE=$profile sam package \
+account=$1
+bucket=yodata-$account-create-view-service
+
+sam package \
 --output-template-file template-package.yaml \
 --s3-bucket "$bucket"
