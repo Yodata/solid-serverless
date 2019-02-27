@@ -25,8 +25,19 @@ USER builder
 # We install AWS SAM CLI to build and deploy the various lambdas
 RUN pip install --user awscli aws-sam-cli
 
+# Install npm, node
+RUN cd /home/builder/.local/lib && wget https://nodejs.org/dist/v10.15.1/node-v10.15.1-linux-x64.tar.xz -O node.tar.xz \
+    && tar xvf node.tar.xz && rm node.tar.xz
+
+# Make necessary symbolic links
+RUN ln -s /home/builder/.local/lib/node-v10.15.1-linux-x64/bin/npm /home/builder/.local/bin/npm \
+    && ln -s /home/builder/.local/lib/node-v10.15.1-linux-x64/bin/node /home/builder/.local//bin/node \
+    && ln -s /home/builder/.local/lib/node-v10.15.1-linux-x64/bin/npx /home/builder/.local/bin/npx
+
 # We set the PATH to include local binary folder for SAM
 ENV PATH="/home/builder/src/scripts:/home/builder/.local/bin:${PATH}"
+
+RUN make --version && docker --version && python --version && aws --version && sam --version && npm --version && node --version
 
 # We will mount the mono repo here
 VOLUME /home/builder/src

@@ -1,6 +1,7 @@
 phony: prepare package deploy push
 
 prepare:
+	@npm install src
 	@s3-bucket-create
 
 package:
