@@ -1,5 +1,5 @@
 # API Key Service
-This service allows acts as the authoritative service to create, update and revoke API keys.
+This service allows acts as the authoritative gateway to create, update and revoke API keys.
 
 ## Requirements
 - Java 8
@@ -16,14 +16,48 @@ Via environment variables:
 | Key Name                    | Required | Default | Example                                |
 |-----------------------------|----------|---------|----------------------------------------|
 | `EVENT_STORE_SNS_TOPIC_ARN` | **Yes**  | *None*  | `arn:aws:sns:region:123456:topic-name` |
-| `S3_BUCKET_NAME`            | **Yes**  | *None*  | `s3BucketName`                         |             
+| `S3_BUCKET_NAME`            | **Yes**  | *None*  | `s3BucketName`                         |
 
-## Execute
-Must be deployed as an AWS lambda and called from there.
+## Deploy to AWS
 
-> **TODO**: Add Lambda configuration
+### First local build
 
-Entry point is `LambdaApiKeyService::handleRequest`
+Follow the [Build](#build) instructions.
+
+### Create Lambda
+
+In wizard:
+
+- Name: `solid-server-api-key-service`
+- Runtime: `Java 8`
+- Role: Existing
+- Existing Role: `solid-server-api-key-service`
+
+In Lambda view:
+
+- Function code
+
+  - Code entry type: Upload .zip or .jar
+  - Function package: Select `repo:/service/api-key-service/build/libs/api-key-service.jar`
+  - Handler: `LambdaApiKeyService::handleRequest`
+
+- Environment variables
+
+  | Name                        | Value                                        |
+  | --------------------------- | -------------------------------------------- |
+  | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
+  | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
+
+- Basic Settings
+
+  - Memory: 192 MB
+  - Timeout: `1` min `0`sec
+
+### Push
+
+```bash
+make push
+```
 
 ## Usage
 ### Create

@@ -19,7 +19,12 @@ This guide will only give instructions and/or values for relevant fields/options
 
 Requirements not directly related to the stack, like TLS certificates for the Load-balancer are considered out of scope as they directly depend on the target infrastructure itself rather than being specific to this stack.
 
-The following is expected to be set up and/or available before following this guide:
+The following is expected to be set up and/or available on your local machine before following this guide:
+
+- A working developer docker environment, from the [Developer guide](../../dev.md).  
+  **All command line commands listed in this guide must run in that environment**.
+
+The following is expected to be set up and/or available in AWS before following this guide:
 
 - A VPC for the various services. This can be the default or a dedicated one and is left at the discretion of the reader.
 - A valid TLS certificate in ACM with subject names:
@@ -119,6 +124,18 @@ The following new roles are to be created:
   - `SNSPublishOnly`
 - Name: `solid-server-outbox-processor`
 
+#### Push Processor
+
+- Service: Lambda
+- Use case: Lambda
+- Policies to be applied:
+  - `AmazonS3ReadOnlyAccess`
+  - `AWSLambdaSQSQueueExecutionRole`
+  - `LambdaInvokeOnly`
+  - `S3WriteOnlyAccess`
+  - `SNSPublishOnly`
+- Name: `solid-server-push-processor`
+
 ## SNS
 Create a new topic for the store events, consumed by the Subscription Manager:
 
@@ -156,7 +173,7 @@ Create a single S3 bucket to hold configuration and data for the server:
 Afterwards, perform the following actions using `repo:/deploy/aws/s3/` as your working directory:
 
 - Edit `internal/subscriptions` and set the SQS queue URLs to those created above and replace the leading `https://` by `aws-sqs://`. The file contains sample values as example.
-- Copy the directory and file structure from the working directory to the S3 bucket.
+- Copy the directory and file structure from the working directory to the S3 bucket, per example using `aws s3 cp [options]`
 - Remove `global/security/api/key/.gitignore` from the S3 bucket.
 
 ## EC2
@@ -238,7 +255,21 @@ After the wizard, edit the **Deregistration delay** and set it to `60` seconds.
 
 ### Middleware
 
-Follow the instructions in `repo:/service/api-middleware/README.md`
+For each directory in the following list:
+
+- `repo:/service/api-middleware`
+- `repo:/service/check-scope`
+- `repo:/service/create-view`
+- `repo:/service/data-policy`
+- `repo:/service/data-processing`
+- `repo:/service/echo-service`
+- `repo:/service/validate-schema`
+
+For the directory as your current working directory, run the following command in your Docker Dev Env:
+
+```bash
+make push
+```
 
 ### Subscription Manager
 
@@ -267,8 +298,9 @@ In Lambda view:
 
   | Name                        | Value                                        |
   | --------------------------- | -------------------------------------------- |
-  | `IN_MIDDLEWARE_LAMBDA`      | `solid-server-api-middleware`                |
-  | `OUT_MIDDLEWARE_LAMBDA`     | `solid-server-api-middleware`                |
+  | `IN_MIDDLEWARE_LAMBDA`      | `api-middleware`                             |
+  | `OUT_MIDDLEWARE_LAMBDA`     | `api-middleware`                             |
+  | `PUSHER_LAMBDA_NAME`        | `solid-server-push-processor`                |
   | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
   | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
 
@@ -351,31 +383,40 @@ In Lambda view:
       - Memory: 192 MB
       - Timeout: `1` min `0`sec
 
+#### Push processor
+
+In wizard:
+
+- Name: `solid-server-push-processor`
+- Runtime: `Java 8`
+- Role: Existing
+- Existing Role: `solid-server-push-processor`
+
+In Lambda view:
+
+- Function code
+  - Code entry type: Upload .zip or .jar
+  - Function package: Select `repo:/service/subscription-manager/build/libs/subscription-manager.jar`
+  - Handler: `LambdaPusherProcessor::handleRequest`
+- Environment variables
+  - *No environment variable needed*
+- Basic Settings
+  - Memory: 192 MB
+  - Timeout: `1` min `0`sec
+
 ## ECR
 
 ### Front API
 
-Create a new repository: `solid-server-api-front`
+- Create a new repository: `solid-server-api-front`
 
-### Authenticate with ECS
+- Build and deploy the image: with `repo:/service/api-front` as your working directory in the Docker Dev env, run:
 
-Run the following command:
-
-```
-$(aws ecr get-login --no-include-email --region us-west-2)
+```bash
+make push
 ```
 
-### Upload Docker image
-
-Build the Front API docker using:
-
-```
-./gradlew -Pdocker.image.name=solid-server-api-front -Pdocker.image.version=latest dockerBuildLatest
-```
-
-Then follow the ECR push commands for step 3 (Tag) and step 4 (Push).
-
-After, the newly pushed image will appear in the images. Make a note of the Image URI.
+- The newly pushed image will appear in the images of the ECR repository; Make a note of the Image URI.
 
 ## ECS
 
