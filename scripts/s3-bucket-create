@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+BUCKET="$1"
+if [ -z "$BUCKET" ]; then
+	BUCKET=$(s3-bucket-compute-name)
+fi
+
+echo "Creating bucket $BUCKET"
+aws s3 ls | grep "$BUCKET" > /dev/null
+
+if [ $? -eq 0 ]; then
+	echo "S3 bucket already exists, skipping"
+	exit 0
+fi
+
+aws s3 mb --region "$AWS_REGION" s3://"$BUCKET"

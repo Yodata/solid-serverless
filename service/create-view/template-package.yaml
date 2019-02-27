@@ -1,7 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'create-view apply event.scope to event.response.body
-
-  '
+Description: create-view-service
 Globals:
   Function:
     Environment:
@@ -11,11 +9,11 @@ Globals:
     Tags:
       app: solid-serverless
       component: create-view-service
-    Timeout: 5
+    Timeout: 6
 Resources:
   CreateViewFunction:
     Properties:
-      CodeUri: s3://yodata-rl-create-view-service/4acc87082d67f59cafbd598c7d2e4815
+      CodeUri: s3://yodata-solid-dev-solid-create-view/0130ddacf13d979065ecf5dd956bcc23
       Description: ({object, context} => createView(context).map(object))
       FunctionName: create-view
       Handler: index.handler

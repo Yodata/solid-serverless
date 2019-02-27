@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo 'NOT IMPLEMENTED SEE EXAMPLE'
-# aws s3 mb s3://dev-yodata-io-create-view
-

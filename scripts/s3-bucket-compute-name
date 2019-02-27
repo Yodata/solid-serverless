@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+SERVICE="$1"
+if [ -z "$SERVICE" ]; then
+	SERVICE=$(basename $PWD)
+fi
+
+BUCKET="$SOLID_AWS_S3_BUCKET_PREFIX-$SERVICE"
+
+echo -n "$BUCKET"

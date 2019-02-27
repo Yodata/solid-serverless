@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+SERVICE="$1"
+if [ -z "$SERVICE" ]; then
+	SERVICE=$(service-compute-name)
+fi
+
+BUCKET="$2"
+if [ -z "$BUCKET" ]; then
+	BUCKET=$(s3-bucket-compute-name)
+fi
+
+echo "Packaging $SVC_NAME to $BUCKET"
+
+./gradlew shadowJar
+aws s3 cp "build/libs/$SERVICE.jar" "s3://$BUCKET"

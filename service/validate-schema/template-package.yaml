@@ -1,17 +1,19 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: validate-schema JSON schema validation microservice
+Transform: AWS::Serverless-2016-10-31
+Description: 'validate-schema JSON schema validation microservice
+
+  '
 Globals:
   Function:
+    Timeout: 5
+    Runtime: nodejs8.10
     Environment:
       Variables:
         NODE_ENV: production
-    Runtime: nodejs8.10
-    Timeout: 5
 Resources:
   ValidateSchemaFunction:
-    Properties:
-      CodeUri: s3://dev.yodata.io-validate-schema/4099dc04be0e19382f558580f9e97f6a
-      FunctionName: validate-schema
-      Handler: index.handler
     Type: AWS::Serverless::Function
-Transform: AWS::Serverless-2016-10-31
+    Properties:
+      CodeUri: s3://yodata-solid-dev-solid-validate-schema/8288f298d7a5f691c97909b9934c639c
+      Handler: index.handler
+      FunctionName: validate-schema

@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 Description: Data Processing Services
 Globals:
   Function:
@@ -8,18 +9,17 @@ Globals:
       component: data-processing
 Resources:
   checkScope:
-    Properties:
-      CodeUri: s3://yodata-solid-serverless-data-processing-service/ddf745564fa6c1389c53e84aa7bd4cd1
-      Description: Validates data with ACL.scope and data policies, returns a ValidateAction
-      FunctionName: data-processing-service-check-scope
-      Handler: check-scope.handler
     Type: AWS::Serverless::Function
-  createView:
     Properties:
-      CodeUri: s3://yodata-solid-serverless-data-processing-service/6c2eb53f30be0ac1da533de08ad0bc13
+      FunctionName: data-processing-service-check-scope
+      Description: Validates data with ACL.scope and data policies, returns a ValidateAction
+      CodeUri: s3://yodata-solid-dev-solid-data-processing/11cfba2f20456e4ef7cf0a9eeec5ffbb
+      Handler: check-scope.handler
+  createView:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: data-processing-service-create-view
       Description: Applies data policies and ACL.scope to create consumer specific
         views of data
-      FunctionName: data-processing-service-create-view
+      CodeUri: s3://yodata-solid-dev-solid-data-processing/11cfba2f20456e4ef7cf0a9eeec5ffbb
       Handler: create-view.handler
-    Type: AWS::Serverless::Function
-Transform: AWS::Serverless-2016-10-31

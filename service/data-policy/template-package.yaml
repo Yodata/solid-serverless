@@ -1,41 +1,41 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 Description: 'data policy service serves functions: apply-policy get-policy
 
   '
+Parameters:
+  clientid:
+    Type: String
 Globals:
   Function:
-    Environment:
-      Variables:
-        CLIENT_ID:
-          Ref: clientid
-        DOMAIN: dev.yodata.io
-        NODE_ENV: development
+    Timeout: 10
     Runtime: nodejs8.10
     Tags:
       app: solid-serverless
       domain: dev.yodata.io
-    Timeout: 10
-Parameters:
-  clientid:
-    Type: String
+    Environment:
+      Variables:
+        NODE_ENV: development
+        DOMAIN: dev.yodata.io
+        CLIENT_ID:
+          Ref: clientid
 Resources:
   ApplyPolicyFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      AutoPublishAlias: next
-      CodeUri: s3://yodata-hsf-data-policy/af944476564f44c7f6c99a6ef0b8aafa
-      FunctionName: apply-policy
+      CodeUri: s3://yodata-solid-dev-solid-data-policy/56f50f5d4c2646b0d980b6b69dbd6c24
       Handler: index.applyPolicy
-    Type: AWS::Serverless::Function
+      FunctionName: apply-policy
+      AutoPublishAlias: next
   GetPoliciesFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://yodata-hsf-data-policy/c9e8f18482b06740867245665d1e2888
-      FunctionName: get-policies
+      CodeUri: s3://yodata-solid-dev-solid-data-policy/56f50f5d4c2646b0d980b6b69dbd6c24
       Handler: index.getPolicies
-    Type: AWS::Serverless::Function
+      FunctionName: get-policies
   SetPolicyFunction:
-    Properties:
-      CodeUri: s3://yodata-hsf-data-policy/b79f4267ea58c239fda0cf766d1e3b6c
-      FunctionName: set-policy
-      Handler: index.setPolicy
     Type: AWS::Serverless::Function
-Transform: AWS::Serverless-2016-10-31
+    Properties:
+      CodeUri: s3://yodata-solid-dev-solid-data-policy/56f50f5d4c2646b0d980b6b69dbd6c24
+      Handler: index.setPolicy
+      FunctionName: set-policy

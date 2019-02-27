@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+BUCKET="$1"
+if [ -z "$BUCKET" ]; then
+	BUCKET=$(s3-bucket-compute-name)
+fi
+
+sam package --output-template-file template-package.yaml --s3-bucket "$BUCKET"

@@ -1,4 +1,4 @@
-rootProject.name = 'api-key-manager'
+rootProject.name = 'api-key-service'
 
 include(':sdk')
 project(':sdk').projectDir = file('../../packages/solid-server-java-sdk')

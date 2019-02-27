@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+SERVICE="$1"
+if [ -z "$SERVICE" ]; then
+	SERVICE=$(service-compute-name)
+fi
+
+BUCKET="$2"
+if [ -z "$BUCKET" ]; then
+	BUCKET=$(s3-bucket-compute-name)
+fi
+
+FUNCTION="$3"
+if [ -z "$FUCTION" ]; then
+	FUNCTION="solid-server-$SERVICE"
+fi
+
+JAR_NAME=$(service-compute-name)
+
+echo "Deploying $SERVICE"
+aws lambda update-function-code --region "$AWS_REGION" --function-name "$FUNCTION" --s3-bucket "$BUCKET" --s3-key "$JAR_NAME.jar" > /dev/null

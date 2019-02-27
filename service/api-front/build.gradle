@@ -70,11 +70,11 @@ def dockerImageLatest = dockerImageName + ':latest'
 
 
 task dockerBuild(type: Exec, dependsOn: shadowJar) {
-    commandLine 'docker', 'build', '-t', dockerImage, project.rootDir
+    commandLine 'sudo', 'docker', 'build', '-t', dockerImage, project.rootDir
 }
 
 task dockerTagLatest(type: Exec) {
-    commandLine 'docker', 'tag', dockerImage, dockerImageLatest
+    commandLine 'sudo', 'docker', 'tag', dockerImage, dockerImageLatest
 }
 
 task dockerBuildLatest(dependsOn: [ dockerBuild, dockerTagLatest ]) {}
