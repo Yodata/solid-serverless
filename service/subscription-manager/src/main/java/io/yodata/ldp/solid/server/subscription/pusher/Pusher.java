@@ -10,13 +10,21 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -48,6 +56,7 @@ public class Pusher {
 
     private Supplier<AmazonSQS> sqs = new LazyLoadProvider<>(AmazonSQSClientBuilder::defaultClient);
     private Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
+    private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
     public void send(JsonObject data, String targetRaw) {
         log.info("Sending data to {}: {}", targetRaw, data);
@@ -77,7 +86,23 @@ public class Pusher {
             } else if (StringUtils.equals(target.getScheme(), "aws-s3")) {
                 throw new RuntimeException("AWS S3 is not implemented as subscription target");
             } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
-                throw new RuntimeException("HTTP is not implemented as subscription target");
+                HttpPost req = new HttpPost(target);
+                req.setEntity(new StringEntity(GsonUtil.toJson(data), ContentType.APPLICATION_JSON));
+                try (CloseableHttpResponse res = http.get().execute(req)) {
+                    int sc = res.getStatusLine().getStatusCode();
+                    if (sc < 200 || sc >= 300) {
+                        log.error("Unable to send notification | sc: {}", sc);
+                        log.error("Error: {}", res.getEntity().getContent());
+                        throw new RuntimeException("Status code when sending to " + target.toString() + ": " + sc);
+                    }
+
+                    log.info("Message was successfully sent to {}", target);
+                } catch (UnknownHostException e) {
+                    log.warn("Unable to send Message, will NOT retry: Unknown host: {}", e.getMessage());
+                } catch (IOException e) {
+                    log.error("Unable to send Message due to I/O error, will retry", e);
+                    throw new RuntimeException("Unable to send notification to " + target.toString(), e);
+                }
             } else {
                 throw new RuntimeException("Scheme " + target.getScheme() + " is not supported");
             }
