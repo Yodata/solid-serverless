@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-. setEnv
+set -e
+
+. scripts/setEnv
 bash || true
