@@ -62,7 +62,7 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    public Page getPage(Target t, String from, String by, boolean isFullFormat) {
+    public Page getPage(Target t, String from, String by, boolean isFullFormat, boolean isTemporal) {
         return new Page();
     }
 

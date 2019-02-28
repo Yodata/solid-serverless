@@ -47,7 +47,7 @@ public interface Store {
 
     Policies getPolicies(URI entity);
 
-    Page getPage(Target t, String from, String by, boolean isFullFormat);
+    Page getPage(Target t, String by, String from, boolean isFullFormat, boolean isTemporal);
 
     Optional<SecurityContext> findForApiKey(String apiKey);
 

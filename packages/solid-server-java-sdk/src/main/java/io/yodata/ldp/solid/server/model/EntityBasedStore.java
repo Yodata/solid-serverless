@@ -28,6 +28,7 @@ public abstract class EntityBasedStore implements Store {
 
     private static final Logger log = LoggerFactory.getLogger(EntityBasedStore.class);
     private static final Type subListType = new TypeToken<List<Subscription>>() {}.getType();
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
 
     protected String buildEntityPath(String entity, String path) {
         return "entities/" + entity + "/data/by-id" + path;
@@ -239,18 +240,6 @@ public abstract class EntityBasedStore implements Store {
     @Override
     public void delete(Request in) {
         delete("entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath());
-    }
-
-    protected String getIdPrefix(String namespace, String host, String path, String id) {
-        if (!path.endsWith("/")) {
-            path += "/";
-        }
-
-        JsonObject data = getData("entities/" + host + path + id)
-                .map(GsonUtil::parseObj)
-                .orElseGet(JsonObject::new);
-
-        return getTsPrefix(GsonUtil.findString(data, "timestamp").orElse(""), namespace);
     }
 
     @Override

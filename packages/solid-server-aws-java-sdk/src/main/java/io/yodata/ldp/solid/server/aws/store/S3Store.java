@@ -252,38 +252,30 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
-    public Page getPage(Target t, String from, String by, boolean isFullFormat) {
+    public Page getPage(Target t, String by, String from, boolean isFullFormat, boolean isTemporal) {
         Page p = new Page();
 
-        String prefix = "entities/" + t.getHost() + "/data/by-id";
+        String prefix = isTemporal ? "entities/" + t.getHost() + "/data/by-ts" : "entities/" + t.getHost() + "/data/by-id";
         String namespace = prefix + t.getPath();
 
         ListObjectsV2Request req = new ListObjectsV2Request();
         req.setBucketName(getBucket());
-        req.setDelimiter("/");
+        req.setPrefix(namespace);
+        if (!"".equals(from)) {
+            String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
+            log.info("Starting after {}", sinceDecoded);
+            req.setStartAfter(sinceDecoded);
+        } else {
+            log.info("Starting from the beginning");
+        }
 
-        switch (by) {
-            case "timestamp":
-                req.setPrefix(getTsPrefix(from, namespace));
-                break;
-            case "path":
-                req.setPrefix(getIdPrefix(namespace, t.getHost(), t.getPath(), from));
-                break;
-            case "token":
-                req.setPrefix(namespace);
-                if (!"".equals(from)) {
-                    String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
-                    log.info("Starting after {}", sinceDecoded);
-                    req.setStartAfter(sinceDecoded);
-                } else {
-                    log.info("Starting from the beginning");
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown from type: " + by);
+        if (!isTemporal) {
+            req.setDelimiter("/");
         }
 
         do {
+            log.info("Looping");
+
             req.setMaxKeys(pageMaxKeys - p.getContains().size());
             ListObjectsV2Result res = s3.listObjectsV2(req);
             p.setNext(res.getNextContinuationToken());
@@ -313,8 +305,6 @@ public class S3Store extends EntityBasedStore {
                 log.info("No more elements in scope");
                 break;
             }
-
-            log.info("Looping");
         } while (p.getContains().size() < pageMaxKeys);
 
         log.info("Next token: {}", p.getNext());

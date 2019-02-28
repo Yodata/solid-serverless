@@ -26,16 +26,18 @@ public class ContainerStoreProcessor {
     public Response get(Request request) {
         Response r = new Response();
 
+        boolean isTemporal = StringUtils.equalsAny(request.getTarget().getPath(), "/inbox/", "/outbox/");
         boolean fullFormat = request.getSingleParameter("format")
                 .map(f -> StringUtils.equals("full", f))
                 // FIXME turn into configuration value
-                .orElseGet(() -> StringUtils.equalsAny(request.getTarget().getPath(), "/inbox/", "/outbox/"));
+                .orElse(isTemporal);
 
         Page p = store.getPage(
                 request.getTarget(),
-                request.getSingleParameter("from").orElse(""),
                 request.getSingleParameter("by").orElse("token"),
-                fullFormat
+                request.getSingleParameter("from").orElse(""),
+                fullFormat,
+                isTemporal
         );
 
         if (!fullFormat) {
