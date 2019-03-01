@@ -28,6 +28,9 @@ RUN ln -s /usr/local/lib/node/bin/npm /usr/local/bin/npm \
 # We install AWS SAM CLI to build and deploy the various lambdas
 RUN pip install --system awscli aws-sam-cli
 
+# We add the entry point
+ADD scripts/docker/entrypoint /home/builder/entrypoint
+
 # We create the build user environment
 RUN useradd -rm -d /home/builder -s /bin/bash -g root -G sudo -u 1000 builder
 RUN echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -39,8 +42,6 @@ RUN make --version && docker --version && java -version && node --version && npm
 
 # We will mount the mono repo here
 VOLUME /home/builder/src
-
-ADD scripts/docker/entrypoint /home/builder/entrypoint
 
 # We start in the source directory
 WORKDIR /home/builder/src

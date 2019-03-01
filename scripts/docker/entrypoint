@@ -6,10 +6,11 @@ echo "#"
 echo "# YoData - Solid Serverless - Dev Docker Environment"
 echo "#"
 echo "######################################################"
-echo "Current working directory: $(pwd)"
+echo "HOME: $HOME"
+echo "PWD: $(pwd)"
 echo "Initial PATH: $PATH"
 
-. scripts/setEnv
+. "$HOME/src/scripts/setEnv"
 
 echo "Environment PATH: $PATH"
 echo "------------------------------------------------------"
