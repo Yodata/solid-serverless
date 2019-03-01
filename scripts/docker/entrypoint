@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
-
 set -e
 
+echo "######################################################"
+echo "#"
+echo "# YoData - Solid Serverless - Dev Docker Environment"
+echo "#"
+echo "######################################################"
+echo "Current working directory: $(pwd)"
+echo "Initial PATH: $PATH"
+
 . scripts/setEnv
+
+echo "Environment PATH: $PATH"
+echo "------------------------------------------------------"
+echo
+
 bash || true
