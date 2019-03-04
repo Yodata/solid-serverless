@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
-. $PWD/env
+ENV_BOOTSTRAP="$PWD/env"
+
+if ! [ -f "$ENV_BOOTSTRAP " ]; then
+	echo
+	echo "Could not find your configuration file 'env'. Make sure the environment is configured before running the Docker image"
+	echo
+	exit 1
+fi
+
+. "$ENV_BOOTSTRAP"
 
 export SOLID_AWS_S3_BUCKET_PREFIX=$SOLID_COMPANY-$SOLID_PROJECT-$SOLID_ENV-solid
 export SOLID_AWS_S3_BUCKET_STORE=$SOLID_AWS_S3_BUCKET_PREFIX-storage
