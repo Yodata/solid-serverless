@@ -14,6 +14,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +51,7 @@ public class S3Store extends EntityBasedStore {
     private AmazonS3 s3;
     private List<String> buckets;
     private int pageMaxKeys;
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd/HH/mm/ss/SSS");
 
     private S3Store() {
         pageMaxKeys = EnvUtils.find("S3_LIST_MAX_KEYS").map(Integer::parseInt).orElse(50);
@@ -155,106 +162,36 @@ public class S3Store extends EntityBasedStore {
 
     @Override
     protected String getTsPrefix(String from, String namespace) {
-        if (from.length() < 13) {
-            from = "0000000000000";
-        }
-
-        StringBuilder tsBuild = new StringBuilder(namespace);
+        Instant ts = Instant.ofEpochMilli(Long.parseLong(from));
+        String tsPrefix = dtf.format(LocalDateTime.ofInstant(ts, ZoneOffset.UTC));
 
         ListObjectsV2Request req = new ListObjectsV2Request();
         req.setBucketName(getBucket());
-        int posStart = 0;
-        int posEnd = from.length() - 13 + 2;
-        String tsPrefix;
         List<S3ObjectSummary> objs;
-        String lastListed = namespace;
-
-        try {
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
+        do {
+            String prefix = namespace + tsPrefix;
+            System.out.println("Trying prefix "+ prefix);
             req.setPrefix(namespace + tsPrefix);
             req.setMaxKeys(1);
             objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
+            if (objs.size() > 0) {
+                return objs.get(0).getKey();
             }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart);
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // we don't care;
-        }
-
-        return lastListed;
+            tsPrefix = tsPrefix.substring(0, tsPrefix.length() - (tsPrefix.endsWith("/") ? 2 : 1));
+        } while (tsPrefix.length() > 0);
+        return "";
     }
 
     @Override
     public Page getPage(Target t, String by, String from, boolean isFullFormat, boolean isTemporal) {
         Page p = new Page();
 
+        boolean isTs = false;
+
+        if (StringUtils.equals("timestamp", by)) {
+            isTemporal = true;
+            isTs = true;
+        }
         String prefix = isTemporal ? "entities/" + t.getHost() + "/data/by-ts" : "entities/" + t.getHost() + "/data/by-id";
         String namespace = prefix + t.getPath();
 
@@ -262,9 +199,15 @@ public class S3Store extends EntityBasedStore {
         req.setBucketName(getBucket());
         req.setPrefix(namespace);
         if (!"".equals(from)) {
-            String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
-            log.info("Starting after {}", sinceDecoded);
-            req.setStartAfter(sinceDecoded);
+            if (!isTs) {
+                String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
+                log.info("Starting after {}", sinceDecoded);
+                req.setStartAfter(sinceDecoded);
+            } else {
+                String tsPrefix = getTsPrefix(from, namespace);
+                System.out.println("TS Prefix: " + tsPrefix);
+                req.setStartAfter(tsPrefix);
+            }
         } else {
             log.info("Starting from the beginning");
         }
@@ -275,6 +218,7 @@ public class S3Store extends EntityBasedStore {
 
         do {
             log.info("Looping");
+            System.out.println("Start after: " + req.getStartAfter());
 
             req.setMaxKeys(pageMaxKeys - p.getContains().size());
             ListObjectsV2Result res = s3.listObjectsV2(req);
