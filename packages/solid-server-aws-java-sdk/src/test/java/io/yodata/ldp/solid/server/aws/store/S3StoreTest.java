@@ -26,6 +26,7 @@ public class S3StoreTest {
             store.save("", new byte[]{}, "entities/localhost/data/by-ts/A/2019/02/21/23/51/44/132/d");
             store.save("", new byte[]{}, "entities/localhost/data/by-ts/B/2019/02/21/23/51/44/120/e");
         } catch (SdkClientException e) {
+            System.err.println(e.getMessage());
             init = false;
         } finally {
             assumeTrue(init);
@@ -34,11 +35,11 @@ public class S3StoreTest {
 
     @Test
     public void findAndListFromTsPrefix() {
-        String prefix = store.getTsPrefix("1550793104129", "A/");
+        String prefix = store.getTsPrefix("1550793104131", "A/");
         assertEquals("A/2019/02/21/23/51/44/120/a", prefix);
 
         Page p = store.getPage(Target.forPath(URI.create("http://localhost"), "/A/"), "timestamp", "1550793104129", false, true);
-        assertEquals(3, p.getContains().size());
+        assertEquals(2, p.getContains().size());
         assertEquals("b", p.getContains().get(0).getAsString());
         assertEquals("c", p.getContains().get(1).getAsString());
         assertEquals("d", p.getContains().get(2).getAsString());

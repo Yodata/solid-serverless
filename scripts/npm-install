@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+if ! [ -d "src" ]; then
+	echo "No source directory. Is this a service directory?"
+	exit 1
+fi
+
+if ! [ -f "src/package.json" ]; then
+	echo "No package.json file found. Is this a node-based service?"
+fi
+
+pushd src 2>&1 > /dev/null
+npm install
+popd 2>&1 > /dev/null

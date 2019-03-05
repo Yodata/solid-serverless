@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-ENV_BOOTSTRAP="$PWD/env"
+ENV_BOOTSTRAP="$(pwd)/env"
 
-if ! [ -f "$ENV_BOOTSTRAP " ]; then
+ls -l .
+echo "Checking for settings file at $ENV_BOOTSTRAP"
+if ! [ -f "$ENV_BOOTSTRAP" ]; then
 	echo
 	echo "Could not find your configuration file 'env'. Make sure the environment is configured before running the Docker image"
 	echo
