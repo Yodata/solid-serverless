@@ -29,7 +29,7 @@ public class UndertowSolidServer {
         ResourceHandler file = new ResourceHandler();
         SecurityProcessor auth = new SecurityProcessor(S3Store.getDefault());
 
-        Undertow.builder().addHttpListener(9000, "0.0.0.0").setHandler(Handlers.routing()
+        Undertow.builder().setWorkerThreads(2*2*8).addHttpListener(9000, "0.0.0.0").setHandler(Handlers.routing()
                 .get("/status", exchange -> {
                     exchange.setStatusCode(200);
                     exchange.endExchange();
