@@ -251,6 +251,15 @@ Skip this step.
 
 After the wizard, edit the **Deregistration delay** and set it to `60` seconds.
 
+Update your DNS entries so that the two entries in your TLS certificate, `example.org` and `*.example.org` point to the Load-Balancer hostname given in its details.
+
+You would typically have the following new entries:
+
+```bind9
+example.org. IN 3600 CNAME solid-server-api-front-1234567890.region.elb.amazonaws.com.
+*.example.org. IN 3600 CNAME solid-server-api-front-1234567890.region.elb.amazonaws.com.
+```
+
 ## Lambda
 
 ### Middleware
@@ -423,6 +432,8 @@ make push
 ### Task Definitions
 
 Create new Task Definition:
+
+> **WARNING:** Do not confuse `Task Role` and `Task execution role`. Only the value of the former, `Task Role` needs to be configured.
 
 - Launch type: EC2
 
