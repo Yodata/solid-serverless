@@ -112,7 +112,11 @@ A subscription has the following structure:
   "object": "<URI of the resource to match>",
   "target": "<URI of where the notification should be sent>",
   "scope": {
-      "smth": "smth"
+    "smth": "smth"
+  },
+  "config": {
+    "arbitraryKey": "arbitraryValue",
+    "otherKey": "otherValue"
   },
   "needContext": false
 }
@@ -154,8 +158,30 @@ Example of valid URIs:
 
 ---
 
+---
+
+`config` is an arbitrary object depending on the scheme used in the URI. See below for more information.
+
+--- 
+
 `needContext` is a basic filter to remove personal/confidential/credentials data from the raw store event that triggered
 the subscription. It is `false` by default and will strip out those values.
+
+### Schemes
+#### HTTP
+```json
+{
+  "headers": {
+    "X-Header-Single-Value": [
+      "value"
+    ],
+    "X-Header-Multi-Values": [
+      "value1",
+      "value2"
+    ]
+  }
+}
+```
 
 ### Files
 #### Pod-specific

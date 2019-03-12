@@ -9,6 +9,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -17,18 +18,36 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public class Pusher {
+
+    public static void main(String[] args) throws IOException {
+        String data;
+        try (InputStream is = new FileInputStream(System.getenv("SOLID_SERVERLESS_PUSHER_STANDALONE_INPUT"))) {
+            data = IOUtils.toString(is, StandardCharsets.UTF_8);
+        }
+
+        JsonObject command = GsonUtil.parseObj(data);
+        JsonObject obj = GsonUtil.getObj(command, "object");
+        String target = GsonUtil.getStringOrThrow(command, "target");
+        JsonObject cfg = GsonUtil.findObj(command, "config").orElseGet(JsonObject::new);
+
+        new Pusher().send(obj, target, cfg);
+    }
 
     private static class LazyLoadProvider<T> implements Supplier<T> {
 
@@ -58,7 +77,7 @@ public class Pusher {
     private Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
     private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
-    public void send(JsonObject data, String targetRaw) {
+    public void send(JsonObject data, String targetRaw, JsonObject cfg) {
         log.info("Sending data to {}: {}", targetRaw, data);
         try {
             URI target = URI.create(targetRaw);
@@ -86,17 +105,23 @@ public class Pusher {
             } else if (StringUtils.equals(target.getScheme(), "aws-s3")) {
                 throw new RuntimeException("AWS S3 is not implemented as subscription target");
             } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
+                HttpConfig httpCfg = GsonUtil.get().fromJson(cfg, HttpConfig.class);
                 HttpPost req = new HttpPost(target);
+                httpCfg.getHeaders().forEach((name, values) -> {
+                    values.forEach(value -> req.addHeader(name, value));
+                });
                 req.setEntity(new StringEntity(GsonUtil.toJson(data), ContentType.APPLICATION_JSON));
                 try (CloseableHttpResponse res = http.get().execute(req)) {
                     int sc = res.getStatusLine().getStatusCode();
+                    String body = EntityUtils.toString(res.getEntity());
                     if (sc < 200 || sc >= 300) {
                         log.error("Unable to send notification | sc: {}", sc);
-                        log.error("Error: {}", res.getEntity().getContent());
+                        log.error("Error: {}", body);
                         throw new RuntimeException("Status code when sending to " + target.toString() + ": " + sc);
                     }
 
                     log.info("Message was successfully sent to {}", target);
+                    log.debug("Response body:\n{}", body);
                 } catch (UnknownHostException e) {
                     log.warn("Unable to send Message, will NOT retry: Unknown host: {}", e.getMessage());
                 } catch (IOException e) {

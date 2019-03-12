@@ -58,7 +58,8 @@ public class LambdaPusherProcessor implements RequestStreamHandler {
     private void process(JsonObject command) {
         JsonObject data = GsonUtil.getObj(command, "object");
         String target = GsonUtil.getStringOrThrow(command, "target");
-        pusher.send(data, target);
+        JsonObject cfg = GsonUtil.findObj(command, "config").orElseGet(JsonObject::new);
+        pusher.send(data, target, cfg);
     }
 
 }
