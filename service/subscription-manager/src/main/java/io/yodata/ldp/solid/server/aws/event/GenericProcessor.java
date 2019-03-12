@@ -156,7 +156,7 @@ public class GenericProcessor {
                     }
                 }
 
-                pusher.send(notification, sub.getTarget());
+                pusher.send(notification, sub.getTarget(), sub.getConfig());
             }
         }
 

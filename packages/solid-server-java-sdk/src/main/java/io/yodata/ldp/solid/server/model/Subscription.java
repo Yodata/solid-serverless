@@ -1,5 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
+import com.google.gson.JsonObject;
+
 public class Subscription {
 
     private String id;
@@ -15,6 +17,9 @@ public class Subscription {
 
     // Send to
     private String target;
+
+    // Configuration
+    private JsonObject config = new JsonObject();
 
     // If this subscription should be the only one doing the work
     private boolean isExclusive;
@@ -59,6 +64,14 @@ public class Subscription {
 
     public void setTarget(String target) {
         this.target = target;
+    }
+
+    public JsonObject getConfig() {
+        return config;
+    }
+
+    public void setConfig(JsonObject config) {
+        this.config = config;
     }
 
     public boolean isExclusive() {

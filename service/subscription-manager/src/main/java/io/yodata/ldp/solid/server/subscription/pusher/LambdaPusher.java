@@ -18,10 +18,11 @@ public class LambdaPusher {
     private final String lName = EnvUtils.get("PUSHER_LAMBDA_NAME");
     private final AWSLambda lambda = AWSLambdaClientBuilder.defaultClient();
 
-    public void send(JsonObject data, String targetRaw) {
+    public void send(JsonObject data, String targetRaw, JsonObject config) {
         JsonObject payload = new JsonObject();
         payload.add("object", data);
         payload.addProperty("target", targetRaw);
+        payload.add("config", config);
 
         InvokeRequest i = new InvokeRequest();
         i.setFunctionName(lName);
