@@ -4,14 +4,15 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
-import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.UndertorwRequest;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
+import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.undertow.handler.BasicHttpHandler;
+import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,13 +24,21 @@ public class UndertowSolidServer {
     private static final Logger log = LoggerFactory.getLogger(UndertowSolidServer.class);
 
     public static void main(String[] args) {
+        int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(System.getenv("FRONTD_LOAD_MULTIPLIER"), "1"));
+        int workerThreads = multiplier * 2 * 8;
+
+        int port = 9000;
+        String host = "0.0.0.0";
+
         log.info("-------/ Frontd is starting \\-------");
+        log.info("Load multiplier: {}", multiplier);
+        log.info("Will use {} HTTP worker threads", workerThreads);
 
         ContainerHandler folder = new ContainerHandler();
         ResourceHandler file = new ResourceHandler();
         SecurityProcessor auth = new SecurityProcessor(S3Store.getDefault());
 
-        Undertow.builder().setWorkerThreads(2*2*8).addHttpListener(9000, "0.0.0.0").setHandler(Handlers.routing()
+        Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
                 .get("/status", exchange -> {
                     exchange.setStatusCode(200);
                     exchange.endExchange();

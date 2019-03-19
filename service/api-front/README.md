@@ -60,12 +60,15 @@ The following environment variables are used:
 
 | Name                        | Required    | Default value          | Example Value                        |
 |-----------------------------|-------------|------------------------|--------------------------------------|
+| `FRONTD_LOAD_MULTIPLIER`    | No          | `1`                    | `1`                                  |
 | `IN_MIDDLEWARE_LAMBDA`      | Yes         | *None*                 | `lambdaName`                         |
 | `OUT_MIDDLEWARE_LAMBDA`     | Yes         | *None*                 | `lambdaName`                         |
 | `EVENT_STORE_SNS_TOPIC_ARN` | Yes         | *None*                 | `arn:aws:sns:region:12345:topicName` |
 | `S3_BUCKET_NAME`            | *See below* | *None*                 | `bucketName`                         |
 | `S3_BUCKET_NAMES`           | *See below* | `["{S3_BUCKET_NAME}"]` | `["bucketName1","bucketName2"]`      |
 
+- `FRONTD_LOAD_MULTIPLIER` is an overall multiplier to configure what load to handle. This typically defines things like
+  the amount of background threads, HTTP worker threads, etc.
 - `IN_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on requests
 - `OUT_MIDDLEWARE_LAMBDA`: Lambda name for the middleware called on responses
 - `EVENT_STORE_SNS_TOPIC_ARN`: SNS Topic ARN where storage events will be sent for components like the subscription manager
