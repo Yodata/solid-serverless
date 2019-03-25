@@ -52,7 +52,7 @@ public class InboxService {
         }
         c.message = event.getObject().get();
 
-        if (!StringUtils.equals(StorageAction.Add, event.getType())) {
+        if (!StringUtils.equalsAny(event.getType(), StorageAction.Add, StorageAction.Update, StorageAction.Delete)) {
             log.warn("Event is not about adding data, not supported for now, skipping");
             return;
         }

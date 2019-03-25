@@ -117,13 +117,24 @@ public class GenericProcessor {
                     continue;
                 }
 
+                // We rebuild the storage action to be sure only specific fields are there
+                JsonObject actionNew = new JsonObject();
+                actionNew.addProperty(ActionPropertyKey.Type.getId(), action.getType());
+                actionNew.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
+                actionNew.addProperty(ActionPropertyKey.Instrument.getId(), action.getRequest().getSecurity().getInstrument());
+                action.getRequest().getSecurity().getAgent().ifPresent(a -> actionNew.addProperty(ActionPropertyKey.Agent.getId(), a));
+                if (action.getObject().isPresent()) {
+                    actionNew.add(ActionPropertyKey.Object.getId(), action.getObject().get());
+                } else {
+                    actionNew.addProperty(ActionPropertyKey.Object.getId(), action.getId());
+                }
+
                 // We a Notification event
                 JsonObject notification = new JsonObject();
                 notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
                 notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
                 notification.addProperty(ActionPropertyKey.Instrument.getId(), target.resolve("/profile/card#me").toString());
-                notification.addProperty(ActionPropertyKey.Target.getId(), id.toString());
-                action.getObject().ifPresent(obj -> notification.add(ActionPropertyKey.Object.getId(), obj));
+                notification.add(ActionPropertyKey.Object.getId(), actionNew);
 
                 // We add the audience
                 notification.addProperty("@to", sub.getAgent());
