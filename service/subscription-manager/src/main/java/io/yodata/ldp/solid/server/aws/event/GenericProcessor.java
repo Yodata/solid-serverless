@@ -133,7 +133,7 @@ public class GenericProcessor {
                 JsonObject notification = new JsonObject();
                 notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
                 notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
-                notification.addProperty(ActionPropertyKey.Instrument.getId(), target.resolve("/profile/card#me").toString());
+                notification.addProperty(ActionPropertyKey.Agent.getId(), target.resolve("/profile/card#me").toString());
                 notification.add(ActionPropertyKey.Object.getId(), actionNew);
 
                 // We add the audience
