@@ -19,18 +19,19 @@ repositories {
 }
 
 dependencies {
-    compile project(':aws-sdk')
-    compile 'org.slf4j:slf4j-simple:1.7.25'
+    implementation project(':aws-sdk')
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
 
-    compile 'org.apache.commons:commons-lang3:3.8.1'
-    compile 'commons-io:commons-io:2.6'
-    compile 'com.google.code.gson:gson:2.8.5'
+    implementation 'org.apache.commons:commons-lang3:3.8.1'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-codec:commons-codec:1.11'
+    implementation 'com.google.code.gson:gson:2.8.5'
 
-    compile 'com.amazonaws:aws-lambda-java-core:1.2.0'
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
 
-    compile 'com.amazonaws:aws-java-sdk-s3:1.11.460'
-    compile 'com.amazonaws:aws-java-sdk-sqs:1.11.460'
-    compile 'com.amazonaws:aws-java-sdk-lambda:1.11.460'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.460'
+    implementation 'com.amazonaws:aws-java-sdk-sqs:1.11.460'
+    implementation 'com.amazonaws:aws-java-sdk-lambda:1.11.460'
 
     testCompile 'junit:junit:4.12'
     testCompile 'com.github.tomakehurst:wiremock:2.8.0'

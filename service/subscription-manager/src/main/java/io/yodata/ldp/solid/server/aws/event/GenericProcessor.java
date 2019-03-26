@@ -127,7 +127,7 @@ public class GenericProcessor {
                     actionNew.addProperty(ActionPropertyKey.Object.getId(), action.getId());
                 }
 
-                // We a Notification event
+                // We publish the event - Publisher will handle the wrapping and routing for us
                 JsonObject publication = new JsonObject();
                 publication.add("recipient", GsonUtil.asArray(sub.getAgent()));
                 publication.add("payload", actionNew);

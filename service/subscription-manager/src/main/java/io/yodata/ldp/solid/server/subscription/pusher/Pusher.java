@@ -9,6 +9,8 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,6 +32,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -78,8 +81,9 @@ public class Pusher {
     private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
     public void send(JsonObject data, String targetRaw, JsonObject cfg) {
-        log.info("Sending data to {}: {}", targetRaw, data);
+        log.debug("Sending data to {}: {}", targetRaw, data);
         try {
+            String dataRaw = GsonUtil.toJson(data);
             URI target = URI.create(targetRaw);
             if (StringUtils.equals("aws-sqs", target.getScheme())) {
                 SendMessageRequest req = new SendMessageRequest();
@@ -111,6 +115,19 @@ public class Pusher {
                     values.forEach(value -> req.addHeader(name, value));
                 });
                 req.setEntity(new StringEntity(GsonUtil.toJson(data), ContentType.APPLICATION_JSON));
+
+                if (StringUtils.equals(httpCfg.getSign().getType(), "sha1-salt")) {
+                    if (StringUtils.isEmpty(httpCfg.getSign().getSalt())) {
+                        log.warn("No secret given but sha1 signature requested - ignoring signature");
+                    } else {
+                        MessageDigest digest = DigestUtils.getSha1Digest();
+                        digest.update(httpCfg.getSign().getSalt().getBytes(StandardCharsets.UTF_8));
+                        digest.update(dataRaw.getBytes(StandardCharsets.UTF_8));
+                        String hex = "sha1=" + Hex.encodeHexString(digest.digest());
+                        req.addHeader("X-Signature", hex);
+                    }
+                }
+
                 try (CloseableHttpResponse res = http.get().execute(req)) {
                     int sc = res.getStatusLine().getStatusCode();
                     String body = EntityUtils.toString(res.getEntity());

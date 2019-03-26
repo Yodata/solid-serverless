@@ -171,6 +171,10 @@ the subscription. It is `false` by default and will strip out those values.
 #### HTTP
 ```json
 {
+  "sign": {
+    "type": "sha1-salt",
+    "salt": "<If application, salt value to hash the payload with>"
+  },
   "headers": {
     "X-Header-Single-Value": [
       "value"
