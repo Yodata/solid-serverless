@@ -6,5 +6,9 @@
   {
     "object":"/outbox/",
     "target":"aws-sqs://sqs.<REGION>.amazonaws.com/<ACCOUNT_ID>/solid-server-outbox-store-events"
+  },
+  {
+    "object":"/publish"/,
+    "target":"aws-sqs://sqs.<REGION>.amazonaws.com/<ACCOUNT_ID>/solid-server-publish-store-events"
   }
 ]

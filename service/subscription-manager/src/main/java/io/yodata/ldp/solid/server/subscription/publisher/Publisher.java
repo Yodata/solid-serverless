@@ -93,7 +93,7 @@ public class Publisher {
                 }
 
                 if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
-                    target = new URIBuilder(target).setPath("/inbox/").build();
+                    target = new URIBuilder(target).setPath("/inbox/").setFragment("").build();
                     log.info("Discovering inbox");
                     URI subUri = URI.create(target.toString());
                     HttpGet profileReq = new HttpGet(subUri);
