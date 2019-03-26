@@ -31,20 +31,20 @@ public class LambdaOutboxProcessor extends OutboxService implements RequestStrea
 
     private void handleRequest(JsonObject obj) {
         if (!obj.has("Records")) { // This is not from SNS/SQS
-            log.info("This is a regular message");
+            log.debug("This is a regular message");
             process(obj);
         } else {
-            log.info("Processing as wrapped messages");
+            log.debug("Processing as wrapped messages");
             JsonArray records = obj.getAsJsonArray("Records");
             records.forEach(recordEl -> {
                 JsonObject record = recordEl.getAsJsonObject();
                 if (record.has("Sns")) {
                     String dataRaw = record.get("Sns").getAsJsonObject().get("Message").getAsString();
-                    log.info("SNS data: {}", dataRaw);
+                    log.debug("SNS data: {}", dataRaw);
                     process(GsonUtil.parseObj(dataRaw));
                 } else if (record.has("body")) {
                     String body = record.getAsJsonPrimitive("body").getAsString();
-                    log.info("SQS data: {}", body);
+                    log.debug("SQS data: {}", body);
                     process(GsonUtil.parseObj(body));
                 } else {
                     throw new IllegalArgumentException("This is not a SNS or SQS message, cannot process");

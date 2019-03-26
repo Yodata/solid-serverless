@@ -6,14 +6,12 @@ import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
-import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class GenericHandler {
@@ -27,7 +25,8 @@ public class GenericHandler {
     }
 
     protected Exchange build(Request in) {
-        in.setPolicy(store.getPolicies(in.getTarget().getId()));
+        Target t = Objects.requireNonNull(in.getTarget());
+        in.setPolicy(store.getPolicies(t.getId()));
         Exchange ex = new Exchange();
         ex.setRequest(in);
         return ex;

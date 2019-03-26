@@ -53,57 +53,25 @@ public class OutboxService {
 
         log.info("Push content: {}", dataRaw);
 
-        try {
-            URI inboxUri = new URIBuilder(subscriber).setPath("/inbox/").build();
-            log.info("Discovery inbox");
-            URI subUri = URI.create(subscriber);
-            HttpGet profileReq = new HttpGet(subUri);
-            try (CloseableHttpResponse profileRes = client.execute(profileReq)) {
-                int sc = profileRes.getStatusLine().getStatusCode();
-                if (sc != 200) {
-                    log.info("No profile info. Status code: {}", sc);
-                } else {
-                    JsonObject body = GsonUtil.parseObj(profileRes.getEntity().getContent());
-                    Optional<String> profileInboxUri = GsonUtil.findString(body, "inbox");
-                    if (profileInboxUri.isPresent()) {
-                        try {
-                            inboxUri = new URI(profileInboxUri.get());
-                            log.info("Found advertised inbox URI: {}", inboxUri.toString());
-                        } catch (URISyntaxException e) {
-                            log.warn("Invalid advertised Inbox URI: {}", profileInboxUri.get());
-                        }
-                    } else {
-                        log.info("No advertised Inbox URI found, using default");
-                    }
-                }
-            } catch (IOException e) {
-                log.warn("Unable to discover inbox location due to I/O Error: {}", e.getMessage());
-                log.debug("Exception stacktrace", e);
-                log.warn("Using default inbox location: {}", inboxUri.toString());
+        HttpPost req = new HttpPost(subscriber);
+        req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
+        // FIXME need to find a good solution
+        req.setHeader("X-YoData-Instrument", Target.forPath(URI.create(action.getTarget()), "/profile/card#me").getId().toString());
+        req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
+        try (CloseableHttpResponse res = client.execute(req)) {
+            int sc = res.getStatusLine().getStatusCode();
+            if (sc < 200 || sc >= 300) {
+                log.error("Unable to send notification | sc: {}", sc);
+                log.error("Error: {}", res.getEntity().getContent());
+                throw new RuntimeException("Status code when sending to " + subscriber + ": " + sc);
             }
 
-            HttpPost req = new HttpPost(inboxUri);
-            req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
-            // FIXME need to find a good solution
-            req.setHeader("X-YoData-Instrument", Target.forPath(URI.create(action.getTarget()), "/profile/card#me").getId().toString());
-            req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
-            try (CloseableHttpResponse res = client.execute(req)) {
-                int sc = res.getStatusLine().getStatusCode();
-                if (sc < 200 || sc >= 300) {
-                    log.error("Unable to send notification | sc: {}", sc);
-                    log.error("Error: {}", res.getEntity().getContent());
-                    throw new RuntimeException("Status code when sending to " + inboxUri.toString() + ": " + sc);
-                }
-
-                log.info("Notification was successfully sent to {}", inboxUri);
-            } catch (UnknownHostException e) {
-                log.warn("Unable to send notification, will NOT retry: Unknown host: {}", e.getMessage());
-            } catch (IOException e) {
-                log.error("Unable to send notification due to I/O error, will retry", e);
-                throw new RuntimeException("Unable to send notification to " + inboxUri.toString(), e);
-            }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            log.info("Notification was successfully sent to {}", subscriber);
+        } catch (UnknownHostException e) {
+            log.warn("Unable to send notification, will NOT retry: Unknown host: {}", e.getMessage());
+        } catch (IOException e) {
+            log.error("Unable to send notification due to I/O error, will retry", e);
+            throw new RuntimeException("Unable to send notification to " + subscriber, e);
         }
     }
 

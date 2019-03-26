@@ -54,9 +54,7 @@ public class GenericProcessor {
 
             URI subTarget = URI.create(sub.getObject());
             String host = subTarget.getHost();
-            if (StringUtils.isBlank(host)) {
-                log.info("No host specified");
-            } else {
+            if (!StringUtils.isBlank(host)) {
                 if (host.startsWith("*.")) {
                     host = host.substring(1);
                     if (!target.getHost().endsWith(host)) {
@@ -130,20 +128,15 @@ public class GenericProcessor {
                 }
 
                 // We a Notification event
-                JsonObject notification = new JsonObject();
-                notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
-                notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
-                notification.addProperty(ActionPropertyKey.Agent.getId(), target.resolve("/profile/card#me").toString());
-                notification.add(ActionPropertyKey.Object.getId(), actionNew);
-
-                // We add the audience
-                notification.addProperty("@to", sub.getAgent());
+                JsonObject publication = new JsonObject();
+                publication.add("recipient", GsonUtil.asArray(sub.getAgent()));
+                publication.add("payload", actionNew);
 
                 // We build the store request
                 Request r = new Request();
                 r.setMethod("POST");
-                r.setTarget(Target.forPath(new Target(id), "/outbox/"));
-                r.setBody(notification);
+                r.setTarget(Target.forPath(new Target(id), "/publish/"));
+                r.setBody(publication);
 
                 // We send to store
                 Response res = storeHandler.post(r);
