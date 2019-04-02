@@ -158,11 +158,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 scope.setPath("/profile/");
                 break;
             case "contact":
-                scope.setPath("/event/");
-                break;
             case "lead":
-                scope.setPath("/event/");
-                break;
             case "website":
                 scope.setPath("/event/");
                 break;
@@ -197,6 +193,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                                 if (entry.getModes().contains(scope.getMode())) {
                                     log.info("Removing ACL mode {}", scope.getMode());
                                     entry.getModes().remove(scope.getMode());
+                                    entry.setScope(newAction.getContext().getScope());
                                     acl.getEntities().put(newAction.getObject(), entry);
                                     store.setEntityAcl(aclTarget, acl);
                                     log.info("ACL updated at {}", aclTarget.getPath());
