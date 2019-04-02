@@ -84,49 +84,7 @@ public class Publisher {
 
         for (String recipient : recipients) {
             try {
-                URI target;
-                try {
-                    target = new URI(recipient);
-                } catch (URISyntaxException e) {
-                    log.warn("Recipient {} is not a valid URI, skipping", recipient);
-                    return;
-                }
-
-                if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
-                    target = new URIBuilder(target).setPath("/inbox/").setFragment("").build();
-                    log.info("Discovering inbox");
-                    URI subUri = URI.create(target.toString());
-                    HttpGet profileReq = new HttpGet(subUri);
-                    try (CloseableHttpResponse profileRes = client.execute(profileReq)) {
-                        int sc = profileRes.getStatusLine().getStatusCode();
-                        if (sc != 200) {
-                            log.info("No profile info. Status code: {}", sc);
-                        } else {
-                            try {
-                                JsonObject body = GsonUtil.parseObj(profileRes.getEntity().getContent());
-                                Optional<String> profileInboxUri = GsonUtil.findString(body, "inbox");
-                                if (profileInboxUri.isPresent()) {
-                                    try {
-                                        target = new URI(profileInboxUri.get());
-                                        log.info("Found advertised inbox URI: {}", target.toString());
-                                    } catch (URISyntaxException e) {
-                                        log.warn("Invalid advertised Inbox URI: {}", profileInboxUri.get());
-                                    }
-                                } else {
-                                    log.info("No advertised Inbox URI found, using default");
-                                }
-                            } catch (JsonSyntaxException e) {
-                                log.info("Received data was not JSON, ignoring");
-                            }
-                        }
-                    } catch (IOException e) {
-                        log.warn("Unable to discover inbox location due to I/O Error: {}", e.getMessage());
-                        log.debug("Exception stacktrace", e);
-                        log.warn("Using default inbox location: {}", target.toString());
-                    }
-                }
-
-                notification.addProperty("@to", target.toString());
+                notification.addProperty("@to", recipient);
                 // We build the store request
                 Request r = new Request();
                 r.setMethod("POST");
@@ -144,8 +102,8 @@ public class Publisher {
                 d.setTarget(new Target(from));
                 Response dRes = fileHandler.delete(d);
                 log.info("{} delete status: {}", from, dRes.getStatus());
-            } catch (URISyntaxException | RuntimeException e) {
-                log.warn("Unable to produce notification about for {}", from, recipient, e);
+            } catch (RuntimeException e) {
+                log.warn("Unable to produce notification from {} for {}", from, recipient, e);
             }
         }
     }
