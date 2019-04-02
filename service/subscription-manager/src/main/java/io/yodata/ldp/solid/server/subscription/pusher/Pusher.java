@@ -4,6 +4,9 @@ import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
 import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
@@ -24,6 +27,8 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +37,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -76,6 +83,7 @@ public class Pusher {
 
     private static final Logger log = LoggerFactory.getLogger(Pusher.class);
 
+    private Supplier<AmazonSNS> sns = new LazyLoadProvider<>(AmazonSNSClientBuilder::defaultClient);
     private Supplier<AmazonSQS> sqs = new LazyLoadProvider<>(AmazonSQSClientBuilder::defaultClient);
     private Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
     private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
@@ -85,20 +93,28 @@ public class Pusher {
         try {
             String dataRaw = GsonUtil.toJson(data);
             URI target = URI.create(targetRaw);
-            if (StringUtils.equals("aws-sqs", target.getScheme())) {
+            if (StringUtils.equals("aws-sns", target.getScheme())) {
+                PublishRequest req = new PublishRequest();
+                String arn = target.getAuthority();
+                log.info("ARN: {}", arn);
+                req.setTopicArn(arn);
+                req.setMessage(dataRaw);
+                sns.get().publish(req);
+                log.info("Event dispatched to SNS topic {}", req.getTopicArn());
+            } else if (StringUtils.equals("aws-sqs", target.getScheme())) {
                 SendMessageRequest req = new SendMessageRequest();
                 req.setQueueUrl(new URIBuilder(target).setScheme("https").build().toURL().toString());
                 if (StringUtils.endsWith(req.getQueueUrl(), ".fifo")) {
                     req.setMessageGroupId("default");
                 }
-                req.setMessageBody(GsonUtil.toJson(data));
+                req.setMessageBody(dataRaw);
                 sqs.get().sendMessage(req);
                 log.info("Event dispatched to SQS queue {}", req.getQueueUrl());
             } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
                 String lName = target.getAuthority();
                 InvokeRequest i = new InvokeRequest();
                 i.setFunctionName(lName);
-                i.setPayload(GsonUtil.toJson(data));
+                i.setPayload(dataRaw);
                 InvokeResult r = lambda.get().invoke(i);
                 int statusCode = r.getStatusCode();
                 String functionError = r.getFunctionError();
@@ -120,11 +136,18 @@ public class Pusher {
                     if (StringUtils.isEmpty(httpCfg.getSign().getSalt())) {
                         log.warn("No secret given but sha1 signature requested - ignoring signature");
                     } else {
-                        MessageDigest digest = DigestUtils.getSha1Digest();
-                        digest.update(httpCfg.getSign().getSalt().getBytes(StandardCharsets.UTF_8));
-                        digest.update(dataRaw.getBytes(StandardCharsets.UTF_8));
-                        String hex = "sha1=" + Hex.encodeHexString(digest.digest());
-                        req.addHeader("X-Signature", hex);
+                        try {
+                            SecretKeySpec spec = new SecretKeySpec(httpCfg.getSign().getSalt().getBytes(StandardCharsets.UTF_8), "HmacSHA1");
+                            Mac mac = Mac.getInstance("HmacSHA1");
+                            mac.init(spec);
+                            byte[] sign = mac.doFinal(dataRaw.getBytes(StandardCharsets.UTF_8));
+                            String hex = "sha1=" + Hex.encodeHexString(sign);
+                            req.addHeader("X-Signature", hex);
+                        } catch (NoSuchAlgorithmException e) {
+                            log.warn("Unable to sign message: Unknown algorithm", e);
+                        } catch (InvalidKeyException e) {
+                            log.warn("Unable to sign message: Invalid key spec", e);
+                        }
                     }
                 }
 
