@@ -9,6 +9,7 @@ import io.yodata.ldp.solid.server.aws.handler.resource.input.ResourceRequestChec
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.notification.EventBus;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ public class ResourceHandler extends GenericHandler {
 
         // Temp solution about custom ACL format
         if (in.getTarget().getPath().endsWith(".acl")) {
+            String target = StringUtils.removeEndIgnoreCase(in.getTarget().getId().toString(), ".acl");
             ex.getResponse().getBody().ifPresent(aclJson -> {
                 Acl acl = GsonUtil.parse(aclJson, Acl.class);
                 Map<String, JsonObject> entities = new HashMap<>();
@@ -56,16 +58,18 @@ public class ResourceHandler extends GenericHandler {
                     JsonObject entryView = new JsonObject();
                     entryView.addProperty("type", "Authorization");
                     entryView.addProperty("agent", resolvedPattern);
-                    entryView.addProperty("accessTo", in.getTarget().getId().toString());
+                    entryView.addProperty("accessTo", target);
                     entryView.add("mode", GsonUtil.asStringArray(pattern.getValue().getModes()));
+                    entryView.add("scope", GsonUtil.asStringArray(pattern.getValue().getScope()));
                     entities.put("#" + resolvedPattern, entryView);
                 }
                 acl.getEntities().forEach((entity, entry) -> {
                     JsonObject entryView = new JsonObject();
                     entryView.addProperty("type", "Authorization");
                     entryView.addProperty("agent", entity);
-                    entryView.addProperty("accessTo", in.getTarget().getId().toString());
+                    entryView.addProperty("accessTo", target);
                     entryView.add("mode", GsonUtil.asStringArray(entry.getModes()));
+                    entryView.add("scope", GsonUtil.asStringArray(entry.getScope()));
                     entities.put("#" + entity, entryView);
                 });
 
