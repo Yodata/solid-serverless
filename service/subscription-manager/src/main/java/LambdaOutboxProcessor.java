@@ -17,7 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class LambdaOutboxProcessor extends OutboxService implements RequestStreamHandler {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaOutboxProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaOutboxProcessor.class);
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {

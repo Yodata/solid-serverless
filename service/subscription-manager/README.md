@@ -96,6 +96,12 @@ Required permissions for each component:
 - Memory: 128MB minimum, 192MB recommended
 - Timeout: 1 min
 
+#### Notify processor
+- Runtime: `Java 8`
+- Handler: `LambdaNotifyProcessor::handleRequest`
+- Memory: 128MB minimum, 192MB recommended
+- Timeout: 1 min
+
 #### Outbox processor
 - Runtime: `Java 8`
 - Handler: `LambdaOutboxProcessor::handleRequest`

@@ -33,6 +33,9 @@ public class OutboxService {
         URI target;
         try {
             target = new URI(recipient);
+            if (!StringUtils.endsWithAny(recipient, "/profile/card", "/profile/card#me")) {
+                return Optional.of(target);
+            }
 
             if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 target = new URIBuilder(target).setPath("/inbox/").setFragment("").build();

@@ -18,7 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class LambdaInboxProcessor extends InboxService implements RequestStreamHandler {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaInboxProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaInboxProcessor.class);
 
     public LambdaInboxProcessor() {
         super(S3Store.getDefault());

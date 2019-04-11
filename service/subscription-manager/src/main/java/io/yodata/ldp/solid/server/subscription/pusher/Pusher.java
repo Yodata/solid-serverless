@@ -122,8 +122,6 @@ public class Pusher {
                     throw new RuntimeException("Error when calling lambda " + lName + " | Status code: " + statusCode + " | Error: " + functionError);
                 }
                 log.info("Lambda {} was successfully called", lName);
-            } else if (StringUtils.equals(target.getScheme(), "aws-s3")) {
-                throw new RuntimeException("AWS S3 is not implemented as subscription target");
             } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 HttpConfig httpCfg = GsonUtil.get().fromJson(cfg, HttpConfig.class);
                 HttpPost req = new HttpPost(target);

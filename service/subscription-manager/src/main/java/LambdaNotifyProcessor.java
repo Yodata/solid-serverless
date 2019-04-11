@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
-import io.yodata.ldp.solid.server.subscription.publisher.Publisher;
+import io.yodata.ldp.solid.server.subscription.notify.Notifier;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,11 +16,11 @@ import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class LambdaPublishProcessor extends Publisher implements RequestStreamHandler {
+public class LambdaNotifyProcessor extends Notifier implements RequestStreamHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(LambdaPublishProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaNotifyProcessor.class);
 
-    public LambdaPublishProcessor() {
+    public LambdaNotifyProcessor() {
         super(S3Store.getDefault());
     }
 

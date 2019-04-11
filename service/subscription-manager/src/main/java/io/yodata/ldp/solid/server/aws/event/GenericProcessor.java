@@ -105,44 +105,62 @@ public class GenericProcessor {
 
                 action.setObject(rawData);
             }
-            log.info("Data after scope: {}", GsonUtil.toJson(action));
+            log.debug("Data after scope: {}", GsonUtil.toJson(action));
 
             if (!StringUtils.isEmpty(sub.getAgent())) {
-                log.info("Subscription is external, we'll send to outbox");
+                log.info("Subscription is external");
 
                 if (!action.getObject().isPresent()) {
-                    log.info("No content to send");
+                    log.info("No content to send, skipping sub");
                     continue;
                 }
 
-                // We rebuild the storage action to be sure only specific fields are there
-                JsonObject actionNew = new JsonObject();
-                actionNew.addProperty(ActionPropertyKey.Type.getId(), action.getType());
-                actionNew.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
-                actionNew.addProperty(ActionPropertyKey.Instrument.getId(), action.getRequest().getSecurity().getInstrument());
-                action.getRequest().getSecurity().getAgent().ifPresent(a -> actionNew.addProperty(ActionPropertyKey.Agent.getId(), a));
-                if (action.getObject().isPresent()) {
-                    actionNew.add(ActionPropertyKey.Object.getId(), action.getObject().get());
+                if (target.getPath().startsWith("/event/")) {
+                    // This is the event bus container, we consider the message final
+                    JsonObject msg = action.getObject().get();
+                    msg.addProperty("@to", sub.getAgent());
+
+                    // We build the store request
+                    Request r = new Request();
+                    r.setMethod("POST");
+                    r.setTarget(Target.forPath(new Target(id), "/outbox/"));
+                    r.setBody(msg);
+
+                    // We send to store
+                    Response res = storeHandler.post(r);
+                    String eventId = GsonUtil.parseObj(res.getBody()
+                            .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                    log.info("Data was saved at {}", eventId);
                 } else {
-                    actionNew.addProperty(ActionPropertyKey.Object.getId(), action.getId());
+                    // We rebuild the storage action to be sure only specific fields are there
+                    JsonObject actionNew = new JsonObject();
+                    actionNew.addProperty(ActionPropertyKey.Type.getId(), action.getType());
+                    actionNew.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
+                    actionNew.addProperty(ActionPropertyKey.Instrument.getId(), action.getRequest().getSecurity().getInstrument());
+                    action.getRequest().getSecurity().getAgent().ifPresent(a -> actionNew.addProperty(ActionPropertyKey.Agent.getId(), a));
+                    if (action.getObject().isPresent()) {
+                        actionNew.add(ActionPropertyKey.Object.getId(), action.getObject().get());
+                    } else {
+                        actionNew.addProperty(ActionPropertyKey.Object.getId(), action.getId());
+                    }
+
+                    // We publish the event - Publisher will handle the wrapping and routing for us
+                    JsonObject publication = new JsonObject();
+                    publication.add("recipient", GsonUtil.asArray(sub.getAgent()));
+                    publication.add("payload", actionNew);
+
+                    // We build the store request
+                    Request r = new Request();
+                    r.setMethod("POST");
+                    r.setTarget(Target.forPath(new Target(id), "/notify/"));
+                    r.setBody(publication);
+
+                    // We send to store
+                    Response res = storeHandler.post(r);
+                    String eventId = GsonUtil.parseObj(res.getBody()
+                            .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                    log.info("Data was saved at {}", eventId);
                 }
-
-                // We publish the event - Publisher will handle the wrapping and routing for us
-                JsonObject publication = new JsonObject();
-                publication.add("recipient", GsonUtil.asArray(sub.getAgent()));
-                publication.add("payload", actionNew);
-
-                // We build the store request
-                Request r = new Request();
-                r.setMethod("POST");
-                r.setTarget(Target.forPath(new Target(id), "/publish/"));
-                r.setBody(publication);
-
-                // We send to store
-                Response res = storeHandler.post(r);
-                String eventId = GsonUtil.parseObj(res.getBody()
-                        .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
-                log.info("Data was saved at {}", eventId);
             } else {
                 log.info("Subscription is internal");
 

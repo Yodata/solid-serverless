@@ -197,6 +197,21 @@ public class GsonUtil {
         return Optional.ofNullable(o.get(key));
     }
 
+    public static List<String> findArrayOrString(JsonObject o, String key) {
+        List<String> values = new ArrayList<>();
+        Optional<JsonElement> elOpt = findElement(o, key);
+        if (elOpt.isPresent()) {
+            JsonElement el = elOpt.get();
+            if (el.isJsonArray()) {
+                values.addAll(asList(el.getAsJsonArray(), String.class));
+            }
+            if (el.isJsonPrimitive()) {
+                values.add(el.getAsJsonPrimitive().getAsString());
+            }
+        }
+        return values;
+    }
+
     public static Optional<JsonPrimitive> findPrimitive(JsonObject o, String key) {
         return findElement(o, key).map(el -> el.isJsonPrimitive() ? el.getAsJsonPrimitive() : null);
     }

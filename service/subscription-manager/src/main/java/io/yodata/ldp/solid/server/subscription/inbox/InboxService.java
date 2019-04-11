@@ -25,13 +25,11 @@ public class InboxService {
     }
 
     private Map<String, Consumer<Wrapper>> typeProcessors;
-    private NormalizationProcessor normalizeProcessor;
 
     public InboxService(Store store) {
-        normalizeProcessor = new NormalizationProcessor();
-
         typeProcessors = new HashMap<>();
         typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor());
+        typeProcessors.put("ReflexPublishAction", new PublishProcessor());
 
         AppAuthProcessor p = new AppAuthProcessor(store);
         for (String type : AppAuthProcessor.Types) {
@@ -40,7 +38,7 @@ public class InboxService {
     }
 
     public void process(JsonObject eventJson) {
-        log.info("Processing event data: {}", GsonUtil.toJson(eventJson));
+        log.debug("Processing event data: {}", GsonUtil.toJson(eventJson));
 
         StorageAction event = GsonUtil.get().fromJson(eventJson, StorageAction.class);
         Wrapper c = new Wrapper();
@@ -53,7 +51,7 @@ public class InboxService {
         c.message = event.getObject().get();
 
         if (!StringUtils.equalsAny(event.getType(), StorageAction.Add, StorageAction.Update, StorageAction.Delete)) {
-            log.warn("Event is not about adding data, not supported for now, skipping");
+            log.warn("Event is not about regular storage action, not supported for now, skipping");
             return;
         }
 
@@ -62,17 +60,16 @@ public class InboxService {
         String type = GsonUtil.findString(c.message, "type").orElse("");
         Consumer<Wrapper> consumer = typeProcessors.get(type);
         if (Objects.isNull(consumer)) {
-            log.info("No processor for type {}, using normalization processor", type);
-            consumer = normalizeProcessor;
-        }
-
-        log.info("Using processor {} for type {}", consumer.getClass().getCanonicalName(), type);
-        try {
-            consumer.accept(c);
-            log.info("Processing of inbox event finished");
-        } catch (RuntimeException e) {
-            log.warn("Error when processing inbox event: {}", e.getMessage(), e);
-            throw e;
+            log.info("No processor for type {}, ignoring", type);
+        } else {
+            log.info("Using processor {} for type {}", consumer.getClass().getCanonicalName(), type);
+            try {
+                consumer.accept(c);
+                log.info("Processing of inbox event finished");
+            } catch (RuntimeException e) {
+                log.warn("Error when processing inbox event: {}", e.getMessage(), e);
+                throw e;
+            }
         }
     }
 
