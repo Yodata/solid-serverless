@@ -70,7 +70,8 @@ public class Publisher {
     }
 
     public void publish(URI from, List<String> recipients, JsonObject message) {
-        message.addProperty("source", from.resolve("/profile/card#me").toString());
+        log.info("From: {}", from.toString());
+        message.addProperty("instrument", from.resolve("/profile/card#me").toString());
 
         JsonObject publication = new JsonObject();
         publication.addProperty("type", "ReflexPublishAction");

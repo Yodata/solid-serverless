@@ -71,11 +71,22 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         for (String topic : topics) {
-            if (!StringUtils.endsWith(topic, "/")) {
-                topic = topic + "/";
+            String topicPath = StringUtils.defaultIfBlank(topic, "");
+            if (topicPath.contains(":")) {
+                String[] splitValues = StringUtils.split(topicPath, ":", 2);
+                topicPath = splitValues[1];
             }
 
-            Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/" + topic);
+            if (topicPath.contains("#")) {
+                String[] splitValues = StringUtils.split(topicPath, "#", 2);
+                topicPath = splitValues[0];
+            }
+
+            if (!topicPath.endsWith("/")) {
+                topicPath = topicPath + "/";
+            }
+
+            Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
             Request r = new Request();
             r.setMethod("POST");
             r.setTarget(target);

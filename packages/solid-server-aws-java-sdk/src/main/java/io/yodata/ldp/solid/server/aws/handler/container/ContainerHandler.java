@@ -1,5 +1,7 @@
 package io.yodata.ldp.solid.server.aws.handler.container;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.GenericHandler;
 import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
@@ -11,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -66,7 +70,12 @@ public class ContainerHandler extends GenericHandler {
         log.info("Data ID: {}", id);// We update the request with the relevant data to store
         in.setDestination(new Target(URI.create(id)));
 
-        addIdIfPossible(in, id);
+        Map<String, JsonElement> keys = new HashMap<>();
+        keys.put("id", new JsonPrimitive(id));
+        if (in.getTarget().getPath().endsWith("/inbox/")) {
+            keys.put("agent", new JsonPrimitive(in.getSecurity().getIdentity()));
+        }
+        addKeysIfPossible(in, keys);
 
         // We store
         storeProc.post(in);

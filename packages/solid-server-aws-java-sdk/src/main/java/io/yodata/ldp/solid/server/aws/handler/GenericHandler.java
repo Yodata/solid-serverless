@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,6 +40,28 @@ public class GenericHandler {
         }
 
         return contentType.get();
+    }
+
+    protected void addKeysIfPossible(Request in, Map<String, JsonElement> keys) {
+        if (!StringUtils.equals(MimeTypes.APPLICATION_JSON, in.getContentType().orElse(""))) {
+            // Ignoring content which is not JSON
+            return;
+        }
+
+        // We try to add the ID to the object
+        try {
+            JsonElement el = GsonUtil.parse(in.getBody());
+            if (!el.isJsonObject()) {
+                log.info("JSON is not an object, skipping adding ID");
+                return;
+            }
+
+            keys.forEach((k, v) -> el.getAsJsonObject().add(k, v));
+
+            in.setBody(el);
+        } catch (RuntimeException e) {
+            log.warn("Content type is JSON, but we could not parse it to add keys");
+        }
     }
 
     protected void addIdIfPossible(Request in, String id) {
