@@ -152,21 +152,21 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
             throw new IllegalArgumentException("Blank data");
         }
 
-        Scope scope = new Scope();
-        switch (data[0]) {
-            case "profile":
-                scope.setPath("/profile/");
-                break;
-            case "contact":
-            case "lead":
-            case "website":
-                scope.setPath("/event/");
-                break;
-            default:
-                throw new IllegalArgumentException(data[0]);
+        String mode = data[0];
+        String topic = data[1];
+        String topicPath = topic;
+        if (topic.contains("#")) {
+            String[] v = topic.split("#", 2);
+            topicPath = v[0];
+            if (!topicPath.endsWith("/")) {
+                topicPath = topicPath + "/";
+            }
         }
 
-        scope.setMode(AclMode.valueOf(StringUtils.capitalize(data[1])));
+        Scope scope = new Scope();
+        scope.setPath("/event/topic/" + topicPath);
+
+        scope.setMode(AclMode.valueOf(StringUtils.capitalize(mode)));
         if (AclMode.Read.equals(scope.getMode())) {
             scope.setSubscribe(true);
         }
@@ -306,7 +306,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         }
     }
 
-    public void acceptAuth(Request request, JsonObject message) {
+    private void acceptAuth(Request request, JsonObject message) {
         AuthorizeAction newAction = GsonUtil.get().fromJson(message, AuthorizeAction.class);
 
         Target pod = new Target(request.getTarget().getId().resolve("/profile/card#me"));
@@ -336,7 +336,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 subPending.addProperty("agent", pod.getId().toString());
                 subPending.addProperty("type", "SubscribeAction");
                 subPending.addProperty("actionStatus", "PotentialActionStatus");
-                subPending.addProperty("object", pod.getId().toString());
+                subPending.addProperty("object", newAction.getObject());
                 subPending.add("context", GsonUtil.makeObj(newAction.getContext()));
                 subPending.addProperty("@to", newAction.getObject());
 

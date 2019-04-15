@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -72,8 +73,13 @@ public class ContainerHandler extends GenericHandler {
 
         Map<String, JsonElement> keys = new HashMap<>();
         keys.put("id", new JsonPrimitive(id));
-        if (in.getTarget().getPath().endsWith("/inbox/")) {
+        if (in.getTarget().getPath().startsWith("/inbox/")) {
             keys.put("agent", new JsonPrimitive(in.getSecurity().getIdentity()));
+        }
+        if (in.getTarget().getPath().startsWith("/publish/")) {
+            Instant ts = Instant.now();
+            keys.put(ActionPropertyKey.Timestamp.getId(), new JsonPrimitive(ts.toEpochMilli()));
+            keys.put("time", new JsonPrimitive(ts.toString()));
         }
         addKeysIfPossible(in, keys);
 
