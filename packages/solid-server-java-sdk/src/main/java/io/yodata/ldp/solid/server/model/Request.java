@@ -113,7 +113,7 @@ public class Request {
     }
 
     public List<String> getScope() {
-        return getAcl().computeEntity(getSecurity().getIdentity()).getScope();
+        return new ArrayList<>(getAcl().computeEntity(getSecurity().getIdentity()).getScope());
     }
 
     public void setAcl(Acl acl) {

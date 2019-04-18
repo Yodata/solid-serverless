@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.FileHandler;
+import java.util.stream.Collectors;
 
 public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
@@ -28,16 +29,18 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
     public static class Scope {
 
-        private String path;
+        private String id;
         private AclMode mode;
+        private String topic;
+        private String path;
         private boolean isSubscribe;
 
-        public String getPath() {
-            return path;
+        public String getId() {
+            return id;
         }
 
-        public void setPath(String path) {
-            this.path = path;
+        public void setId(String id) {
+            this.id = id;
         }
 
         public AclMode getMode() {
@@ -48,20 +51,28 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
             this.mode = mode;
         }
 
+        public String getTopic() {
+            return topic;
+        }
+
+        public void setTopic(String topic) {
+            this.topic = topic;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
         public boolean isSubscribe() {
             return isSubscribe;
         }
 
         public void setSubscribe(boolean subscribe) {
             isSubscribe = subscribe;
-        }
-
-        public boolean matchesPath(String path) {
-            if (StringUtils.startsWithIgnoreCase(path, this.path)) {
-                return true;
-            }
-
-            return StringUtils.equalsIgnoreCase(this.path, path);
         }
 
     }
@@ -142,7 +153,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         sec = SecurityProcessor.getDefault();
     }
 
-    private Scope parse(String raw) throws IllegalArgumentException {
+    private Scope parse(String raw) {
         String[] data = raw.split(":", 2);
         if (data.length != 2) {
             throw new IllegalArgumentException("wrong format, missing :");
@@ -152,24 +163,26 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
             throw new IllegalArgumentException("Blank data");
         }
 
+        Scope scope = new Scope();
+        scope.setId(raw);
+        scope.setTopic(data[1]);
         String mode = data[0];
-        String topic = data[1];
-        String topicPath = topic;
-        if (topic.contains("#")) {
-            String[] v = topic.split("#", 2);
+        String topicPath = scope.getTopic();
+        if (scope.getTopic().contains("#")) {
+            String[] v = scope.getTopic().split("#", 2);
             topicPath = v[0];
             if (!topicPath.endsWith("/")) {
                 topicPath = topicPath + "/";
             }
         }
 
-        Scope scope = new Scope();
         scope.setPath("/event/topic/" + topicPath);
 
         scope.setMode(AclMode.valueOf(StringUtils.capitalize(mode)));
         if (AclMode.Read.equals(scope.getMode())) {
             scope.setSubscribe(true);
         }
+
         return scope;
     }
 
@@ -180,128 +193,153 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         List<String> toRemove = new ArrayList<>(oldAction.getContext().getScope());
         toRemove.removeAll(newAction.getContext().getScope());
 
-        for (String raw : toRemove) {
-            log.info("Removing scope {}", raw);
+        Map<String, List<Scope>> toRemovePath = new HashMap<>();
+        for (String s : toRemove) {
             try {
-                Scope scope = parse(raw);
-                Target aclTarget =  Target.forPath(pod, scope.getPath());
-                store.getEntityAcl(aclTarget, false)
-                        .ifPresent(acl -> {
-                            log.info("We have an ACL to check at {}", aclTarget.getPath());
-                            acl.getEntity(newAction.getObject()).ifPresent(entry -> {
-                                log.info("We have an ACL entry for {}", newAction.getObject());
-                                if (entry.getModes().contains(scope.getMode())) {
-                                    log.info("Removing ACL mode {}", scope.getMode());
-                                    entry.getModes().remove(scope.getMode());
-                                    entry.setScope(newAction.getContext().getScope());
-                                    acl.getEntities().put(newAction.getObject(), entry);
-                                    store.setEntityAcl(aclTarget, acl);
-                                    log.info("ACL updated at {}", aclTarget.getPath());
-                                } else {
-                                    log.info("Entity {} does not have {} access, nothing to do", newAction.getObject(), scope.getMode());
-                                }
-                            });
-                        });
-
-                if (scope.isSubscribe()) {
-                    log.info("Scope is also subscription, removing from pod");
-
-                    boolean hadSub = false;
-                    List<Subscription> subs = store.getEntitySubscriptions(pod.getId());
-                    Iterator<Subscription> i = subs.iterator();
-                    while (i.hasNext()) {
-                        Subscription sub = i.next();
-                        if (!StringUtils.equals(scope.getPath(), sub.getObject())) {
-                            continue;
-                        }
-
-                        if (!StringUtils.equals(newAction.getObject(), sub.getAgent())) {
-                            continue;
-                        }
-
-                        i.remove();
-                        hadSub = true;
-                    }
-
-                    if (!hadSub) {
-                        log.info("No matching subscription already in place, not updating subscriptions");
-                    } else {
-                        log.info("Matching subscription already in place, removing");
-
-                        Request in = new Request();
-                        in.setMethod("PUT");
-                        in.setTimestamp(Instant.now());
-                        in.setTarget(Target.forPath(pod, "/settings/subscriptions"));
-                        in.setBody(GsonUtil.makeObj("items", GsonUtil.asArrayObj(subs)));
-                        fileMgr.put(in);
-
-                        log.info("Existing subscription for {} on {} removed", newAction.getObject(), scope.getPath());
-                    }
-                }
+                Scope scope = parse(s);
+                List<Scope> scopes = toRemovePath.computeIfAbsent(scope.getPath(), p -> new ArrayList<>());
+                scopes.add(scope);
             } catch (IllegalArgumentException e) {
-                log.warn("Unknown/invalid scope {}, ignoring", raw);
+                log.info("Ignoring invalid scope {}: {}", s, e.getMessage());
             }
         }
 
         List<String> toAdd = new ArrayList<>(newAction.getContext().getScope());
         toAdd.removeAll(oldAction.getContext().getScope());
 
-        for (String raw : toAdd) {
-            log.info("Adding scope {}", raw);
+        Map<String, List<Scope>> toAddPath = new HashMap<>();
+        for (String s : toAdd) {
             try {
-                Scope scope = parse(raw);
-                Target aclTarget =  Target.forPath(pod, scope.getPath());
-                Acl acl = store.getEntityAcl(aclTarget).orElseGet(Acl::forInit);
-                Acl.Entry entry = acl.computeEntity(newAction.getObject());
-                entry.setScope(toAdd);
+                Scope scope = parse(s);
+                List<Scope> scopes = toAddPath.computeIfAbsent(scope.getPath(), p -> new ArrayList<>());
+                scopes.add(scope);
+            } catch (IllegalArgumentException e) {
+                log.info("Ignoring invalid scope {}: {}", s, e.getMessage());
+            }
+        }
+
+        for (Map.Entry<String, List<Scope>> entries : toRemovePath.entrySet()) {
+            log.info("Removing scopes under {}", entries.getKey());
+
+            Target aclTarget =  Target.forPath(pod, entries.getKey());
+            store.getEntityAcl(aclTarget, false)
+                    .ifPresent(acl -> {
+                        log.info("We have an ACL to check at {}", aclTarget.getPath());
+                        acl.getEntity(newAction.getObject()).ifPresent(entry -> {
+                            log.info("We have an ACL entry for {}", newAction.getObject());
+                            for (Scope scope : entries.getValue()) {
+                                if (entry.getModes().contains(scope.getMode())) {
+                                    log.info("Removing ACL mode {}", scope.getMode());
+                                    entry.getModes().remove(scope.getMode());
+                                    entry.setScope(newAction.getContext().getScope());
+                                    acl.getEntities().put(newAction.getObject(), entry);
+                                } else {
+                                    log.info("Entity {} does not have {} access, nothing to do", newAction.getObject(), scope.getMode());
+                                }
+                            }
+
+                            store.setEntityAcl(aclTarget, acl);
+                            log.info("ACL updated at {}", aclTarget.getPath());
+                        });
+                    });
+
+
+            if (entries.getValue().stream().anyMatch(Scope::isSubscribe)) {
+                log.info("Found scope acting as subscription, removing from pod");
+
+                boolean hadSub = false;
+                List<Subscription> subs = store.getEntitySubscriptions(pod.getId());
+                Iterator<Subscription> i = subs.iterator();
+                while (i.hasNext()) {
+                    Subscription sub = i.next();
+                    if (!StringUtils.equals(entries.getKey(), sub.getObject())) {
+                        continue;
+                    }
+
+                    if (!StringUtils.equals(newAction.getObject(), sub.getAgent())) {
+                        continue;
+                    }
+
+                    i.remove();
+                    hadSub = true;
+                }
+
+                if (!hadSub) {
+                    log.info("No matching subscription already in place, not updating subscriptions");
+                } else {
+                    log.info("Matching subscription already in place, removing");
+
+                    Request in = new Request();
+                    in.setMethod("PUT");
+                    in.setTimestamp(Instant.now());
+                    in.setTarget(Target.forPath(pod, "/settings/subscriptions"));
+                    in.setBody(GsonUtil.makeObj("items", GsonUtil.asArrayObj(subs)));
+                    fileMgr.put(in);
+
+                    log.info("Existing subscription for {} on {} removed", newAction.getObject(), entries.getKey());
+                }
+            }
+        }
+
+        for (Map.Entry<String, List<Scope>> entries : toAddPath.entrySet()) {
+            Target aclTarget =  Target.forPath(pod, entries.getKey());
+            Acl acl = store.getEntityAcl(aclTarget).orElseGet(Acl::forInit);
+            log.info("ACL read: {}", GsonUtil.toJson(acl));
+            Acl.Entry entry = acl.computeEntity(newAction.getObject());
+            log.info("ACL compute: {}", GsonUtil.toJson(acl));
+
+            for (Scope scope : entries.getValue()) {
+                log.info("Adding scope {}", scope.getId());
+                entry.getScope().add(scope.getTopic());
                 if (!entry.getModes().contains(scope.getMode())) {
                     log.info("Adding ACL mode {}", scope.getMode());
                     entry.getModes().add(scope.getMode());
                 } else {
                     log.info("Entity {} already has {} access", newAction.getObject(), scope.getMode());
                 }
+            }
 
-                acl.getEntities().put(newAction.getObject(), entry);
-                store.setEntityAcl(aclTarget, acl);
-                log.info("ACL updated at {}", aclTarget.getPath());
+            log.info("ACL before: {}", GsonUtil.toJson(acl));
+            acl.getEntities().put(newAction.getObject(), entry);
+            log.info("ACL after: {}", GsonUtil.toJson(acl));
+            store.setEntityAcl(aclTarget, acl);
+            log.info("ACL updated at {}", aclTarget.getPath());
 
-                if (scope.isSubscribe()) {
-                    log.info("Scope is also subscription, adding to pod");
+            if (entries.getValue().stream().anyMatch(Scope::isSubscribe)) {
+                log.info("Found scope acting as subscription, adding to pod");
 
-                    List<Subscription> subs = store.getEntitySubscriptions(pod.getId());
-                    boolean foundMatching = subs.stream()
-                            .anyMatch(sub -> {
-                                if (!StringUtils.equals(scope.getPath(), sub.getObject())) {
-                                    return false;
-                                }
+                List<Subscription> subs = store.getEntitySubscriptions(pod.getId());
+                boolean foundMatching = subs.stream()
+                        .anyMatch(sub -> {
+                            if (!StringUtils.equals(entries.getKey(), sub.getObject())) {
+                                return false;
+                            }
 
-                                if (!StringUtils.equals(newAction.getObject(), sub.getAgent())) {
-                                    return false;
-                                }
+                            if (!StringUtils.equals(newAction.getObject(), sub.getAgent())) {
+                                return false;
+                            }
 
-                                return true;
-                            });
-                    if (!foundMatching) {
-                        log.info("No matching subscription already in place, adding a new one");
+                            return true;
+                        });
+                if (!foundMatching) {
+                    log.info("No matching subscription already in place, adding a new one");
 
-                        Subscription sub = new Subscription();
-                        sub.setAgent(newAction.getObject());
-                        sub.setObject(scope.getPath());
-                        sub.setNeedsContext(false);
-                        subs.add(sub);
+                    Subscription sub = new Subscription();
+                    sub.setAgent(newAction.getObject());
+                    sub.setObject(entries.getKey());
+                    sub.setNeedsContext(false);
+                    sub.setExclusive(false);
+                    subs.add(sub);
 
-                        Request in = new Request();
-                        in.setMethod("PUT");
-                        in.setTimestamp(Instant.now());
-                        in.setTarget(Target.forPath(pod, "/settings/subscriptions"));
-                        in.setBody(GsonUtil.makeObj("items", GsonUtil.asArrayObj(subs)));
-                        fileMgr.put(in);
+                    Request in = new Request();
+                    in.setMethod("PUT");
+                    in.setTimestamp(Instant.now());
+                    in.setTarget(Target.forPath(pod, "/settings/subscriptions"));
+                    in.setBody(GsonUtil.makeObj("items", GsonUtil.asArrayObj(subs)));
+                    fileMgr.put(in);
 
-                        log.info("New subscription for {} on {} added", newAction.getObject(), scope.getPath());
-                    }
+                    log.info("New subscription for {} on {} added", newAction.getObject(), entries.getKey());
                 }
-            } catch (IllegalArgumentException e) {
-                log.warn("Unknown/invalid scope {}, ignoring", raw);
             }
         }
     }
@@ -320,6 +358,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                     .orElseGet(JsonObject::new);
 
             JsonObject items = GsonUtil.findObj(data, "items").orElseGet(JsonObject::new);
+
             if (items.has(newAction.getObject())) {
                 log.info("Entity {} has already an authorization - only updating ACLs", newAction.getObject());
                 AuthorizeAction oldAction = GsonUtil.get().fromJson(items.get(newAction.getObject()), AuthorizeAction.class);
@@ -328,8 +367,6 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 log.info("Entity {} does not have an authorization - sending sub notif", newAction.getObject());
                 items.add(newAction.getObject(), message);
                 data.add("items", items);
-
-                store.saveEntityData(pod.getId(), "/settings/auth/entities", data);
 
                 // Now we inform the entity there is a pending subscription
                 JsonObject subPending = new JsonObject();
@@ -347,6 +384,11 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 Response res = storeMgr.post(r);
                 log.info("SC for sending potential subscribe: {}", res.getStatus());
             }
+
+            // We update the master state
+            items.add(newAction.getObject(), message);
+            data.add("items", items);
+            store.saveEntityData(pod.getId(), "/settings/auth/entities", data);
         } catch (ForbiddenException e) {
             log.warn("AuthorizeAction was denied at {}: {}", request.getTarget().getId(), e.getMessage());
         }
@@ -354,13 +396,13 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
     private void acceptSub(Request request, JsonObject message) {
         String actionStatus = GsonUtil.findString(message, "actionStatus").orElse("");
-        if (!StringUtils.equals("ActiveActionStatus", actionStatus)) {
+        if (!StringUtils.equalsAny(actionStatus, "ActiveActionStatus", "CompletedActionStatus")) {
             log.warn("Ignoring {} event, unknown status: {}", SubType, actionStatus);
             return;
         }
 
-        String agent = GsonUtil.findString(message, "agent").orElse("");
-        if (StringUtils.isBlank(agent)) {
+        String object = GsonUtil.findString(message, "object").orElse("");
+        if (StringUtils.isBlank(object)) {
             log.warn("Ignoring invalid event without agent");
             return;
         }
@@ -374,18 +416,18 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                     .flatMap(obj -> GsonUtil.findObj(obj, "items"))
                     .orElseGet(JsonObject::new);
 
-            Optional<JsonObject> item = GsonUtil.findObj(items, agent);
+            Optional<JsonObject> item = GsonUtil.findObj(items, object);
             if (!item.isPresent()) {
-                log.warn("We do not have a pending subscription for {}, ignoring event", agent);
+                log.warn("We do not have a pending subscription for {}, ignoring event", object);
                 return;
             }
-            log.info("We have a pending subscription for {}", agent);
+            log.info("We have a pending subscription for {}", object);
 
             AuthorizeAction newAction = GsonUtil.get().fromJson(item.get(), AuthorizeAction.class);
 
             // We make a dummy action without any scopes so the new ones get added
             AuthorizeAction oldAction = new AuthorizeAction();
-            oldAction.setObject(agent);
+            oldAction.setObject(object);
 
             updateAcl(pod, oldAction, newAction);
         } catch (ForbiddenException e) {

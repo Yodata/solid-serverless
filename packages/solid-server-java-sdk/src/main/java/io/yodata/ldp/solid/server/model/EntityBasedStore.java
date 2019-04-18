@@ -66,13 +66,13 @@ public abstract class EntityBasedStore implements Store {
 
         for (String loc : paths) {
             String aclPath = entity + "/data/by-id" + loc + ".acl";
-            log.info("Checking in {}", aclPath);
+            log.debug("Checking in {}", aclPath);
             Optional<String> aclRaw = getData(aclPath);
             if (aclRaw.isPresent()) {
                 log.info("ACL found at {}", aclPath);
                 return Optional.of(GsonUtil.get().fromJson(aclRaw.get(), Acl.class));
             } else {
-                log.info("ACL not found at {}", aclPath);
+                log.debug("ACL not found at {}", aclPath);
             }
         }
 

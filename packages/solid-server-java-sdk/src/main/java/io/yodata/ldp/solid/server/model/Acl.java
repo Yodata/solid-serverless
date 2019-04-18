@@ -32,8 +32,15 @@ public class Acl {
 
     public static class Entry {
 
+        public static Entry copy(Entry source) {
+            Entry dest = new Entry();
+            dest.modes = new ArrayList<>(source.modes);
+            dest.scope = new HashSet<>(source.scope);
+            return dest;
+        }
+
         private List<AclMode> modes = new ArrayList<>();
-        private List<String> scope = new ArrayList<>();
+        private Set<String> scope = new HashSet<>();
 
         public List<AclMode> getModes() {
             return modes;
@@ -47,12 +54,12 @@ public class Acl {
             modes.add(mode);
         }
 
-        public List<String> getScope() {
+        public Set<String> getScope() {
             return scope;
         }
 
-        public void setScope(List<String> scope) {
-            this.scope = scope;
+        public void setScope(Collection<String> scope) {
+            this.scope = new HashSet<>(scope);
         }
 
     }
@@ -83,7 +90,7 @@ public class Acl {
     }
 
     public Entry computeEntity(String id) {
-        return getEntity(id).orElse(def);
+        return getEntity(id).orElse(Entry.copy(def));
     }
 
     public Map<String, Entry> getPatterns() {
