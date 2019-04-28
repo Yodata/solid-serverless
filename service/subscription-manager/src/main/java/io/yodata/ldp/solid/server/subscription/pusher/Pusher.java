@@ -13,7 +13,6 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -38,7 +37,6 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -125,9 +123,7 @@ public class Pusher {
             } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 HttpConfig httpCfg = GsonUtil.get().fromJson(cfg, HttpConfig.class);
                 HttpPost req = new HttpPost(target);
-                httpCfg.getHeaders().forEach((name, values) -> {
-                    values.forEach(value -> req.addHeader(name, value));
-                });
+                httpCfg.getHeaders().forEach((name, values) -> values.forEach(value -> req.addHeader(name, value)));
                 req.setEntity(new StringEntity(GsonUtil.toJson(data), ContentType.APPLICATION_JSON));
 
                 if (StringUtils.equals(httpCfg.getSign().getType(), "sha1-salt")) {
