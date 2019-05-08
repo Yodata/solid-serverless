@@ -34,8 +34,8 @@ module.exports = (event) => {
 		req.headers = getHeaders(req)
 	}
 	event.hasData = hasData(req)
-	event.contentType = getHeader(req,'content-type')
+	event.contentType = getHeader(req, 'content-type')
 	event.object = getData(event)
-	logger.debug('normalize-event:result', {event})
+	logger.debug('normalize-event:result', { event })
 	return event
 }

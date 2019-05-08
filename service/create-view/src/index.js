@@ -3,21 +3,32 @@ const logger = require('./lib/logger')
 const createView = require('./lib/create-view')
 
 /**
+ * @typedef Action
+ * @property {string} type
+ * @property {string|object} agent
+ * @property {string|object} object
+ * @property {string|object} instrument
+ * 
+ * @typedef Event
+ * @property {string} topic
+ * @property {Action} data
+ * 
+ * @typedef Message
+ * @property {Event} object
+ * @property {object} [scope]
+ * @property {object} [context]
+ * 
  * transforms event.object with event.context (a @yodata/transform.Context)
- * @param {object} event
- * @param {object} event.object - the data to be transformed
- * @param {object} event.context - the context definition object
+ * @param {Message} event
  * @returns {Promise<object>} - event.object (transformed)
  */
 exports.handler = async (event, context) => {
-	logger.debug('event-received', event)
 	let result = event.object
 	try {
 		result = await createView(event)
-		// result = event.object
 	} catch (error) {
-		logger.error('error', {error, context})
+		logger.error('create-view:error', { error, event, context })
 	}
-	logger.info('create-view', {event,result})
+	logger.info('create-view:completed', { event, result })
 	return result
 }

@@ -7,13 +7,16 @@
   "license": "MIT",
   "dependencies": {
     "@yodata/solid-serverless-logger": "^0.0.8",
-    "@yodata/transform": "^0.2.10",
-    "@yodata/transform-plugin-view": "^0.1.1-alpha.0"
+    "@yodata/transform": "^0.3.3",
+    "@yodata/transform-plugin-view": "^0.2.3",
+    "got": "^9.6.0",
+    "lodash": "^4.17.11"
   },
   "scripts": {
     "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.12",
     "aws-sdk": "^2.382.0",
     "jest": "^24.1.0"
   }
