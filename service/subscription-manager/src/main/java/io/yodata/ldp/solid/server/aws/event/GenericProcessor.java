@@ -94,7 +94,7 @@ public class GenericProcessor {
                 log.info("Subscription has a scope, processing");
                 TransformMessage msg = new TransformMessage();
                 msg.setSecurity(action.getRequest().getSecurity());
-                msg.setScope(action.getRequest().getScope());
+                msg.setScope(sub.getScope());
                 msg.setPolicy(store.getPolicies(id));
                 msg.setObject(action.getObject().get());
                 JsonObject rawData = transform.transform(msg);

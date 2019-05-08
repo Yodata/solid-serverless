@@ -10,7 +10,7 @@ public class TransformMessage {
     private String agent;
     private String instrument;
     private Policies policy = new Policies();
-    private List<String> scope;
+    private Object scope;
     private JsonObject object;
     private JsonObject context;
 
@@ -43,11 +43,11 @@ public class TransformMessage {
         this.policy = policy;
     }
 
-    public List<String> getScope() {
+    public Object getScope() {
         return scope;
     }
 
-    public void setScope(List<String> scope) {
+    public void setScope(Object scope) {
         this.scope = scope;
     }
 
