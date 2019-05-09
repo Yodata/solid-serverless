@@ -1,14 +1,16 @@
 // @ts-check
 
-const {reduce} = require('p-iteration')
+const { reduce } = require('p-iteration')
 const normalize = require('./normalize-event')
 const checkScope = require('./check-scope')
 const applyPolicy = require('./apply-policy')
+const createView = require('./create-view')
 
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
 	applyPolicy,
+	createView
 ]
 
 const handler = (event, fn) => {
