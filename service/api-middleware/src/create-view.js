@@ -1,22 +1,44 @@
-const AWS = require('aws-sdk')
+// @ts-check
 
-const lambda = new AWS.Lambda({region: 'us-west-2'})
-const logger = require('./logger')
+const logger = require('./lib/logger')
+const invoke = require('./lib/invoke-lambda-function')
+const getEnvValue = require('./lib/get-env-value')
+const assert = require('assert-plus')
 
-const CREATE_VIEW_FUNCTION_NAME = process.env.CREATE_VIEW_FUNCTION_NAME || 'create-view'
+const CREATE_VIEW_FUNCTION_NAME = 'CREATE_VIEW_FUNCTION_NAME'
 
-module.exports = async function createView(event) {
-	let response
-	try {
-		const FunctionName = CREATE_VIEW_FUNCTION_NAME
-		const Payload = JSON.stringify(event)
-		const lambdaResponse = await lambda.invoke({FunctionName, Payload}).promise()
-		logger.debug('middleware:create-view:response', response)
-		response = lambdaResponse.hasOwnProperty('Payload') ? lambdaResponse.Payload : lambdaResponse
-		response = JSON.parse(response)
-	} catch (error) {
-		logger.error('middleware:create-view:error', error)
-		response = error
+/**
+ * Apply data policies
+ * @param {object} event
+ * @param {object} event.stage - the event request stage {request|response}
+ * @param {object} event.object - the parsed event.request body
+ * @param {boolean} event.hasData - true if the event has data
+ */
+module.exports = async (event) => {
+	if (needsToBeProcessed) {
+		const lambdaFunction = getEnvValue(event, CREATE_VIEW_FUNCTION_NAME, 'create-view')
+		assert.string(lambdaFunction, CREATE_VIEW_FUNCTION_NAME)
+		event.object = await invoke(lambdaFunction, event).then(response => response.object)
+		logger.debug('create-view:result', event.object)
+	} else {
+		logger.debug('create-view:skipped')
 	}
-	return response
+	return event
+}
+
+const needsToBeProcessed = (event) => {
+	return isRequest(event) && hasData(event) && hasContext(event)
+}
+
+const isRequest = (event) => {
+	return event && event.stage === 'request'
+}
+
+const hasData = (event) => {
+	return (typeof event.hasData !== 'undefined') ? event.hasData : (typeof event.object !== 'undefined')
+}
+
+const hasContext = (event = { object: {} }) => {
+	const data = event.object
+	return data['@context'] && typeof data['@context'] === 'string' && data['@context'].startsWith('http')
 }
