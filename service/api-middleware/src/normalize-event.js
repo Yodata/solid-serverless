@@ -8,10 +8,10 @@ const hasData = require('./lib/request-has-data')
 
 /**
  * @typedef NormalizeEventResponse
- * @property {string} stage
+ * @property {string}  stage
  * @property {boolean} hasData
- * @property {string}	contentType
- * @property {object}	object
+ * @property {string}	 [contentType]
+ * @property {object}	 [object]
  */
 
 /**
@@ -23,19 +23,23 @@ const hasData = require('./lib/request-has-data')
  * @param {boolean} [event.hasData]
  * @param {string} 	[event.contentType]
  * @param {object} 	[event.object]
- * @returns {object}
+ * @returns {Promise<NormalizeEventResponse>}
  */
-module.exports = (event) => {
+module.exports = async (event) => {
 	// set event.stage = request|response
 	event.stage = event.response ? 'response' : 'request'
-	const req = event[event.stage]
+	const message = event[event.stage]
 	// normalize headers
-	if (req && !req.headers && req.rawHeaders) {
-		req.headers = getHeaders(req)
+	if (message && !message.headers && message.rawHeaders) {
+		message.headers = getHeaders(message)
 	}
-	event.hasData = hasData(req)
-	event.contentType = getHeader(req, 'content-type')
-	event.object = getData(event)
+	event.hasData = hasData(message)
+	if (event.hasData) {
+		event.contentType = getHeader(message, 'content-type')
+		event.object = getData(event)
+	}
+
+
 	logger.debug('normalize-event:result', { event })
 	return event
 }

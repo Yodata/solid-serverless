@@ -21,8 +21,7 @@ const finalize = require('./finalize-event')
  * @returns {Promise<ApiMiddlewareResponse>}
  */
 exports.handler = async (event, context) => {
-	logger.debug('event-received', event)
-	logger.debug('event-context', context)
+	logger.debug('event-received', { event, context })
 	try {
 		event = await processRequest(event)
 	} catch (error) {

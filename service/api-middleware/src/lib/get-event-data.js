@@ -6,10 +6,9 @@ const yaml = require('js-yaml')
 
 
 const parseBody = (req) => {
-	let body = req.body
-	let data
+	let body = String(req.body)
 	if (body.length === 0) {
-		return {}
+		return '{}'
 	}
 	if (req.isBase64Encoded) {
 		body = new Buffer(req.body, 'base64').toString()
@@ -18,35 +17,37 @@ const parseBody = (req) => {
 }
 
 /**
- * @param {object} event
- * @param {object} event.object
- * @param {string} event.stage
+ * @param {object}  event
  * @param {boolean} event.hasData
- * @param {object} [event.request]
- * @param {object} [event.response]
+ * @param {string}  event.stage
+ * @param {object}  [event.object]
+ * @param {object}  [event.request]
+ * @param {object}  [event.response]
  */
 module.exports = (event) => {
 	logger.debug('get-event-data:received', { event })
-	let stage = event.response ? 'response' : 'request'
-	if (stage === event.stage && event.hasData && event.object) {
-		logger.debug('get-event-data:using-event.object', { object: event.object })
-		return event.object
-	}
-	const req = event[stage]
-	const contentType = getHeader(req, 'content-type')
 	let data
-	switch (typeis.is(contentType, ['json', '+json', 'application/x-yaml'])) {
-		case 'json':
-			data = parseJson(parseBody(req))
-			break
-		case 'application/ld+json':
-			data = parseJson(parseBody(req))
-			break
-		case 'application/x-yaml':
-			data = yaml.load(parseBody(req))
-			break
-		default:
-			data = null
+
+	const stage = event.response ? 'response' : 'request'
+	if (stage === event.stage && event.hasData && event.object) {
+		// event already has data (event.object)
+		data = event.object
+	} else {
+		const req = event[stage]
+		const contentType = getHeader(req, 'content-type')
+		switch (typeis.is(contentType, ['json', '+json', 'application/x-yaml'])) {
+			case 'json':
+				data = parseJson(parseBody(req))
+				break
+			case 'application/ld+json':
+				data = parseJson(parseBody(req))
+				break
+			case 'application/x-yaml':
+				data = yaml.load(parseBody(req))
+				break
+			default:
+				data = null
+		}
 	}
 	logger.debug('get-event-data:result', { data })
 	return data

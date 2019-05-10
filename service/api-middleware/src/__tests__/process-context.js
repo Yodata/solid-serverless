@@ -2,7 +2,7 @@
 
 const processContext = require('../process-context')
 
-describe('api-middleware.create-view', () => {
+describe('api-middleware.process-context', () => {
 
   test('if no context, data returned as-is', async () => {
     const event = {
@@ -13,6 +13,6 @@ describe('api-middleware.create-view', () => {
       }
     }
     const result = await processContext(event)
-    return expect(result).toEqual(event.object)
+    return expect(result.object).toEqual(event.object)
   })
 })
