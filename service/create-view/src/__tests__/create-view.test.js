@@ -56,4 +56,13 @@ describe('create-view', () => {
 		expect(result).toHaveProperty('type', 'Contact')
 		return expect(result).toHaveProperty('name', 'TEST_CONTEXT_WAS_HERE')
 	})
+
+	test('remote event.context', async () => {
+		const event = {
+			context: 'https://subscriber.dev.yodata.io/public/context/stage/testcontext.cdef.yaml',
+			object: { type: 'test' }
+		}
+		const result = await createView(event)
+		return expect(result).toHaveProperty('name', 'TEST_CONTEXT_WAS_HERE')
+	})
 })

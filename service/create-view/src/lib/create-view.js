@@ -1,8 +1,7 @@
-const { Context, keyOrder, defaultValues, getContext } = require('@yodata/transform')
-const createView = require('@yodata/transform-plugin-view')
+const { keyOrder, defaultValues, getContext } = require('@yodata/transform')
+const pluginView = require('@yodata/transform-plugin-view')
 const get = require('lodash/get')
 const has = require('lodash/has')
-const request = require('./request')
 const logger = require('./logger')
 
 /**
@@ -14,28 +13,23 @@ const logger = require('./logger')
  */
 module.exports = async (event) => {
 	if (event.context && event.object) {
-		logger.debug('event.context', { context: event.context })
+		logger.info('found event.context', event)
 		return processContext(event.context, event.object)
 	}
 	if (has(event, 'object.topic') && has(event, ['scope', event.object.topic])) {
+		logger.info(`found topic (${event.object.topic}) and scope (${event.scope[event.object.topic]})`)
 		const contextHref = get(event, ['scope', event.object.topic])
-		const cdef = await request.get(contextHref)
-			.then(res => get(res, 'data', {}))
-			.catch(error => {
-				console.error('error getting cdef', error.message)
-			})
-		logger.debug('scope.content=', cdef)
-		return processContext(cdef, event.object)
+		return processContext(contextHref, event.object)
 	}
 	return event.object
 }
 
-
 async function processContext(cdef, data) {
-	let contextDefinition = (typeof cdef === 'object')
-	const context = new Context(cdef)
+	const context = await getContext(cdef)
+	context
 		.use(keyOrder)
 		.use(defaultValues)
-		.use(createView)
+		.use(pluginView)
+
 	return context.map(data)
 }

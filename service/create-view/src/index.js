@@ -23,12 +23,14 @@ const createView = require('./lib/create-view')
  * @returns {Promise<object>} - event.object (transformed)
  */
 exports.handler = async (event, context) => {
-	let result = event.object
+	let result
 	try {
 		result = await createView(event)
+		logger.info('create-view:completed', { event, result })
 	} catch (error) {
 		logger.error('create-view:error', { error, event, context })
+		logger.error('event data returned unchanged')
+		result = event.object
 	}
-	logger.info('create-view:completed', { event, result })
 	return result
 }
