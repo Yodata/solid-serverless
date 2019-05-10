@@ -8,8 +8,8 @@ const hasData = require('./lib/request-has-data')
 
 /**
  * @typedef NormalizeEventResponse
- * @property {string} 	stage
- * @property {boolean} 	hasData
+ * @property {string} stage
+ * @property {boolean} hasData
  * @property {string}	contentType
  * @property {object}	object
  */
@@ -17,9 +17,9 @@ const hasData = require('./lib/request-has-data')
 /**
  * normalize event.request and response
  * @param {object} 	event
- * @param {object} 	event.request
- * @param {object}	[event.response]
- * @param {string} 	[event.stage]
+ * @param {object} 	event.request - http request object
+ * @param {object}	[event.response] http response object
+ * @param {string} 	[event.stage] - request | response
  * @param {boolean} [event.hasData]
  * @param {string} 	[event.contentType]
  * @param {object} 	[event.object]

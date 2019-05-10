@@ -25,9 +25,9 @@
   "homepage": "https://github.com/Yodata/solid-serverless#readme",
   "devDependencies": {
     "aws-sdk": "^2.382.0",
-    "eslint": "^5.11.1",
-    "eslint-plugin-jest": "^22.1.2",
-    "jest": "^23.6.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-jest": "^22.5.1",
+    "jest": "^24.8.0",
     "lerna": "^3.8.0"
   },
   "dependencies": {

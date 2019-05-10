@@ -1,9 +1,7 @@
 const createView = require('../lib/create-view')
-const event = require('../example/event.json')
-const response = require('../example/response.json')
 
 describe('create-view', () => {
-	test('example.v1 event.context', () => {
+	test('example.v1 event.context + event.object', () => {
 		const event = {
 			"object": {
 				"@context": "http://schema.org",
@@ -38,14 +36,9 @@ describe('create-view', () => {
 		return expect(createView(event)).resolves.toEqual(expectedResult)
 	})
 
-	test('example.v2 event.scope/topic', async () => {
+	test('example.v2 event.scope + event.topic', async () => {
 		const event = {
 			"object": {
-				"id": "https://subscriber.dev.yodata.io/inbox/c886f44a13bb4ae2b8fd9ff47175927a",
-				"agent": "https://user.dev.yodata.io/profile/card#me",
-				"instrument": "https://subscriber.dev.yodata.io/profile/card#me",
-				"time": "2019-05-07T22:34:49.074Z",
-				"timestamp": 1557268489074,
 				"topic": "realestate/contact#add",
 				"data": {
 					"type": "AddAction",
@@ -61,6 +54,6 @@ describe('create-view', () => {
 		}
 		const result = await createView(event)
 		expect(result).toHaveProperty('type', 'Contact')
-		expect(result).toHaveProperty('name', 'Bruce Wayne')
+		return expect(result).toHaveProperty('name', 'TEST_CONTEXT_WAS_HERE')
 	})
 })

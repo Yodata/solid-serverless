@@ -1,4 +1,4 @@
-const { Context, keyOrder, defaultValues } = require('@yodata/transform')
+const { Context, keyOrder, defaultValues, getContext } = require('@yodata/transform')
 const createView = require('@yodata/transform-plugin-view')
 const get = require('lodash/get')
 const has = require('lodash/has')
@@ -31,7 +31,8 @@ module.exports = async (event) => {
 }
 
 
-function processContext(cdef, data) {
+async function processContext(cdef, data) {
+	let contextDefinition = (typeof cdef === 'object')
 	const context = new Context(cdef)
 		.use(keyOrder)
 		.use(defaultValues)

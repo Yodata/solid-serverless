@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 
-const createView = require('../create-view')
+const processContext = require('../process-context')
 
 describe('api-middleware.create-view', () => {
 
@@ -12,7 +12,7 @@ describe('api-middleware.create-view', () => {
         "type": 'test'
       }
     }
-    const result = await createView(event)
+    const result = await processContext(event)
     return expect(result).toEqual(event.object)
   })
 })

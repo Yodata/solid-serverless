@@ -8,7 +8,8 @@ const assert = require('assert-plus')
 const CREATE_VIEW_FUNCTION_NAME = 'CREATE_VIEW_FUNCTION_NAME'
 
 /**
- * Apply data policies
+ * process context on post
+ * 
  * @param {object} event
  * @param {object} event.stage - the event request stage {request|response}
  * @param {object} event.object - the parsed event.request body

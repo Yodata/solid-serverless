@@ -7,8 +7,8 @@
   "license": "MIT",
   "dependencies": {
     "@yodata/solid-serverless-logger": "^0.0.8",
-    "@yodata/transform": "^0.3.3",
-    "@yodata/transform-plugin-view": "^0.2.3",
+    "@yodata/transform": "^0.4.0",
+    "@yodata/transform-plugin-view": "^0.3.0",
     "got": "^9.6.0",
     "lodash": "^4.17.11"
   },

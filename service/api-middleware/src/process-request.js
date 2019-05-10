@@ -4,13 +4,13 @@ const { reduce } = require('p-iteration')
 const normalize = require('./normalize-event')
 const checkScope = require('./check-scope')
 const applyPolicy = require('./apply-policy')
-const createView = require('./create-view')
+const processContext = require('./process-context')
 
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
 	applyPolicy,
-	createView
+	processContext
 ]
 
 const handler = (event, fn) => {
