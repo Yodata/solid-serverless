@@ -42,16 +42,17 @@ public class ResourceHandler extends GenericHandler {
             return ex.getResponse();
         }
 
-        ex.setResponse(storeProc.get(in));
+        Request inProcessed = ex.getRequest();
+        ex.setResponse(storeProc.get(inProcessed));
 
         // Temp solution about custom ACL format
-        if (in.getTarget().getPath().endsWith(".acl")) {
-            String target = StringUtils.removeEndIgnoreCase(in.getTarget().getId().toString(), ".acl");
+        if (inProcessed.getTarget().getPath().endsWith(".acl")) {
+            String target = StringUtils.removeEndIgnoreCase(inProcessed.getTarget().getId().toString(), ".acl");
             ex.getResponse().getBody().ifPresent(aclJson -> {
                 Acl acl = GsonUtil.parse(aclJson, Acl.class);
                 Map<String, JsonObject> entities = new HashMap<>();
 
-                URI pod = in.getTarget().getId();
+                URI pod = inProcessed.getTarget().getId();
                 for (Map.Entry<String, Acl.Entry> pattern : acl.getPatterns().entrySet()) {
                     String baseUrl = pod.getScheme() + "://" + pod.getHost() + (pod.getPort() != -1 ? pod.getPort() : "");
                     String resolvedPattern = pattern.getKey().replace("%BASE_URL%", baseUrl);

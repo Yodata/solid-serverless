@@ -64,6 +64,9 @@ public class ContainerHandler extends GenericHandler {
             return ex.getResponse();
         }
 
+        // We ensure we use the latest middleware data
+        in = ex.getRequest();
+
         // We produce a unique ID for this message
         String uuid = UUID.randomUUID().toString().replace("-", "");
         log.info("Generated internal ID: {}", uuid);

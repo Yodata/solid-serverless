@@ -49,9 +49,10 @@ public abstract class LambdaInValidationProcessor extends LambdaValidationProces
         }
         log.info("Got reply from lambda {}", getLambdaName());
 
-        JsonObject exProcessed = GsonUtil.parseObj(invokeRes.getPayload().array());
+        byte[] invokeResBody = invokeRes.getPayload().array();
+        JsonObject exProcessed = GsonUtil.parseObj(invokeResBody);
         GsonUtil.findObj(exProcessed, "response").ifPresent(resJson -> log.info("Got response object"));
-        Exchange exNew = GsonUtil.parse(invokeRes.getPayload().array(), Exchange.class);
+        Exchange exNew = GsonUtil.parse(invokeResBody, Exchange.class);
 
         if (Objects.nonNull(exNew.getRequest())) {
             ex.setRequest(exNew.getRequest());
