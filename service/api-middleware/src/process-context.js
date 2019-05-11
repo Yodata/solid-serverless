@@ -23,9 +23,9 @@ module.exports = async (event) => {
 			context: getContext(event),
 			object: event.object
 		})
-		logger.debug('create-view:result', event.object)
+		logger.debug('process-context:result', event.object)
 	} else {
-		logger.debug('create-view:skipped')
+		logger.debug('process-context:skipped')
 	}
 	return event
 }
