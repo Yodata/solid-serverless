@@ -85,7 +85,7 @@ public class S3Store extends EntityBasedStore {
     }
 
     private Optional<S3Object> getFile(String path) {
-        log.info("Getting S3 object at {}", path);
+        log.debug("Getting S3 object at {}", path);
         try {
             return Optional.of(s3.getObject(getBucket(), path));
         } catch (AmazonS3Exception e) {
@@ -103,7 +103,7 @@ public class S3Store extends EntityBasedStore {
 
     @Override
     protected Optional<String> getData(String path) {
-        log.info("Getting S3 object {}", path);
+        log.debug("Getting S3 object {}", path);
 
         return getFile(path).map(this::getData);
     }
@@ -138,7 +138,7 @@ public class S3Store extends EntityBasedStore {
 
     @Override
     protected void save(String contentType, byte[] bytes, String path) {
-        log.info("File {} will be stored in {} buckets", path, buckets.size());
+        log.debug("File {} will be stored in {} buckets", path, buckets.size());
         buckets.forEach(bucket -> {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(contentType);
@@ -152,9 +152,9 @@ public class S3Store extends EntityBasedStore {
 
     @Override
     public void delete(String path) {
-        log.info("Deleting {}", path);
+        log.debug("Deleting {}", path);
         buckets.forEach(bucket -> {
-            log.info("Deleting from bucket {}", bucket);
+            log.debug("Deleting from bucket {}", bucket);
             s3.deleteObject(bucket, path);
         });
         log.info("Deleted {}", path);
@@ -170,7 +170,7 @@ public class S3Store extends EntityBasedStore {
         List<S3ObjectSummary> objs;
         do {
             String prefix = namespace + tsPrefix;
-            System.out.println("Trying prefix "+ prefix);
+            log.debug("Trying prefix "+ prefix);
             req.setPrefix(namespace + tsPrefix);
             req.setMaxKeys(1);
             objs = s3.listObjectsV2(req).getObjectSummaries();
@@ -205,7 +205,7 @@ public class S3Store extends EntityBasedStore {
                 req.setStartAfter(sinceDecoded);
             } else {
                 String tsPrefix = getTsPrefix(from, namespace);
-                System.out.println("TS Prefix: " + tsPrefix);
+                log.debug("TS Prefix: " + tsPrefix);
                 req.setStartAfter(tsPrefix);
             }
         } else {
@@ -217,8 +217,8 @@ public class S3Store extends EntityBasedStore {
         }
 
         do {
-            log.info("Looping");
-            System.out.println("Start after: " + req.getStartAfter());
+            log.debug("Looping");
+            log.debug("Start after: " + req.getStartAfter());
 
             req.setMaxKeys(pageMaxKeys - p.getContains().size());
             ListObjectsV2Result res = s3.listObjectsV2(req);
@@ -231,10 +231,10 @@ public class S3Store extends EntityBasedStore {
                     continue;
                 }
 
-                log.info("Adding {}", obj.getKey());
+                log.debug("Adding {}", obj.getKey());
                 if (isFullFormat) {
                     S3Object s3obj = s3.getObject(obj.getBucketName(), obj.getKey());
-                    log.info("Redirection location: {}", s3obj.getRedirectLocation());
+                    log.debug("Redirection location: {}", s3obj.getRedirectLocation());
                     JsonElement el = GsonUtil.parse(s3obj.getObjectContent(), JsonElement.class);
                     p.getContains().add(el);
                 } else {
@@ -246,12 +246,12 @@ public class S3Store extends EntityBasedStore {
             }
 
             if (!res.isTruncated()) {
-                log.info("No more elements in scope");
+                log.debug("No more elements in scope");
                 break;
             }
         } while (p.getContains().size() < pageMaxKeys);
 
-        log.info("Next token: {}", p.getNext());
+        log.debug("Next token: {}", p.getNext());
 
         return p;
     }
