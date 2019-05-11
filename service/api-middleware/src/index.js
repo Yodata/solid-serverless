@@ -38,6 +38,6 @@ exports.handler = async (event, context) => {
 		}
 	}
 	event = finalize(event)
-	logger.info('api-middleware:result', { event })
+	logger.info('api-middleware:result', event)
 	return event
 }
