@@ -108,7 +108,7 @@ public class App implements RequestStreamHandler {
     }
 
     private void send(URI base, SecurityContext sc, JsonObject notification) {
-        Target target = Target.forPath(new Target(base), "/event/topic/profile/");
+        Target target = Target.forPath(new Target(base), "/event/topic/realestate/profile/");
         Request r = new Request();
         r.setMethod("POST");
         r.setTarget(target);
