@@ -9,6 +9,7 @@ import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.Event.StorageAction;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -25,9 +27,15 @@ public class App implements RequestStreamHandler {
     private static final Logger log = LoggerFactory.getLogger(App.class);
 
     private ContainerHandler storeHandler;
+    private URI mainPod;
 
     public App() {
         storeHandler = new ContainerHandler(S3Store.getDefault());
+
+        String mainPodUriRaw = System.getenv("BASE_POD_URI");
+        if (StringUtils.isNotEmpty(mainPodUriRaw)) {
+            mainPod = URI.create(mainPodUriRaw);
+        }
     }
 
     @Override
@@ -86,14 +94,21 @@ public class App implements RequestStreamHandler {
         notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
         notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
         notification.addProperty(ActionPropertyKey.Instrument.getId(), podId);
-        notification.add(ActionPropertyKey.Object.getId(), actionNew);
+        notification.add("data", actionNew);
 
         SecurityContext sc = new SecurityContext();
         sc.setAgent(podId);
         sc.setInstrument(podId);
         sc.setAdmin(true);
 
-        Target target = Target.forPath(new Target(objId), "/event/topic/profile/");
+        send(objId, sc, notification);
+        if (Objects.nonNull(mainPod)) {
+            send(mainPod, sc,notification);
+        }
+    }
+
+    private void send(URI base, SecurityContext sc, JsonObject notification) {
+        Target target = Target.forPath(new Target(base), "/event/topic/profile/");
         Request r = new Request();
         r.setMethod("POST");
         r.setTarget(target);
