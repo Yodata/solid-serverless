@@ -32,4 +32,22 @@ describe('api-middleware.process-context', () => {
     expect(result).toHaveProperty('object.recipient')
   })
 
+  test('content-type with no object does not crash', async () => {
+    const event = {
+      request: {
+        method: 'GET',
+        body: '',
+        headers: {
+          'content-type': 'application/json'
+        },
+        isBase64Encoded: true
+      },
+      hasData: false,
+      stage: 'request',
+      scope: [],
+      policy: []
+    }
+    return expect(processContext(event)).resolves.toEqual(event)
+  })
+
 })

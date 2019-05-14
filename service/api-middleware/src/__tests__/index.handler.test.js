@@ -42,5 +42,18 @@ describe('api-middleware', () => {
 		console.log({ result })
 		return expect(result).toHaveProperty('hasData', false)
 	})
-})
 
+	test('content-type with no object does not crash', async () => {
+		const event = {
+			"request": {
+				"method": "GET",
+				"url": "https://dave.dev.yodata.io/public/",
+				"body": "",
+				"isBase64Encoded": true
+			},
+			"scope": [],
+			"policy": {}
+		}
+		return expect(handler(event, {})).resolves.toEqual(event)
+	})
+})

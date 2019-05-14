@@ -16,7 +16,7 @@ const CREATE_VIEW_FUNCTION_NAME = 'CREATE_VIEW_FUNCTION_NAME'
  * @param {boolean} event.hasData - true if the event has data
  */
 module.exports = async (event) => {
-	if (needsToBeProcessed) {
+	if (needsToBeProcessed(event)) {
 		const lambdaFunction = getEnvValue(event, CREATE_VIEW_FUNCTION_NAME, 'create-view')
 		assert.string(lambdaFunction, CREATE_VIEW_FUNCTION_NAME)
 		event.object = await invoke(lambdaFunction, {
