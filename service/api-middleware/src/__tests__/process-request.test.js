@@ -8,7 +8,7 @@ describe('process-request', () => {
 	})
 
 	test('example request/response is valid', async () => {
-		const event = require('../example/process-request-event.json')
+		const event = require('../example/process-request-event')
 		const expectedResponse = Object.assign(event, { foo: 'bar' })
 		const mockMiddlewareFunction = jest.fn(event => {
 			return Object.assign(event, { foo: 'bar' })
@@ -19,7 +19,7 @@ describe('process-request', () => {
 	})
 
 	test('throws on middleware error', async () => {
-		const event = require('../example/process-request-event.json')
+		const event = require('../example/process-request-event')
 		const expectedResponse = Object.assign(event, { foo: 'bar' })
 		const error = new Error('test')
 		const mockMiddlewareFunction = jest.fn().mockRejectedValue(error)

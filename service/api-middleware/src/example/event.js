@@ -1,6 +1,12 @@
-{
+module.exports = {
     "request": {
-        "method": "GET"
+        "method": "GET",
+        "headers": {
+            "Content-Type": [
+                "application/json"
+            ]
+        },
+        "body": ""
     },
     "response": {
         "headers": {

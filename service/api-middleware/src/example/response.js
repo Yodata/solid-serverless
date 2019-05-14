@@ -1,4 +1,4 @@
-{
+module.exports = {
     "contentType": "application/json",
     "hasData": true,
     "isAllowed": true,

@@ -1,4 +1,4 @@
-{
+module.exports = {
     "request": {
         "method": "GET",
         "rawHeaders": {

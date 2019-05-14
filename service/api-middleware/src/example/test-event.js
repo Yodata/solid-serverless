@@ -1,4 +1,4 @@
-{
+module.exports = {
     "request": {
         "method": "GET",
         "url": "https: //testuser.dev.yodata.io/test/authorization/.acl",

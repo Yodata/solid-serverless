@@ -25,7 +25,7 @@ describe('api-middleware.apply-policy', () => {
 	})
 
 	test('response-data', async () => {
-		let data = {password: 'secret'}
+		let data = { password: 'secret' }
 		let event = {
 			stage: 'response',
 			hasData: true,
@@ -38,7 +38,7 @@ describe('api-middleware.apply-policy', () => {
 	})
 
 	test('request-data', async () => {
-		let data = {password: 'secret'}
+		let data = { password: 'secret' }
 		let event = {
 			stage: 'request',
 			hasData: true,
@@ -47,13 +47,13 @@ describe('api-middleware.apply-policy', () => {
 		}
 		const result = await applyPolicy(event)
 		expect(result).toHaveProperty('object')
-		return expect(result.object).toHaveProperty('password','[PASSWORD]')
+		return expect(result.object).toHaveProperty('password', '[PASSWORD]')
 	})
 
 
 
 	test('empty policy returns event', async () => {
-		let event = require('../example/event.json')
+		let event = require('../example/event')
 		let result
 		// empty policy
 		event.policy = {}
