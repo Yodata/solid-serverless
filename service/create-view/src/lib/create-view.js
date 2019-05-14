@@ -26,6 +26,8 @@ module.exports = async (event) => {
 
 async function processContext(cdef, data) {
 	const context = await getContext(cdef)
+	logger.debug('create-view:process:context', context)
+	logger.debug('create-view:process:data', data)
 	context
 		.use(keyOrder)
 		.use(defaultValues)
