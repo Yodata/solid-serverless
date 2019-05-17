@@ -26,13 +26,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class S3Store extends EntityBasedStore {
 
@@ -162,24 +158,55 @@ public class S3Store extends EntityBasedStore {
 
     @Override
     protected String getTsPrefix(String from, String namespace) {
-        Instant ts = Instant.ofEpochMilli(Long.parseLong(from));
-        String tsPrefix = dtf.format(LocalDateTime.ofInstant(ts, ZoneOffset.UTC));
+        final String delimiter = "/";
 
-        ListObjectsV2Request req = new ListObjectsV2Request();
-        req.setBucketName(getBucket());
-        List<S3ObjectSummary> objs;
-        do {
-            String prefix = namespace + tsPrefix;
-            log.debug("Trying prefix "+ prefix);
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() > 0) {
-                return objs.get(0).getKey();
+        if (namespace.endsWith(delimiter)) {
+            namespace = namespace.substring(0, namespace.length() - 1);
+        }
+
+        log.debug("Finding prefix for TS {}", from);
+
+        // We find by year
+        Instant ts = Instant.ofEpochMilli(Long.parseLong(from));
+        String formatted = dtf.format(LocalDateTime.ofInstant(ts, ZoneOffset.UTC));
+        log.debug("Formatted: {}", formatted);
+        String[] paths = formatted.split(delimiter);
+        String prefix = namespace + delimiter;
+
+        for (String path : paths) {
+            log.debug("-- Loop --");
+            log.debug("Prefix: {}", prefix);
+
+            int max = Integer.parseInt(path);
+            log.debug("Max: {}", max);
+
+            ListObjectsV2Request req = new ListObjectsV2Request();
+            req.setBucketName(getBucket());
+            req.setDelimiter(delimiter);
+            req.setPrefix(prefix);
+
+            ListObjectsV2Result res = s3.listObjectsV2(req);
+            List<String> prefixes = new ArrayList<>();
+            for (String cp : res.getCommonPrefixes()) {
+                cp = cp.substring(prefix.length());
+                if (cp.endsWith(delimiter)) cp = cp.substring(0, cp.length() - 1);
+                log.debug("Common prefix: {}", cp);
+                prefixes.add(cp);
             }
-            tsPrefix = tsPrefix.substring(0, tsPrefix.length() - (tsPrefix.endsWith("/") ? 2 : 1));
-        } while (tsPrefix.length() > 0);
-        return "";
+            Optional<String> before = prefixes.stream().filter(p -> Integer.parseInt(p) >= max).min(Comparator.naturalOrder());
+
+            if (before.isPresent()) {
+                log.debug("Found previous path: {}", before.get());
+                prefix = prefix + before.get() + delimiter;
+            } else {
+                log.debug("No previous path, we do not continue further");
+                prefix = prefix + max + delimiter;
+                return prefix;
+            }
+        }
+
+        log.debug("Finished looking for matches, returning current prefix");
+        return prefix;
     }
 
     @Override
