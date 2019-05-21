@@ -44,6 +44,11 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
+    protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
+
+    }
+
+    @Override
     protected void save(String contentType, byte[] bytes, String path) {
         Entity e = new Entity();
         e.setContentType(contentType);
@@ -52,8 +57,18 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
+    public void link(String linkTargetPath, String linkPath) {
+
+    }
+
+    @Override
     protected Optional<String> getData(String path) {
         return Optional.ofNullable(entities.get(path)).map(d -> new String(d.getData(), StandardCharsets.UTF_8));
+    }
+
+    @Override
+    protected Optional<Map<String, String>> findMeta(String path) {
+        return Optional.empty();
     }
 
     @Override

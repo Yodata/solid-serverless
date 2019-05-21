@@ -9,6 +9,7 @@ import io.yodata.ldp.solid.server.model.transform.Policies;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.util.resources.cldr.zh.CalendarData_zh_Hans_HK;
 
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -19,10 +20,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class EntityBasedStore implements Store {
 
@@ -216,7 +214,7 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public void post(Request in) {
-        List<String> paths = new ArrayList<>();
+        Instant timestamp = in.getTimestamp();
 
         URI id = in.getDestination().getId();
         log.info("Id: {}", id);
@@ -224,33 +222,65 @@ public abstract class EntityBasedStore implements Store {
         log.info("Path: {}", id.getPath());
         String byIdPath = "entities/" + in.getDestination().getHost() + "/data/by-id" + in.getDestination().getPath();
         ensureNotExisting(byIdPath);
-        paths.add(byIdPath);
 
-        Instant timestamp = in.getTimestamp();
+        Map<String, String> meta = new HashMap<>();
+        if (Objects.nonNull(timestamp)) {
+            meta.put("X-Solid-Serverless-Timestamp", Long.toString(timestamp.toEpochMilli()));
+        }
+        save(in.getContentType().orElse("application/octet-stream"), in.getBody(), byIdPath, meta);
+
         if (Objects.nonNull(timestamp)) {
             log.info("Timestamp: {}", timestamp.toEpochMilli());
             LocalDateTime ldt = LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC);
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
-            paths.add("entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString());
+            String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
+            link(byIdPath, tsPath);
         }
-
-        paths.forEach(p -> save(in.getContentType().orElse("application/octet-stream"), in.getBody(), p));
     }
 
     @Override
     public void delete(Request in) {
-        delete("entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath());
+        URI id = in.getDestination().getId();
+        Path idPath = Paths.get(id.getPath());
+        String path = "entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath();
+
+        findMeta(path).ifPresent(meta -> {
+            String tsRaw = meta.get("X-Solid-Serverless-Timestamp".toLowerCase());
+            if (StringUtils.isNotBlank(tsRaw)) {
+                try {
+                    Instant ts = Instant.ofEpochMilli(Long.parseLong(tsRaw));
+                    LocalDateTime ldt = LocalDateTime.ofInstant(ts, ZoneOffset.UTC);
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
+                    String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
+                    delete(tsPath);
+                    log.info("Deleted by TS index: {}", tsPath);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid TS header value: {}", tsRaw);
+                }
+            }
+        });
+
+        delete(path);
+        log.info("Deleted by ID: {}", path);
     }
 
     @Override
     public void save(String path, JsonElement content) {
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path);
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path, new HashMap<>());
     }
+
+    protected void save(String contentType, byte[] bytes, String path) {
+        save(contentType, bytes, path, new HashMap<>());
+    }
+
+    public abstract void link(String linkTargetPath, String linkPath);
 
     protected abstract String getTsPrefix(String from, String namespace);
 
-    protected abstract void save(String contentType, byte[] bytes, String path);
+    protected abstract void save(String contentType, byte[] bytes, String path, Map<String, String> meta);
 
     protected abstract Optional<String> getData(String path);
+
+    protected abstract Optional<Map<String, String>> findMeta(String path);
 
 }

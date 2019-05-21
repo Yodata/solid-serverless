@@ -93,6 +93,19 @@ public class S3Store extends EntityBasedStore {
         }
     }
 
+    private Optional<ObjectMetadata> getFileMeta(String path) {
+        log.debug("Getting S3 meta at {}", path);
+        try {
+            return Optional.of(s3.getObjectMetadata(getBucket(), path));
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() != 404) {
+                throw new RuntimeException(e);
+            }
+
+            return Optional.empty();
+        }
+    }
+
     private Optional<S3Object> getEntityFile(URI entity, String path) {
         return getEntityFile(entity.getHost(), path);
     }
@@ -102,6 +115,11 @@ public class S3Store extends EntityBasedStore {
         log.debug("Getting S3 object {}", path);
 
         return getFile(path).map(this::getData);
+    }
+
+    @Override
+    protected Optional<Map<String, String>> findMeta(String path) {
+        return getFileMeta(path).map(meta -> new HashMap<>(meta.getUserMetadata()));
     }
 
     private String getData(S3Object o) {
@@ -133,12 +151,13 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
-    protected void save(String contentType, byte[] bytes, String path) {
+    protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
         log.debug("File {} will be stored in {} buckets", path, buckets.size());
         buckets.forEach(bucket -> {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(contentType);
             metadata.setContentLength(bytes.length);
+            metadata.setUserMetadata(meta);
 
             log.info("Storing {} bytes in bucket {} in path {}", bytes.length, bucket, path);
             PutObjectResult res = s3.putObject(bucket, path, new ByteArrayInputStream(bytes), metadata);
@@ -154,6 +173,16 @@ public class S3Store extends EntityBasedStore {
             s3.deleteObject(bucket, path);
         });
         log.info("Deleted {}", path);
+    }
+
+    @Override
+    public void link(String linkTargetPath, String linkPath) {
+        buckets.forEach(bucket -> {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.addUserMetadata("X-Solid-Serverless-Link", linkTargetPath);
+            s3.putObject(bucket, linkPath, new ByteArrayInputStream(new byte[0]), metadata);
+            log.info("Stored link in bucket {} from {} to {}", bucket, linkTargetPath, linkPath);
+        });
     }
 
     @Override

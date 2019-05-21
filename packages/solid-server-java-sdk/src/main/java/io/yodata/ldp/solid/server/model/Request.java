@@ -14,7 +14,7 @@ import java.util.*;
 public class Request {
 
     protected String id;
-    protected Instant timestamp;
+    protected Instant timestamp = Instant.now();
     protected SecurityContext security;
     protected String url;
     protected Target target;
