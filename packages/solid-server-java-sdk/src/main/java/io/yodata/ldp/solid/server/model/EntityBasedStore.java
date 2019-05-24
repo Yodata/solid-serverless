@@ -9,7 +9,6 @@ import io.yodata.ldp.solid.server.model.transform.Policies;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.util.resources.cldr.zh.CalendarData_zh_Hans_HK;
 
 import java.lang.reflect.Type;
 import java.net.URI;
