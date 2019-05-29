@@ -244,10 +244,17 @@ public class S3Store extends EntityBasedStore {
 
         boolean isTs = false;
 
+        if (StringUtils.equals("datetime", by)) {
+            Instant i = Instant.parse(from);
+            by = "timestamp";
+            from = Long.toString(i.toEpochMilli());
+        }
+
         if (StringUtils.equals("timestamp", by)) {
             isTemporal = true;
             isTs = true;
         }
+
         String prefix = isTemporal ? "entities/" + t.getHost() + "/data/by-ts" : "entities/" + t.getHost() + "/data/by-id";
         String namespace = prefix + t.getPath();
 
