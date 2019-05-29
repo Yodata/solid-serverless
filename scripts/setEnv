@@ -2,7 +2,6 @@
 
 ENV_BOOTSTRAP="$(pwd)/env"
 
-ls -l .
 echo "Checking for settings file at $ENV_BOOTSTRAP"
 if ! [ -f "$ENV_BOOTSTRAP" ]; then
 	echo
