@@ -289,13 +289,44 @@ public class S3Store extends EntityBasedStore {
 
                 log.debug("Adding {}", obj.getKey());
                 if (isFullFormat) {
-                    S3Object s3obj = s3.getObject(obj.getBucketName(), obj.getKey());
-                    log.debug("Redirection location: {}", s3obj.getRedirectLocation());
-                    JsonElement el = GsonUtil.parse(s3obj.getObjectContent(), JsonElement.class);
-                    p.getContains().add(el);
+                    Optional<S3Object> dataOpt = getFile(obj.getKey());
+
+                    boolean done = false;
+                    do {
+                        if (!dataOpt.isPresent()) {
+                            log.warn("S3 object vanished at {}, ignoring", obj.getKey());
+                            break;
+                        }
+
+                        S3Object data = dataOpt.get();
+                        String redirect = data.getObjectMetadata().getUserMetaDataOf("X-Solid-Serverless-Link");
+                        if (StringUtils.isNotBlank(redirect)) {
+                            log.debug("Following link from {} to {}", data.getKey(), redirect);
+
+                            try {
+                                data.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            dataOpt = getFile(redirect);
+                            if (!dataOpt.isPresent()) {
+                                log.warn("Cleaning up dead link at {} towards {}", data.getKey(), redirect);
+                                delete(data.getKey());
+                                break;
+                            }
+
+                            continue;
+                        }
+
+                        JsonElement el = GsonUtil.parse(data.getObjectContent(), JsonElement.class);
+                        p.getContains().add(el);
+                        done = true;
+                    } while (!done);
                 } else {
                     p.getContains().add(new JsonPrimitive(Paths.get(obj.getKey().substring(namespace.length())).getFileName().toString()));
                 }
+
                 p.setNext(Base64Util.encode(obj.getKey().substring(namespace.length()).getBytes(StandardCharsets.UTF_8)));
                 req.setPrefix(null);
                 req.setStartAfter(obj.getKey());
