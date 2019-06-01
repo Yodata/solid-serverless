@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+sudo chown -R builder "/var/tmp/cache"
+mkdir /var/tmp/cache/{generic,gradle} 2> /dev/null
+
+ln -sF "/var/tmp/cache/generic" "$HOME/.cache"
+ln -sF "/var/tmp/cache/gradle" "$HOME/.gradle"
+
 set -e
 
 echo "######################################################"
