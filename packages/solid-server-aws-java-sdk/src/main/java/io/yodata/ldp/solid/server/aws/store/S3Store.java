@@ -11,6 +11,7 @@ import com.google.gson.JsonPrimitive;
 import io.yodata.Base64Util;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.io.IOUtils;
@@ -326,7 +327,14 @@ public class S3Store extends EntityBasedStore {
                             continue;
                         }
 
-                        JsonElement el = GsonUtil.parse(data.getObjectContent(), JsonElement.class);
+                        JsonElement el;
+                        try {
+                            el = GsonUtil.parse(data.getObjectContent(), JsonElement.class);
+                        } catch (RuntimeException e) {
+                            String idPath = t.getId().toString() + Paths.get(obj.getKey().substring(namespace.length())).getFileName().toString();
+                            throw new EncodingNotSupportedException("Cannot create listing: Invalid JSON object at " + idPath);
+                        }
+
                         p.getContains().add(el);
                         done = true;
                     } while (!done);
