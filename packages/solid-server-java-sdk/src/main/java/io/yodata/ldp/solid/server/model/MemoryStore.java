@@ -87,6 +87,20 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
+    public Response head(Target target) {
+        Entity entity = entities.get(buildEntityPath(target.getId()));
+        if (Objects.isNull(entity)) {
+            throw new NotFoundException();
+        }
+
+        Response r = new Response();
+        r.getHeaders().put("Content-Type", entity.getContentType());
+        r.getHeaders().put("Content-Length", Long.toString(entity.getData().length));
+
+        return r;
+    }
+
+    @Override
     public Response get(Target target) {
         Entity entity = entities.get(buildEntityPath(target.getId()));
         if (Objects.isNull(entity)) {

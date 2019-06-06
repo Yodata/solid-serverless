@@ -44,6 +44,26 @@ public class UndertowSolidServer {
                     exchange.endExchange();
                 })
 
+                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) {
+                        UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
+                        Map<String, List<String>> headers = getHeaders(exchange);
+                        SecurityContext context = auth.authenticate(headers);
+                        Acl rights = auth.authorize(context, target);
+                        Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
+
+                        Response r;
+                        if (exchange.getRequestPath().endsWith("/")) {
+                            r = folder.head(request);
+                        } else {
+                            r = file.head(request);
+                        }
+
+                        writeBody(exchange, r);
+                    }
+                })))
+
                 .get("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {

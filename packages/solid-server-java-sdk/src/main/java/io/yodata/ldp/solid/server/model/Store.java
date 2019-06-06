@@ -61,6 +61,8 @@ public interface Store {
 
     boolean exists(String path);
 
+    Response head(Target target);
+
     Response get(Target target);
 
     void post(Request in);

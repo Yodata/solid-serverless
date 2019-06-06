@@ -152,6 +152,23 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
+    public Response head(Target target) {
+        String s3Path = "entities/" + target.getHost() + "/data/by-id" + target.getPath();
+        log.info("Getting Resource meta {}", s3Path);
+
+        Optional<ObjectMetadata> meta = getFileMeta(s3Path);
+        if (!meta.isPresent()) {
+            throw new NotFoundException();
+        }
+
+        Response r = new Response();
+        r.getHeaders().put(Headers.CONTENT_TYPE, meta.get().getContentType());
+        r.getHeaders().put(Headers.CONTENT_LENGTH, Long.toString(meta.get().getContentLength()));
+
+        return r;
+    }
+
+    @Override
     protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
         log.debug("File {} will be stored in {} buckets", path, buckets.size());
         buckets.forEach(bucket -> {

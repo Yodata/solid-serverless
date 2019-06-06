@@ -85,6 +85,10 @@ public class GenericHandler {
         }
     }
 
+    public Response head(Request in) {
+        throw new ForbiddenException("This method is not allowed");
+    }
+
     public Response get(Request in) {
         throw new ForbiddenException("This method is not allowed");
     }

@@ -15,6 +15,10 @@ public class ResourceStoreProcessor {
         this.evBus = evBus;
     }
 
+    public Response head(Request in) {
+        return store.head(in.getTarget());
+    }
+
     public Response get(Request in) {
         return store.get(in.getTarget());
     }

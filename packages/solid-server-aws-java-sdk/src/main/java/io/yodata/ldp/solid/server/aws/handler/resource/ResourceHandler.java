@@ -34,6 +34,19 @@ public class ResourceHandler extends GenericHandler {
     }
 
     @Override
+    public Response head(Request in) {
+        Exchange ex = build(in);
+
+        inCheck.get(ex);
+        if (Objects.nonNull(ex.getResponse())) {
+            return ex.getResponse();
+        }
+
+        ex.setResponse(storeProc.head(in));
+        return outCheck.get(ex);
+    }
+
+    @Override
     public Response get(Request in) {
         Exchange ex = build(in);
 
