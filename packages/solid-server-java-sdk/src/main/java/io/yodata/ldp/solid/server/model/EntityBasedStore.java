@@ -268,7 +268,7 @@ public abstract class EntityBasedStore implements Store {
         save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path, new HashMap<>());
     }
 
-    protected void save(String contentType, byte[] bytes, String path) {
+    public void save(String contentType, byte[] bytes, String path) {
         save(contentType, bytes, path, new HashMap<>());
     }
 

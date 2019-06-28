@@ -324,5 +324,8 @@ hs_err_pid*
 # Personal config file
 /env
 
+# Gradle
+/.gradle
+
 # SAM output, this is not needed as re-building will produce the same hash
 template-package.yaml

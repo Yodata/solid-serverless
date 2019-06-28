@@ -49,7 +49,7 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    protected void save(String contentType, byte[] bytes, String path) {
+    public void save(String contentType, byte[] bytes, String path) {
         Entity e = new Entity();
         e.setContentType(contentType);
         e.setData(bytes);

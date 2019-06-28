@@ -1,0 +1,10 @@
+rootProject.name = 'solid-serverless'
+
+include(':sdk')
+project(':sdk').projectDir = file('packages/solid-server-java-sdk')
+include(':aws-sdk')
+project(':aws-sdk').projectDir = file('packages/solid-server-aws-java-sdk')
+include(':api-front')
+project(':api-front').projectDir = file('service/api-front')
+include(':subscription-manager')
+project(':subscription-manager').projectDir = file('service/subscription-manager')
