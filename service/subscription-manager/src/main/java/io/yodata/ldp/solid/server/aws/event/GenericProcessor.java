@@ -5,7 +5,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.*;
-import io.yodata.ldp.solid.server.model.Event.StorageAction;
+import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
 import io.yodata.ldp.solid.server.subscription.pusher.LambdaPusher;

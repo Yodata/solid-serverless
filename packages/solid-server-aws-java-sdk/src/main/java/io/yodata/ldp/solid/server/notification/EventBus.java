@@ -6,7 +6,7 @@ import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
-import io.yodata.ldp.solid.server.model.Event.StorageAction;
+import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.Request;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

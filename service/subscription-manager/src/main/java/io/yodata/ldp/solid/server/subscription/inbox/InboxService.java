@@ -2,7 +2,7 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.model.Event.StorageAction;
+import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.Store;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

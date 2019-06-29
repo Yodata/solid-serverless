@@ -1,4 +1,4 @@
-package io.yodata.ldp.solid.server.model.Event;
+package io.yodata.ldp.solid.server.model.event;
 
 import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.model.Request;

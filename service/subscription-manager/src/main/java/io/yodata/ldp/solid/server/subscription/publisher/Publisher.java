@@ -6,7 +6,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.model.*;
-import io.yodata.ldp.solid.server.model.Event.StorageAction;
+import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
