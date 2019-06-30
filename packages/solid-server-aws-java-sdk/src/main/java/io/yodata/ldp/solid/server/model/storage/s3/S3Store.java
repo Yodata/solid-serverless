@@ -114,23 +114,26 @@ public class S3Store implements Store {
 
             log.debug("Storing {} bytes in bucket {} in path {}", element.getLength(), bucket, path);
             PutObjectResult res = s3.putObject(bucket, path, element.getData(), metadata);
-            log.info("Stored to path {} in bucket {} under ETag {}", path, bucket, res.getETag());
+            log.info("Stored {}:{} ({})", bucket, path, res.getETag());
         });
     }
 
     @Override
     public StoreElementPage listElements(String path, String token, long amount) {
         BasicStoreElementPage page = new BasicStoreElementPage();
+        page.setNext(token);
+
         if (amount < 1 || amount > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Amount of items in the list is out of range. Must be between 1 and " + Integer.MAX_VALUE);
         }
 
         ListObjectsV2Request req = new ListObjectsV2Request();
+        req.setDelimiter("/");
         req.setBucketName(getMainBucket());
         req.setPrefix(path);
         req.setMaxKeys((int) amount);
         if (StringUtils.isNotEmpty(token)) {
-            req.setStartAfter(token);
+            req.setStartAfter(path + Base64Util.decodeUtf8(token));
         }
 
         do {
@@ -139,7 +142,9 @@ public class S3Store implements Store {
 
             req.setMaxKeys((int) amount - page.getElements().size());
             ListObjectsV2Result res = s3.listObjectsV2(req);
-            page.setNext(res.getNextContinuationToken());
+            if (res.isTruncated()) {
+                page.setNext(res.getNextContinuationToken());
+            }
 
             res.getCommonPrefixes().forEach(cp -> page.addElement(cp.substring(path.length())));
             for (S3ObjectSummary obj : res.getObjectSummaries()) {
@@ -152,7 +157,7 @@ public class S3Store implements Store {
 
                 log.debug("Adding {}", obj.getKey());
                 page.addElement(Paths.get(localKey).getFileName().toString());
-                page.setNext(Base64Util.encode(localKey.getBytes(StandardCharsets.UTF_8)));
+                page.setNext(Base64Util.encodeUtf8(localKey));
                 req.setPrefix(null);
                 req.setStartAfter(obj.getKey());
             }

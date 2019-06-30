@@ -130,6 +130,12 @@ public abstract class StoreTest {
         store.setElement("list/b/5", el5);
         store.setElement("list/c/6", el6);
 
+        StoreElementPage page = store.listElements("list/", "", Integer.MAX_VALUE);
+        assertEquals(3, page.getElements().size());
+        assertEquals("a/", page.getElements().get(0));
+        assertEquals("b/", page.getElements().get(1));
+        assertEquals("c/", page.getElements().get(2));
+
         StoreElementPage pageA = store.listElements("list/a/", "", 2);
         assertEquals(1, pageA.getElements().size());
         assertEquals("1", pageA.getElements().get(0));

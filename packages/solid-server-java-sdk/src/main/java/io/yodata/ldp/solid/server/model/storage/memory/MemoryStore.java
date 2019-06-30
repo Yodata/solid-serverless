@@ -39,8 +39,14 @@ public class MemoryStore implements Store {
                 continue;
             }
 
-            if (key.compareTo(token) > 0) {
-                page.addElement(key.substring(path.length()));
+            key = key.substring(path.length());
+            String[] split = key.split("/");
+            if (split.length > 1) {
+                key = split[0] + "/";
+            }
+
+            if (key.compareTo(token) > 0 && !page.getElements().contains(key)) {
+                page.addElement(key);
                 page.setNext(key);
             }
             if (page.getElements().size() == amount) {
