@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.subscription.publisher.Publisher;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class LambdaPublishProcessor extends Publisher implements RequestStreamHa
     private static final Logger log = LoggerFactory.getLogger(LambdaPublishProcessor.class);
 
     public LambdaPublishProcessor() {
-        super(S3Store.getDefault());
+        super(S3Core.getDefault());
     }
 
     @Override

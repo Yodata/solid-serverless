@@ -31,15 +31,15 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class S3Store extends EntityBasedStore {
+public class S3Core extends EntityBasedCore {
 
-    private static final Logger log = LoggerFactory.getLogger(S3Store.class);
+    private static final Logger log = LoggerFactory.getLogger(S3Core.class);
 
-    private static S3Store instance;
+    private static S3Core instance;
 
-    public synchronized static S3Store getDefault() {
+    public synchronized static S3Core getDefault() {
         if (Objects.isNull(instance)) {
-            instance = new S3Store();
+            instance = new S3Core();
         }
 
         return instance;
@@ -50,7 +50,7 @@ public class S3Store extends EntityBasedStore {
     private int pageMaxKeys;
     private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd/HH/mm/ss/SSS");
 
-    private S3Store() {
+    private S3Core() {
         pageMaxKeys = EnvUtils.find("S3_LIST_MAX_KEYS").map(Integer::parseInt).orElse(50);
 
         DefaultAWSCredentialsProviderChain credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();

@@ -2,7 +2,7 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
@@ -22,11 +22,11 @@ public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
 
     private static final Logger log = LoggerFactory.getLogger(AuthorizationProcessor.class);
 
-    private S3Store store;
+    private S3Core store;
     private SecurityProcessor sec;
 
     public AuthorizationProcessor() {
-        store = S3Store.getDefault();
+        store = S3Core.getDefault();
         sec = SecurityProcessor.getDefault();
     }
 

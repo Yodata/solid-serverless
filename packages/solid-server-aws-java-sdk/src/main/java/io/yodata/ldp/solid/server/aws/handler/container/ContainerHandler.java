@@ -6,7 +6,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.GenericHandler;
 import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
 import io.yodata.ldp.solid.server.aws.handler.ResponseCheckProcessor;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.notification.EventBus;
 import org.slf4j.Logger;
@@ -28,10 +28,10 @@ public class ContainerHandler extends GenericHandler {
     private ContainerStoreProcessor storeProc;
 
     public ContainerHandler() {
-        this(S3Store.getDefault());
+        this(S3Core.getDefault());
     }
 
-    public ContainerHandler(Store store) {
+    public ContainerHandler(Core store) {
         super(store);
 
         this.inCheck = new RequestCheckProcessor();

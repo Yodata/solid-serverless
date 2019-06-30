@@ -11,16 +11,16 @@ import java.net.URI;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
-public class S3StoreTest {
+public class S3CoreTest {
 
-    private static S3Store store;
+    private static S3Core store;
     private static final String byTsPodPath = "entities/localhost/data/by-ts/A";
 
     @BeforeClass
     public static void beforeClass() {
         boolean init = true;
         try {
-            store = S3Store.getDefault();
+            store = S3Core.getDefault();
             store.save("", new byte[]{}, "entities/localhost/data/by-ts/A/2019/02/21/23/51/44/120/a");
             store.save("", new byte[]{}, "entities/localhost/data/by-ts/A/2019/02/21/23/51/44/130/b");
             store.save("", new byte[]{}, "entities/localhost/data/by-ts/A/2019/02/21/23/51/44/131/c");

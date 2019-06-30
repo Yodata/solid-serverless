@@ -24,7 +24,7 @@ public class Publisher {
     private ContainerHandler dirHandler;
     private ResourceHandler fileHandler;
 
-    public Publisher(Store store) {
+    public Publisher(Core store) {
         this.dirHandler = new ContainerHandler(store);
         this.fileHandler = new ResourceHandler(store);
     }

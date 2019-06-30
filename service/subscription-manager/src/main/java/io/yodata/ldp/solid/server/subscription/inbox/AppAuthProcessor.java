@@ -5,7 +5,6 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
@@ -15,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.logging.FileHandler;
-import java.util.stream.Collectors;
 
 public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
@@ -141,12 +138,12 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
     }
 
-    private Store store;
+    private Core store;
     private ContainerHandler storeMgr;
     private ResourceHandler fileMgr;
     private SecurityProcessor sec;
 
-    public AppAuthProcessor(Store store) {
+    public AppAuthProcessor(Core store) {
         this.store = store;
         storeMgr = new ContainerHandler(store);
         fileMgr = new ResourceHandler(store);

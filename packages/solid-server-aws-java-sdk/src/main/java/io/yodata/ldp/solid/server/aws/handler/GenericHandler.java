@@ -3,7 +3,6 @@ package io.yodata.ldp.solid.server.aws.handler;
 import com.google.gson.JsonElement;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
@@ -19,9 +18,9 @@ public class GenericHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GenericHandler.class);
 
-    protected Store store;
+    protected Core store;
 
-    public GenericHandler(Store store) {
+    public GenericHandler(Core store) {
         this.store = store;
     }
 

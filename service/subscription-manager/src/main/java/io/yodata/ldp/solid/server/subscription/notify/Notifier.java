@@ -23,7 +23,7 @@ public class Notifier {
     private ContainerHandler dirHandler;
     private ResourceHandler fileHandler;
 
-    public Notifier(Store store) {
+    public Notifier(Core store) {
         this.dirHandler = new ContainerHandler(store);
         this.fileHandler = new ResourceHandler(store);
     }

@@ -3,7 +3,7 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.Core;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class InboxService {
 
     private Map<String, Consumer<Wrapper>> typeProcessors;
 
-    public InboxService(Store store) {
+    public InboxService(Core store) {
         typeProcessors = new HashMap<>();
         typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor());
         typeProcessors.put("ReflexPublishAction", new PublishProcessor());

@@ -1,9 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
-import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -11,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MemoryStore extends EntityBasedStore {
+public class MemoryCore extends EntityBasedCore {
 
     private static class Entity {
 

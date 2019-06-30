@@ -3,7 +3,7 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
@@ -28,7 +28,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
     private TransformService transform;
 
     public PublishProcessor() {
-        storeHandler = new ContainerHandler(S3Store.getDefault());
+        storeHandler = new ContainerHandler(S3Core.getDefault());
         transform = new AWSTransformService();
     }
 
@@ -59,7 +59,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             TransformMessage msg = new TransformMessage();
             msg.setSecurity(c.ev.getRequest().getSecurity());
             msg.setScope(c.scope);
-            msg.setPolicy(S3Store.getDefault().getPolicies(c.ev.getRequest().getTarget().getId()));
+            msg.setPolicy(S3Core.getDefault().getPolicies(c.ev.getRequest().getTarget().getId()));
             msg.setObject(message);
             JsonObject data = transform.transform(msg);
             if (data.keySet().isEmpty()) {

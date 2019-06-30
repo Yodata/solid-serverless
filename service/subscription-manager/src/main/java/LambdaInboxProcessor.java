@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.subscription.inbox.InboxService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class LambdaInboxProcessor extends InboxService implements RequestStreamH
     private static final Logger log = LoggerFactory.getLogger(LambdaInboxProcessor.class);
 
     public LambdaInboxProcessor() {
-        super(S3Store.getDefault());
+        super(S3Core.getDefault());
     }
 
     @Override

@@ -2,11 +2,10 @@ package io.yodata.ldp.solid.server.aws.handler.container;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.Page;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.Core;
 import io.yodata.ldp.solid.server.notification.EventBus;
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,10 +14,10 @@ import java.util.List;
 
 public class ContainerStoreProcessor {
 
-    protected Store store;
+    protected Core store;
     private EventBus evBus;
 
-    public ContainerStoreProcessor(Store store, EventBus evBus) {
+    public ContainerStoreProcessor(Core store, EventBus evBus) {
         this.store = store;
         this.evBus = evBus;
     }

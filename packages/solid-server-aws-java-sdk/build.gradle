@@ -1,3 +1,5 @@
+evaluationDependsOn(':sdk')
+
 apply plugin: 'java-library'
 
 group = 'io.yodata.solid-server'
@@ -14,7 +16,7 @@ dependencies {
     api 'com.amazonaws:aws-java-sdk-sns:1.11.460'
     api 'com.amazonaws:aws-java-sdk-lambda:1.11.460'
 
-    // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.slf4j:slf4j-simple:1.7.25'
+    testCompile project(':sdk').sourceSets.test.output
 }

@@ -24,12 +24,12 @@ public class GenericProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
-    private Store store;
+    private Core store;
     private ContainerHandler storeHandler;
     private TransformService transform;
     private LambdaPusher pusher;
 
-    public GenericProcessor(Store store) {
+    public GenericProcessor(Core store) {
         this.store = store;
         this.storeHandler = new ContainerHandler(store);
         this.transform = new AWSTransformService();

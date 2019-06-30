@@ -21,9 +21,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public abstract class EntityBasedStore implements Store {
+public abstract class EntityBasedCore implements Core {
 
-    private static final Logger log = LoggerFactory.getLogger(EntityBasedStore.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityBasedCore.class);
     private static final Type subListType = new TypeToken<List<Subscription>>() {}.getType();
     private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
 
