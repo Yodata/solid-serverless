@@ -8,20 +8,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.yodata.Base64Util;
 import io.yodata.EnvUtils;
-import io.yodata.ldp.solid.server.model.storage.*;
+import io.yodata.ldp.solid.server.model.store.fs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class S3Store implements Store {
+public class S3Filesystem implements Filesystem {
 
-    private static final Logger log = LoggerFactory.getLogger(S3Store.class);
+    private static final Logger log = LoggerFactory.getLogger(S3Filesystem.class);
 
     private AmazonS3 s3;
     private List<String> buckets;
@@ -36,15 +35,15 @@ public class S3Store implements Store {
         return EnvUtils.find("S3_BUCKET_NAMES").orElseGet(() -> EnvUtils.get("S3_BUCKET_NAME"));
     }
 
-    public S3Store() {
+    public S3Filesystem() {
         this(getClient(), getBuckets());
     }
 
-    public S3Store(String bucketsRaw) {
+    public S3Filesystem(String bucketsRaw) {
         this(getClient(), bucketsRaw);
     }
 
-    public S3Store(AmazonS3 client, String bucketsRaw) {
+    public S3Filesystem(AmazonS3 client, String bucketsRaw) {
         s3 = client;
 
         buckets = new ArrayList<>();
@@ -73,11 +72,11 @@ public class S3Store implements Store {
     }
 
     @Override
-    public Optional<StoreElementMeta> findMeta(String path) {
+    public Optional<FsElementMeta> findMeta(String path) {
         log.debug("Getting S3 meta at {}", path);
 
         try {
-            return Optional.of(new S3StoreElementMeta(s3.getObjectMetadata(getMainBucket(), path)));
+            return Optional.of(new S3FsElementMeta(s3.getObjectMetadata(getMainBucket(), path)));
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
                 throw new RuntimeException(e);
@@ -88,11 +87,12 @@ public class S3Store implements Store {
     }
 
     @Override
-    public Optional<StoreElement> findElement(String path) {
+    public Optional<FsElement> findElement(String path) {
         log.debug("Getting S3 object at {}", path);
 
         try {
-            return Optional.of(new S3StoreElement(s3.getObject(getMainBucket(), path)));
+            S3Object obj = s3.getObject(getMainBucket(), path);
+            return Optional.of(new BasicElement(new S3FsElementMeta(obj.getObjectMetadata()), obj.getObjectContent()));
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
                 throw new RuntimeException(e);
@@ -103,29 +103,29 @@ public class S3Store implements Store {
     }
 
     @Override
-    public void setElement(String path, StoreElement element) {
+    public void setElement(String path, FsElement element) {
         log.debug("File {} will be stored in {} buckets", path, buckets.size());
 
         buckets.forEach(bucket -> {
             ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType(element.getContentType());
-            metadata.setContentLength(element.getLength());
-            metadata.setUserMetadata(element.getProperties());
+            metadata.setContentType(element.getMeta().getContentType());
+            metadata.setContentLength(element.getMeta().getLength());
+            metadata.setUserMetadata(element.getMeta().getProperties());
 
-            log.debug("Storing {} bytes in bucket {} in path {}", element.getLength(), bucket, path);
+            log.debug("Storing {} bytes in bucket {} in path {}", element.getMeta().getLength(), bucket, path);
             PutObjectResult res = s3.putObject(bucket, path, element.getData(), metadata);
             log.info("Stored {}:{} ({})", bucket, path, res.getETag());
         });
     }
 
     @Override
-    public StoreElementPage listElements(String path, String token, long amount) {
-        BasicStoreElementPage page = new BasicStoreElementPage();
-        page.setNext(token);
-
+    public FsPage listElements(String path, String token, long amount) {
         if (amount < 1 || amount > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Amount of items in the list is out of range. Must be between 1 and " + Integer.MAX_VALUE);
         }
+
+        BasicFsPage page = new BasicFsPage();
+        page.setNext(token);
 
         ListObjectsV2Request req = new ListObjectsV2Request();
         req.setDelimiter("/");

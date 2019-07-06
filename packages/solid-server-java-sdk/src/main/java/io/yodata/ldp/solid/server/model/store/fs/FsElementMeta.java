@@ -1,8 +1,8 @@
-package io.yodata.ldp.solid.server.model.storage;
+package io.yodata.ldp.solid.server.model.store.fs;
 
 import java.util.Map;
 
-public interface StoreElementMeta {
+public interface FsElementMeta {
 
     String getContentType();
 

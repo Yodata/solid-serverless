@@ -16,4 +16,5 @@ dependencies {
     api 'com.google.code.gson:gson:2.8.5'
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
 }

@@ -1,9 +1,9 @@
-package io.yodata.ldp.solid.server.model.storage;
+package io.yodata.ldp.solid.server.model.store.fs;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BasicStoreElementPage implements StoreElementPage {
+public class BasicFsPage implements FsPage {
 
     private List<String> elements = new ArrayList<>();
     private String next;

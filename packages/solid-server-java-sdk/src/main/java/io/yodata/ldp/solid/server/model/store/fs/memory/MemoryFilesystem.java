@@ -1,13 +1,13 @@
-package io.yodata.ldp.solid.server.model.storage.memory;
+package io.yodata.ldp.solid.server.model.store.fs.memory;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
-import io.yodata.ldp.solid.server.model.storage.*;
+import io.yodata.ldp.solid.server.model.store.fs.*;
 
 import java.util.*;
 
-public class MemoryStore implements Store {
+public class MemoryFilesystem implements Filesystem {
 
-    private SortedMap<String, StoreElement> entities = new TreeMap<>();
+    private SortedMap<String, MemoryFsElement> entities = new TreeMap<>();
 
     @Override
     public boolean exists(String path) {
@@ -15,23 +15,23 @@ public class MemoryStore implements Store {
     }
 
     @Override
-    public Optional<StoreElementMeta> findMeta(String path) {
+    public Optional<FsElementMeta> findMeta(String path) {
         return Optional.ofNullable(entities.get(path));
     }
 
     @Override
-    public Optional<StoreElement> findElement(String path) {
+    public Optional<FsElement> findElement(String path) {
         return Optional.ofNullable(entities.get(path));
     }
 
     @Override
-    public void setElement(String path, StoreElement element) {
-        entities.put(path, element);
+    public void setElement(String path, FsElement element) {
+        entities.put(path, MemoryFsElement.fromAnother(element));
     }
 
     @Override
-    public StoreElementPage listElements(String path, String token, long amount) {
-        BasicStoreElementPage page = new BasicStoreElementPage();
+    public FsPage listElements(String path, String token, long amount) {
+        BasicFsPage page = new BasicFsPage();
         page.setNext(token);
 
         for (String key : entities.keySet()) {
@@ -59,7 +59,7 @@ public class MemoryStore implements Store {
 
     @Override
     public void deleteElement(String path) {
-        StoreElement el = entities.remove(path);
+        FsElement el = entities.remove(path);
         if (Objects.isNull(el)) {
             throw new NotFoundException();
         }

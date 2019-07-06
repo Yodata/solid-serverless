@@ -1,11 +1,11 @@
-package io.yodata.test.ldp.solid.server.model.storage.s3;
+package io.yodata.test.ldp.solid.server.model.store.fs.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import io.yodata.EnvUtils;
-import io.yodata.ldp.solid.server.model.storage.Store;
-import io.yodata.ldp.solid.server.model.storage.s3.S3Store;
-import io.yodata.test.ldp.solid.server.model.storage.StoreTest;
+import io.yodata.ldp.solid.server.model.store.fs.Filesystem;
+import io.yodata.ldp.solid.server.model.storage.s3.S3Filesystem;
+import io.yodata.test.ldp.solid.server.model.store.fs.FilesystemTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -15,14 +15,14 @@ import java.util.UUID;
 
 import static org.junit.Assume.assumeTrue;
 
-public class S3StoreTest extends StoreTest {
+public class S3FilesystemTest extends FilesystemTest {
 
     private static AmazonS3 s3;
     private static String bucket;
 
     @BeforeClass
     public static void beforeClass() {
-        s3 = S3Store.getClient();
+        s3 = S3Filesystem.getClient();
 
         Optional<String> bucketValOpt = EnvUtils.find("TEST_S3_BUCKET_NAME");
         assumeTrue(bucketValOpt.isPresent());
@@ -51,8 +51,8 @@ public class S3StoreTest extends StoreTest {
     }
 
     @Override
-    protected Store create() {
-        return new S3Store(s3, bucket);
+    protected Filesystem create() {
+        return new S3Filesystem(s3, bucket);
     }
 
 }

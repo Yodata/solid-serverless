@@ -1,20 +1,20 @@
 package io.yodata.ldp.solid.server.model.storage.s3;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import io.yodata.ldp.solid.server.model.storage.StoreElementMeta;
+import io.yodata.ldp.solid.server.model.store.fs.FsElementMeta;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class S3StoreElementMeta implements StoreElementMeta {
+public class S3FsElementMeta implements FsElementMeta {
 
-    protected String contentType;
-    protected long length;
-    protected Map<String, String> properties;
-    protected boolean isLink;
+    private String contentType;
+    private long length;
+    private Map<String, String> properties;
+    private boolean isLink;
 
-    public S3StoreElementMeta(ObjectMetadata s3Meta) {
+    S3FsElementMeta(ObjectMetadata s3Meta) {
         contentType = s3Meta.getContentType();
         length = s3Meta.getContentLength();
         properties = new HashMap<>(s3Meta.getUserMetadata());
