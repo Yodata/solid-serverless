@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.io.IOUtils;
@@ -31,7 +31,7 @@ public class App implements RequestStreamHandler {
     private boolean toSpecificPod;
 
     public App() {
-        storeHandler = new ContainerHandler(S3Store.getDefault());
+        storeHandler = new ContainerHandler(S3Core.getDefault());
 
         String mainPodUriRaw = System.getenv("BASE_POD_URI");
         if (StringUtils.isNotEmpty(mainPodUriRaw)) {

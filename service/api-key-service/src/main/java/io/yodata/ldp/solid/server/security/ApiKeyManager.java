@@ -1,9 +1,8 @@
 package io.yodata.ldp.solid.server.security;
 
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.model.Core;
 import io.yodata.ldp.solid.server.model.SecurityContext;
-import io.yodata.ldp.solid.server.model.Store;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Optional;
@@ -11,9 +10,9 @@ import java.util.Optional;
 // FIXME this should really be in the SDK
 public class ApiKeyManager {
 
-    private Store store;
+    private Core store;
 
-    public ApiKeyManager(Store store) {
+    public ApiKeyManager(Core store) {
         this.store = store;
     }
 
