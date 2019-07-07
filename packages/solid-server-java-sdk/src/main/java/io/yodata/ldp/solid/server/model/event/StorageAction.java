@@ -1,7 +1,7 @@
 package io.yodata.ldp.solid.server.model.event;
 
 import com.google.gson.JsonObject;
-import io.yodata.ldp.solid.server.model.Request;
+import io.yodata.ldp.solid.server.model.data.Request;
 
 import java.util.Optional;
 

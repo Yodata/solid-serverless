@@ -1,0 +1,46 @@
+/*
+ * Solid Serverless
+ * Copyright 2018 YoData, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.yodata.ldp.solid.server.model;
+
+import io.yodata.ldp.solid.server.model.data.Page;
+import io.yodata.ldp.solid.server.model.data.Request;
+import io.yodata.ldp.solid.server.model.data.Response;
+import io.yodata.ldp.solid.server.model.data.Target;
+
+public interface SolidPod {
+
+    SecurityContext getIdentity();
+
+    SecurityContext identifyWithApiKey(String apiKey);
+
+    SolidSession getSession(SecurityContext sc);
+
+    Response head(Target target);
+
+    Response get(Target target);
+
+    Page list(Target t, String by, String from, boolean isFullFormat, boolean isTemporal);
+
+    void post(Request in);
+
+    // returns true if data was overwritten
+    boolean save(Request in);
+
+    void delete(Request in);
+
+}

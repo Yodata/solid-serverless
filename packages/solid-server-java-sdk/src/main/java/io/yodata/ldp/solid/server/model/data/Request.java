@@ -1,10 +1,11 @@
-package io.yodata.ldp.solid.server.model;
+package io.yodata.ldp.solid.server.model.data;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import io.yodata.Base64Util;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
+import io.yodata.ldp.solid.server.model.SecurityContext;
+import io.yodata.ldp.solid.server.model.security.Acl;
 import io.yodata.ldp.solid.server.model.transform.Policies;
 
 import java.nio.charset.StandardCharsets;

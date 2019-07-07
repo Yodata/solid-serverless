@@ -1,4 +1,4 @@
-import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.data.Target;
 import org.junit.Test;
 
 import java.net.URI;

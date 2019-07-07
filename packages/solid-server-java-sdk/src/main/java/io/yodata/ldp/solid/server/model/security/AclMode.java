@@ -1,4 +1,4 @@
-package io.yodata.ldp.solid.server.model;
+package io.yodata.ldp.solid.server.model.security;
 
 public enum AclMode {
 

@@ -1,8 +1,8 @@
 package io.yodata.ldp.solid.server.undertow;
 
 import io.undertow.server.HttpServerExchange;
-import io.yodata.ldp.solid.server.model.AclMode;
-import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.data.Target;
+import io.yodata.ldp.solid.server.model.security.AclMode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 

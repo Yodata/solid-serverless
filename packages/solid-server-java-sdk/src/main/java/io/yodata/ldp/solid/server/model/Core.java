@@ -1,6 +1,8 @@
 package io.yodata.ldp.solid.server.model;
 
 import com.google.gson.JsonElement;
+import io.yodata.ldp.solid.server.model.data.*;
+import io.yodata.ldp.solid.server.model.security.Acl;
 import io.yodata.ldp.solid.server.model.transform.Policies;
 
 import java.net.URI;

@@ -7,7 +7,11 @@ import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
 import io.yodata.ldp.solid.server.aws.handler.ResponseCheckProcessor;
 import io.yodata.ldp.solid.server.aws.handler.resource.input.ResourceRequestCheckProcessor;
 import io.yodata.ldp.solid.server.aws.store.S3Core;
-import io.yodata.ldp.solid.server.model.*;
+import io.yodata.ldp.solid.server.model.Core;
+import io.yodata.ldp.solid.server.model.data.Exchange;
+import io.yodata.ldp.solid.server.model.data.Request;
+import io.yodata.ldp.solid.server.model.data.Response;
+import io.yodata.ldp.solid.server.model.security.Acl;
 import io.yodata.ldp.solid.server.notification.EventBus;
 import org.apache.commons.lang3.StringUtils;
 

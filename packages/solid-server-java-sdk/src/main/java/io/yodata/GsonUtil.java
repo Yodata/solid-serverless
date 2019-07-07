@@ -142,6 +142,10 @@ public class GsonUtil {
         return parse(new String(data, StandardCharsets.UTF_8), type);
     }
 
+    public static JsonElement parseEl(InputStream s) {
+        return parse(s, JsonElement.class);
+    }
+
     public static <T> T parse(InputStream is, Class<T> type) {
         try {
             T v = parse(IOUtils.toString(is, StandardCharsets.UTF_8), type);

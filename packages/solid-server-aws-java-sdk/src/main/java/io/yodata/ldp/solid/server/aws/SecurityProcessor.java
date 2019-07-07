@@ -2,11 +2,11 @@ package io.yodata.ldp.solid.server.aws;
 
 import io.yodata.ldp.solid.server.aws.store.S3Core;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
-import io.yodata.ldp.solid.server.exception.UnauthorizedException;
-import io.yodata.ldp.solid.server.model.Acl;
-import io.yodata.ldp.solid.server.model.SecurityContext;
+import io.yodata.ldp.solid.server.exception.UnauthenticatedException;
 import io.yodata.ldp.solid.server.model.Core;
-import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.SecurityContext;
+import io.yodata.ldp.solid.server.model.data.Target;
+import io.yodata.ldp.solid.server.model.security.Acl;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,14 +54,14 @@ public class SecurityProcessor {
         String key = keys.get(0);
         if (StringUtils.isEmpty(key)) {
             log.info("API Key: <Empty>");
-            throw new UnauthorizedException("No API key provided");
+            throw new UnauthenticatedException("No API key provided");
         }
 
         log.info("API Key: {}", key);
         SecurityContext apiKeyContext = store.findForApiKey(key).orElseGet(SecurityContext::new);
         if (apiKeyContext.isAnonymous()) {
             log.info("API key is unknown");
-            throw new UnauthorizedException("Invalid API Key");
+            throw new UnauthenticatedException("Invalid API Key");
         }
 
         log.info("API Key Agent: {}", apiKeyContext.getAgent().orElse("<Empty>"));

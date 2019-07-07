@@ -3,3 +3,7 @@ apply plugin: 'java'
 repositories {
     jcenter()
 }
+
+test {
+    dependsOn ':sdk:test', ':aws-sdk:test'
+}

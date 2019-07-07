@@ -1,4 +1,6 @@
-package io.yodata.ldp.solid.server.model;
+package io.yodata.ldp.solid.server.model.data;
+
+import io.yodata.ldp.solid.server.model.security.AclMode;
 
 import java.net.URI;
 import java.util.regex.Pattern;

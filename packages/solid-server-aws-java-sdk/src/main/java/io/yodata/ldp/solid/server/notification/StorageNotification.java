@@ -1,6 +1,6 @@
 package io.yodata.ldp.solid.server.notification;
 
-import io.yodata.ldp.solid.server.model.Request;
+import io.yodata.ldp.solid.server.model.data.Request;
 
 import java.net.URI;
 

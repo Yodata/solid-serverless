@@ -1,6 +1,6 @@
 package io.yodata.ldp.solid.server.model.processor;
 
-import io.yodata.ldp.solid.server.model.Exchange;
+import io.yodata.ldp.solid.server.model.data.Exchange;
 
 public interface InputValidationProcessor {
 

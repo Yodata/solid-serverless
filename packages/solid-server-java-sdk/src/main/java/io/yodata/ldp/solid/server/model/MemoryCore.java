@@ -1,6 +1,9 @@
 package io.yodata.ldp.solid.server.model;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
+import io.yodata.ldp.solid.server.model.data.Page;
+import io.yodata.ldp.solid.server.model.data.Response;
+import io.yodata.ldp.solid.server.model.data.Target;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;

@@ -1,8 +1,8 @@
 package io.yodata.ldp.solid.server.aws.handler.resource;
 
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.Core;
+import io.yodata.ldp.solid.server.model.data.Request;
+import io.yodata.ldp.solid.server.model.data.Response;
 import io.yodata.ldp.solid.server.notification.EventBus;
 
 public class ResourceStoreProcessor {

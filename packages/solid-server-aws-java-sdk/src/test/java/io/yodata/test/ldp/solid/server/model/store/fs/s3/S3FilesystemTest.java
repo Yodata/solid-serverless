@@ -3,13 +3,14 @@ package io.yodata.test.ldp.solid.server.model.store.fs.s3;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import io.yodata.EnvUtils;
-import io.yodata.ldp.solid.server.model.store.fs.Filesystem;
 import io.yodata.ldp.solid.server.model.storage.s3.S3Filesystem;
+import io.yodata.ldp.solid.server.model.store.fs.Filesystem;
 import io.yodata.test.ldp.solid.server.model.store.fs.FilesystemTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,6 +43,10 @@ public class S3FilesystemTest extends FilesystemTest {
 
     @AfterClass
     public static void afterClass() {
+        if (Objects.isNull(bucket)) {
+            return;
+        }
+
         ListObjectsV2Result res;
         do {
             res = s3.listObjectsV2(bucket);

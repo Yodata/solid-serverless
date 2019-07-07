@@ -1,5 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
+import io.yodata.ldp.solid.server.model.security.AclMode;
+
 import java.util.*;
 
 public class SecurityContext {
@@ -7,6 +9,12 @@ public class SecurityContext {
     public static SecurityContext asAnonymous() {
         SecurityContext sc = new SecurityContext();
         sc.isAnonymous = true;
+        return sc;
+    }
+
+    public static SecurityContext forPod(String id) {
+        SecurityContext sc = new SecurityContext();
+        sc.setInstrument("https://" + id + "/profile/card#me");
         return sc;
     }
 

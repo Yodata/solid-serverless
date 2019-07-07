@@ -1,6 +1,4 @@
-package io.yodata.ldp.solid.server.model;
-
-import com.google.gson.JsonObject;
+package io.yodata.ldp.solid.server.model.security;
 
 import java.util.List;
 

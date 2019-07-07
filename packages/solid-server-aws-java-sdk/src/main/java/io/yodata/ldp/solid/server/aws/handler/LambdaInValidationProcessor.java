@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.model.InvokeResult;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
-import io.yodata.ldp.solid.server.model.Exchange;
+import io.yodata.ldp.solid.server.model.data.Exchange;
 import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

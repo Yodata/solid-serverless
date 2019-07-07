@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
-import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.data.Response;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

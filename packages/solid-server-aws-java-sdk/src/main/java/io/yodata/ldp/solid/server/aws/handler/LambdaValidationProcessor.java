@@ -3,8 +3,8 @@ package io.yodata.ldp.solid.server.aws.handler;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.store.S3Core;
-import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Request;
+import io.yodata.ldp.solid.server.model.data.Exchange;
+import io.yodata.ldp.solid.server.model.data.Request;
 
 public class LambdaValidationProcessor {
 
