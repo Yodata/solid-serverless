@@ -37,6 +37,10 @@ public class UndertowSolidServer {
     private static final Logger log = LoggerFactory.getLogger(UndertowSolidServer.class);
 
     public static void main(String[] args) {
+        // Used in XNIO package, dependency of Undertow
+        // We switch to slf4j
+        System.setProperty("org.jboss.logging.provider", "slf4j");
+
         int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(System.getenv("FRONTD_LOAD_MULTIPLIER"), "1"));
         int workerThreads = multiplier * 2 * 8;
 

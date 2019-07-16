@@ -1,7 +1,24 @@
+/*
+ * Copyright 2018 YoData, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.yodata.ldp.solid.server.undertow.handler;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HttpString;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
@@ -10,9 +27,11 @@ import io.yodata.ldp.solid.server.exception.UnauthenticatedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 public class ExceptionHandler extends BasicHttpHandler {
 
-    private final transient Logger log = LoggerFactory.getLogger(ExceptionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ExceptionHandler.class);
 
     private HttpHandler h;
 
@@ -22,8 +41,10 @@ public class ExceptionHandler extends BasicHttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        String exId = UUID.randomUUID().toString();
         try {
-            log.info("HTTP Request {}: Start", exchange.hashCode());
+            exchange.getResponseHeaders().put(HttpString.tryFromString("X-Solid-Request-Id"), exId);
+            log.info("HTTP Request {}: Start", exId);
             h.handleRequest(exchange);
         } catch (IllegalArgumentException e) {
             writeBody(exchange, 400, GsonUtil.makeObj("error", e.getMessage()));
@@ -40,7 +61,7 @@ public class ExceptionHandler extends BasicHttpHandler {
             writeBody(exchange, 500, GsonUtil.makeObj("error", "An internal server occurred"));
         } finally {
             exchange.endExchange();
-            log.info("HTTP Request {}: End", exchange.hashCode());
+            log.info("HTTP Request {}: End", exId);
         }
     }
 
