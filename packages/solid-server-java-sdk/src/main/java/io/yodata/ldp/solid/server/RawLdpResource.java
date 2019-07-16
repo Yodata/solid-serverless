@@ -14,24 +14,29 @@
  * limitations under the License.
  */
 
-apply plugin: 'java-library'
+package io.yodata.ldp.solid.server;
 
-group = 'io.yodata.solid-server'
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+import com.google.gson.JsonObject;
+import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.model.LdpResource;
 
-repositories {
-    jcenter()
-}
+import java.util.Optional;
 
-dependencies {
-    api 'org.slf4j:slf4j-api:1.7.25'
-    api 'org.apache.commons:commons-lang3:3.8.1'
-    api 'commons-io:commons-io:2.6'
-    api 'commons-codec:commons-codec:1.10'
-    api 'com.google.code.gson:gson:2.8.5'
-    api 'org.apache.httpcomponents:httpclient:4.5.5'
+public class RawLdpResource implements LdpResource {
 
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
+    private byte[] data;
+
+    public RawLdpResource(byte[] data) {
+        this.data = data;
+    }
+
+    @Override
+    public Optional<JsonObject> ifJson() {
+        try {
+            return Optional.of(GsonUtil.parseObj(data));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
 }

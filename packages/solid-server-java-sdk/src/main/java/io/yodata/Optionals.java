@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-apply plugin: 'java-library'
+package io.yodata;
 
-group = 'io.yodata.solid-server'
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+import java.util.Optional;
+import java.util.function.Supplier;
 
-repositories {
-    jcenter()
-}
+public class Optionals {
 
-dependencies {
-    api 'org.slf4j:slf4j-api:1.7.25'
-    api 'org.apache.commons:commons-lang3:3.8.1'
-    api 'commons-io:commons-io:2.6'
-    api 'commons-codec:commons-codec:1.10'
-    api 'com.google.code.gson:gson:2.8.5'
-    api 'org.apache.httpcomponents:httpclient:4.5.5'
+    @SafeVarargs
+    public static <T> Optional<T> get(Supplier<Optional<T>>... ops) {
+        for (Supplier<Optional<T>> op : ops) {
+            Optional<T> v = op.get();
+            if (v.isPresent()) {
+                return v;
+            }
+        }
 
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
+        return Optional.empty();
+    }
+
 }

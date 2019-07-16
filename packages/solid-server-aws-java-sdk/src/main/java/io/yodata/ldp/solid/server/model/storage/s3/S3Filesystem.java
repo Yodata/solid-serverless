@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 YoData, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.yodata.ldp.solid.server.model.storage.s3;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
@@ -7,7 +23,6 @@ import com.amazonaws.services.s3.model.*;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.yodata.Base64Util;
-import io.yodata.EnvUtils;
 import io.yodata.ldp.solid.server.model.store.fs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,14 +44,6 @@ public class S3Filesystem implements Filesystem {
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                 .build();
-    }
-
-    public static String getBuckets() {
-        return EnvUtils.find("S3_BUCKET_NAMES").orElseGet(() -> EnvUtils.get("S3_BUCKET_NAME"));
-    }
-
-    public S3Filesystem() {
-        this(getClient(), getBuckets());
     }
 
     public S3Filesystem(String bucketsRaw) {

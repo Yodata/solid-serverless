@@ -1,5 +1,4 @@
 /*
- * Solid Serverless
  * Copyright 2018 YoData, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +20,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
-import io.yodata.ldp.solid.server.exception.UnauthenticatedException;
 import io.yodata.ldp.solid.server.model.Environment;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.SolidPod;
@@ -48,11 +46,13 @@ public class BasicPod implements SolidPod {
     private final String id;
     private final SecurityContext creds;
     private final Environment env;
+    private final BasicAuth auth;
 
     public BasicPod(String id, Environment env) {
         this.id = id;
         this.env = env;
         this.creds = SecurityContext.forPod(id);
+        this.auth = new BasicAuth(id, env.getStore());
     }
 
     private PodStore getStore() {
@@ -74,13 +74,7 @@ public class BasicPod implements SolidPod {
 
     @Override
     public SecurityContext identifyWithApiKey(String apiKey) {
-        String apiKeyPath = "/security/api/key/" + apiKey;
-
-        FsElement el = getStore().tryGet(apiKeyPath)
-                .or(() -> env.getStore().forGlobal().tryGet(apiKeyPath))
-                .orElseThrow(UnauthenticatedException::new);
-
-        return GsonUtil.parse(el.getData(), SecurityContext.class);
+        return auth.authenticate(apiKey);
     }
 
     @Override
