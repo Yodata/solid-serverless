@@ -23,8 +23,6 @@ public class S3FilesystemTest extends FilesystemTest {
 
     @BeforeClass
     public static void beforeClass() {
-        s3 = S3Filesystem.getClient();
-
         Optional<String> bucketValOpt = EnvUtils.find("TEST_S3_BUCKET_NAME");
         assumeTrue(bucketValOpt.isPresent());
 
@@ -36,8 +34,8 @@ public class S3FilesystemTest extends FilesystemTest {
             bucketVal = bucketVal.substring(0, 63);
         }
 
+        s3 = S3Filesystem.getClient();
         s3.createBucket(bucketVal);
-
         bucket = bucketVal;
     }
 
