@@ -17,24 +17,43 @@
 package io.yodata.ldp.solid.server.model.store;
 
 import com.google.gson.JsonObject;
+import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.model.store.fs.Filesystem;
 import io.yodata.ldp.solid.server.model.transform.Policies;
 
 import java.net.URI;
 
-public interface Store {
+public class BasicStore implements Store {
 
-    JsonObject getConfig();
+    private Filesystem fs;
 
-    default PodStore forPod(URI pod) {
-        return forPod(pod.getHost());
+    public BasicStore(Filesystem fs) {
+        this.fs = fs;
     }
 
-    PodStore forPod(String podId);
+    @Override
+    public JsonObject getConfig() {
+        return fs.findElement("/config").map(v -> GsonUtil.parseObj(v.getData())).orElseGet(JsonObject::new);
+    }
 
-    PodStore forDefault();
+    @Override
+    public PodStore forPod(String podId) {
+        return new BasicPodStore(podId, fs);
+    }
 
-    PodStore forGlobal();
+    @Override
+    public PodStore forDefault() {
+        return null;
+    }
 
-    Policies getPolicies(URI pod);
+    @Override
+    public PodStore forGlobal() {
+        return null;
+    }
+
+    @Override
+    public Policies getPolicies(URI pod) {
+        return null;
+    }
 
 }

@@ -1,6 +1,5 @@
 /*
- * Solid Serverless
- * Copyright 2018 YoData, Inc.
+ * Copyright 2019 YoData, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +29,9 @@ public interface SolidPod {
 
     SolidSession getSession(SecurityContext sc);
 
-    Response head(Target target);
+    Response head(Request in);
 
-    Response get(Target target);
+    Response get(Request in);
 
     Page list(Target t, String by, String from, boolean isFullFormat, boolean isTemporal);
 

@@ -16,24 +16,25 @@
 
 package io.yodata.ldp.solid.server.model.core;
 
-import com.google.gson.JsonElement;
-import io.yodata.ldp.solid.server.model.SolidSession;
+import io.yodata.ldp.solid.server.model.SolidPod;
+import io.yodata.ldp.solid.server.model.SolidServer;
+import io.yodata.ldp.solid.server.model.env.Environment;
 
-public class BasicSession implements SolidSession {
+public class Yolid implements SolidServer {
 
-    @Override
-    public boolean exists(String path) {
-        return false;
+    private final Environment env;
+
+    public Yolid() {
+        this(Environment.get());
+    }
+
+    public Yolid(Environment env) {
+        this.env = env;
     }
 
     @Override
-    public void save(String path, JsonElement content) {
-
-    }
-
-    @Override
-    public void delete(String path) {
-
+    public SolidPod forPod(String id) {
+        return new BasicPod(id, env);
     }
 
 }

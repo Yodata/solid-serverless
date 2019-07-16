@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 YoData, Inc.
+ * Copyright 2019 YoData, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
-import io.yodata.ldp.solid.server.model.Environment;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.SolidPod;
 import io.yodata.ldp.solid.server.model.SolidSession;
@@ -28,6 +27,7 @@ import io.yodata.ldp.solid.server.model.data.Page;
 import io.yodata.ldp.solid.server.model.data.Request;
 import io.yodata.ldp.solid.server.model.data.Response;
 import io.yodata.ldp.solid.server.model.data.Target;
+import io.yodata.ldp.solid.server.model.env.Environment;
 import io.yodata.ldp.solid.server.model.store.PodStore;
 import io.yodata.ldp.solid.server.model.store.fs.*;
 import org.apache.commons.io.IOUtils;
@@ -83,19 +83,19 @@ public class BasicPod implements SolidPod {
     }
 
     @Override
-    public Response head(Target target) {
-        log.info("Getting Resource meta {}", target.getPath());
+    public Response head(Request req) {
+        log.info("Getting Resource meta {}", req.getTarget().getPath());
 
-        FsElementMeta meta = getStore().head(target.getPath());
+        FsElementMeta meta = getStore().head(req.getTarget().getPath());
         return build(meta);
     }
 
     @Override
-    public Response get(Target target) {
-        log.info("Getting Resource {}", target.getPath());
+    public Response get(Request req) {
+        log.info("Getting Resource {}", req.getTarget().getPath());
 
         try {
-            FsElement el = getStore().get(target.getPath());
+            FsElement el = getStore().get(req.getTarget().getPath());
 
             Response r = build(el.getMeta());
             r.setBody(IOUtils.toByteArray(el.getData(), el.getMeta().getLength()));

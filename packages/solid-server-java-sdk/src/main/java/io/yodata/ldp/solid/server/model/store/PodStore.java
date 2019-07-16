@@ -1,6 +1,5 @@
 /*
- * Solid Serverless
- * Copyright 2018 YoData, Inc.
+ * Copyright 2019 YoData, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +23,7 @@ import io.yodata.ldp.solid.server.model.data.Request;
 import io.yodata.ldp.solid.server.model.store.fs.FsElement;
 import io.yodata.ldp.solid.server.model.store.fs.FsElementMeta;
 import io.yodata.ldp.solid.server.model.store.fs.FsPage;
+import io.yodata.ldp.solid.server.model.transform.Policies;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -67,5 +67,7 @@ public interface PodStore {
     void delete(String path);
 
     JsonObject getSubscriptions();
+
+    Policies getPolicies();
 
 }

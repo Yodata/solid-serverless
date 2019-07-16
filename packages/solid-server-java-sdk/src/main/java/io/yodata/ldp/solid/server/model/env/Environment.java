@@ -1,6 +1,5 @@
 /*
- * Solid Serverless
- * Copyright 2018 YoData, Inc.
+ * Copyright 2019 YoData, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.yodata.ldp.solid.server.model;
+package io.yodata.ldp.solid.server.model.env;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 import io.yodata.ldp.solid.server.model.store.Store;
@@ -25,23 +24,28 @@ import java.util.*;
 public abstract class Environment {
 
     private static ServiceLoader<EnvironmentLoader> svcLoader;
+    private static Environment env;
 
     public static synchronized void bootstrap() {
         if (Objects.isNull(svcLoader)) {
             svcLoader = ServiceLoader.load(EnvironmentLoader.class);
+        }
+
+        if (Objects.isNull(env)) {
+            List<Environment> loaded = new ArrayList<>();
+            for (EnvironmentLoader loader : svcLoader) {
+                loader.load().ifPresent(loaded::add);
+            }
+
+            env = loaded.stream().max(Comparator.comparingLong(Environment::getPriority))
+                    .orElseThrow(NotFoundException::new);
         }
     }
 
     public static Environment get() {
         bootstrap();
 
-        List<Environment> loaded = new ArrayList<>();
-        for (EnvironmentLoader loader : svcLoader) {
-            loader.load().ifPresent(loaded::add);
-        }
-
-        return loaded.stream().max(Comparator.comparingLong(Environment::getPriority))
-                .orElseThrow(NotFoundException::new);
+        return env;
     }
 
     public abstract long getPriority();

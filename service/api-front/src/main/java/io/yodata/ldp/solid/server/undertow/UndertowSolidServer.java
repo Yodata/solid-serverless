@@ -1,27 +1,36 @@
+/*
+ * Copyright 2018 YoData, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.yodata.ldp.solid.server.undertow;
 
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
-import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.UndertorwRequest;
-import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Core;
-import io.yodata.ldp.solid.server.model.SecurityContext;
+import io.yodata.ldp.solid.server.model.SolidServer;
+import io.yodata.ldp.solid.server.model.core.Yolid;
 import io.yodata.ldp.solid.server.model.data.Request;
 import io.yodata.ldp.solid.server.model.data.Response;
-import io.yodata.ldp.solid.server.model.security.Acl;
 import io.yodata.ldp.solid.server.model.security.AclMode;
 import io.yodata.ldp.solid.server.undertow.handler.BasicHttpHandler;
 import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
 
 public class UndertowSolidServer {
 
@@ -38,56 +47,41 @@ public class UndertowSolidServer {
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
 
+        /*
         ContainerHandler folder = new ContainerHandler();
         ResourceHandler file = new ResourceHandler();
-        SecurityProcessor auth = new SecurityProcessor(S3Core.getDefault());
+         */
+
+        //SecurityProcessor auth = new SecurityProcessor(S3Core.getDefault());
+        SolidServer srv = new Yolid();
 
         Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
-                .get("/status", exchange -> {
-                    exchange.setStatusCode(200);
-                    exchange.endExchange();
-                })
+                        .get("/status", exchange -> {
+                            exchange.setStatusCode(200);
+                            exchange.endExchange();
+                        })
 
-                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) {
-                        UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
-                        Map<String, List<String>> headers = getHeaders(exchange);
-                        SecurityContext context = auth.authenticate(headers);
-                        Acl rights = auth.authorize(context, target);
-                        Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
+                        .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
+                            @Override
+                            public void handleRequest(HttpServerExchange exchange) {
+                                UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
+                                Request request = UndertorwRequest.build(exchange, target);
+                                Response r = srv.forPod(request.getTarget().getHost()).head(request);
+                                writeBody(exchange, r);
+                            }
+                        })))
 
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.head(request);
-                        } else {
-                            r = file.head(request);
-                        }
+                        .get("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
+                            @Override
+                            public void handleRequest(HttpServerExchange exchange) {
+                                UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
+                                Request request = UndertorwRequest.build(exchange, target);
+                                Response r = srv.forPod(request.getTarget().getHost()).get(request);
+                                writeBody(exchange, r);
+                            }
+                        })))
 
-                        writeBody(exchange, r);
-                    }
-                })))
-
-                .get("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) {
-                        UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
-                        Map<String, List<String>> headers = getHeaders(exchange);
-                        SecurityContext context = auth.authenticate(headers);
-                        Acl rights = auth.authorize(context, target);
-                        Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.get(request);
-                        } else {
-                            r = file.get(request);
-                        }
-
-                        writeBody(exchange, r);
-                    }
-                })))
-
+                /*
                 .post("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
@@ -146,7 +140,9 @@ public class UndertowSolidServer {
 
                         writeBody(exchange, r);
                     }
-                })))).build().start();
+                })))
+                 */
+        ).build().start();
 
         log.info("-------\\ Frontd is running /-------");
     }
