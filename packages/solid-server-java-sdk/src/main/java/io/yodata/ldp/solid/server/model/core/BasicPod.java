@@ -129,22 +129,32 @@ public class BasicPod implements SolidPod {
     }
 
     @Override
-    public void post(Request in) {
-        save(in);
+    public Response post(Request in) {
+        put(in); // FIXME this is not right!
+
+        // FIXME return something useful
+        return new Response();
     }
 
     @Override
-    public boolean save(Request in) {
+    public Response put(Request in) {
         BasicMeta meta = new BasicMeta();
         meta.setContentType(in.getContentType().orElseThrow(() -> new IllegalArgumentException("Content type must be given")));
         meta.setLength(in.getBody().length);
         BasicElement el = new BasicElement(meta, new ByteArrayInputStream(in.getBody()));
-        return getStore().save(in.getDestination().getPath(), el);
+        boolean saved = getStore().save(in.getDestination().getPath(), el);
+
+        // FIXME return something useful
+        Response r = new Response();
+        r.setStatus(saved ? 204 : 201);
+        return r;
     }
 
     @Override
-    public void delete(Request in) {
+    public Response delete(Request in) {
         getStore().delete(in.getDestination().getPath());
+        // FIXME return something useful
+        return new Response();
     }
 
 }

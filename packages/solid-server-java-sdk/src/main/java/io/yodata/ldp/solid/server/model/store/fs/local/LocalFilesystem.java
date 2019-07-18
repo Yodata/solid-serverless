@@ -1,10 +1,28 @@
+/*
+ * Copyright 2019 YoData, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.yodata.ldp.solid.server.model.store.fs.local;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 import io.yodata.ldp.solid.server.model.store.fs.*;
+import io.yodata.ldp.solid.server.model.store.fs.memory.MemoryFsElementMeta;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +50,7 @@ public class LocalFilesystem implements Filesystem {
     private Path initPath(Path path) {
         if (!Files.exists(path)) {
             try {
-                Files.createDirectory(path);
+                Files.createDirectories(path);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -49,14 +67,30 @@ public class LocalFilesystem implements Filesystem {
         return path;
     }
 
+    private String sanitise(String path) {
+        if (StringUtils.startsWith(path, "/")) {
+            path = path.substring(1);
+        }
+
+        return path;
+    }
+
+    private Path resolveMeta(String path) {
+        return baseMeta.resolve(sanitise(path));
+    }
+
+    private Path resolveData(String path) {
+        return baseData.resolve(sanitise(path));
+    }
+
     @Override
     public boolean exists(String path) {
-        return Files.exists(baseData.resolve(path));
+        return Files.exists(resolveData(path));
     }
 
     @Override
     public Optional<FsElementMeta> findMeta(String path) {
-        Path metaPath = baseMeta.resolve(path);
+        Path metaPath = resolveMeta(path);
 
         JsonObject data;
         try (InputStream is = Files.newInputStream(metaPath, StandardOpenOption.READ)) {
@@ -78,13 +112,10 @@ public class LocalFilesystem implements Filesystem {
 
     @Override
     public Optional<FsElement> findElement(String path) {
-        Optional<FsElementMeta> meta = findMeta(path);
-        if (!meta.isPresent()) {
-            return Optional.empty();
-        }
+        FsElementMeta meta = findMeta(path).orElseGet(MemoryFsElementMeta::new);
 
         try {
-            return Optional.of(new BasicElement(meta.get(), Files.newInputStream(baseData.resolve(path), StandardOpenOption.READ)));
+            return Optional.of(new BasicElement(meta, Files.newInputStream(resolveData(path), StandardOpenOption.READ)));
         } catch (NoSuchFileException e) {
             log.warn("Inconsistency for {}: Meta file was found, but data file is not", path);
             return Optional.empty();
@@ -95,8 +126,8 @@ public class LocalFilesystem implements Filesystem {
 
     @Override
     public void setElement(String path, FsElement element) {
-        Path metaPath = baseMeta.resolve(path);
-        Path dataPath = baseData.resolve(path);
+        Path metaPath = resolveMeta(path);
+        Path dataPath = resolveData(path);
 
         try {
             Files.createDirectories(metaPath.getParent());
@@ -115,13 +146,13 @@ public class LocalFilesystem implements Filesystem {
         meta.addProperty("length", element.getMeta().getLength());
         meta.add("properties", GsonUtil.makeObj(element.getMeta().getProperties()));
 
-        try (OutputStream os = Files.newOutputStream(baseData.resolve(path), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+        try (OutputStream os = Files.newOutputStream(dataPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             IOUtils.copyLarge(element.getData(), os, 0, element.getMeta().getLength());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        try (OutputStream os = Files.newOutputStream(baseMeta.resolve(path), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+        try (OutputStream os = Files.newOutputStream(metaPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             IOUtils.write(GsonUtil.toJsonBytes(meta), os);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -134,7 +165,7 @@ public class LocalFilesystem implements Filesystem {
         page.setNext(token);
 
         try {
-            Path metaPath = baseMeta.resolve(path);
+            Path metaPath = resolveMeta(path);
             Files.list(metaPath)
                     .sorted(Comparator.naturalOrder())
                     .map(p -> p.getFileName().toString())
@@ -157,8 +188,8 @@ public class LocalFilesystem implements Filesystem {
     @Override
     public void deleteElement(String path) {
         try {
-            Files.delete(baseMeta.resolve(path));
-            if (!Files.deleteIfExists(baseData.resolve(path))) {
+            Files.delete(resolveMeta(path));
+            if (!Files.deleteIfExists(resolveData(path))) {
                 log.warn("Inconsistency for {}: Meta file was deleted, but data file does not exist", path);
             }
         } catch (NoSuchFileException e) {

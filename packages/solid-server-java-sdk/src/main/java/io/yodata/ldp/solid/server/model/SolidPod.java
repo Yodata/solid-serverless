@@ -35,11 +35,11 @@ public interface SolidPod {
 
     Page list(Target t, String by, String from, boolean isFullFormat, boolean isTemporal);
 
-    void post(Request in);
+    Response post(Request in);
 
     // returns true if data was overwritten
-    boolean save(Request in);
+    Response put(Request in);
 
-    void delete(Request in);
+    Response delete(Request in);
 
 }

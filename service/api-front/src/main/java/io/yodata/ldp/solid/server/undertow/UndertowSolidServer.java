@@ -51,57 +51,41 @@ public class UndertowSolidServer {
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
 
-        /*
-        ContainerHandler folder = new ContainerHandler();
-        ResourceHandler file = new ResourceHandler();
-         */
-
-        //SecurityProcessor auth = new SecurityProcessor(S3Core.getDefault());
         SolidServer srv = new Yolid();
 
         Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
-                        .get("/status", exchange -> {
-                            exchange.setStatusCode(200);
-                            exchange.endExchange();
-                        })
+                .get("/status", exchange -> {
+                    exchange.setStatusCode(200);
+                    exchange.endExchange();
+                })
 
-                        .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
-                            @Override
-                            public void handleRequest(HttpServerExchange exchange) {
-                                UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
-                                Request request = UndertorwRequest.build(exchange, target);
-                                Response r = srv.forPod(request.getTarget().getHost()).head(request);
-                                writeBody(exchange, r);
-                            }
-                        })))
+                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) {
+                        UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
+                        Request request = UndertorwRequest.build(exchange, target);
+                        Response r = srv.forPod(request.getTarget().getHost()).head(request);
+                        writeBody(exchange, r);
+                    }
+                })))
 
-                        .get("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
-                            @Override
-                            public void handleRequest(HttpServerExchange exchange) {
-                                UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
-                                Request request = UndertorwRequest.build(exchange, target);
-                                Response r = srv.forPod(request.getTarget().getHost()).get(request);
-                                writeBody(exchange, r);
-                            }
-                        })))
+                .get("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
+                    @Override
+                    public void handleRequest(HttpServerExchange exchange) {
+                        UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
+                        Request request = UndertorwRequest.build(exchange, target);
+                        Response r = srv.forPod(request.getTarget().getHost()).get(request);
+                        writeBody(exchange, r);
+                    }
+                })))
 
-                /*
+
                 .post("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Append);
-                        Map<String, List<String>> headers = getHeaders(exchange);
-                        SecurityContext context = auth.authenticate(headers);
-                        Acl rights = auth.authorize(context, target);
-                        Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.post(request);
-                        } else {
-                            r = file.post(request);
-                        }
-
+                        Request request = UndertorwRequest.build(exchange, target);
+                        Response r = srv.forPod(request.getTarget().getHost()).post(request);
                         writeBody(exchange, r);
                     }
                 })))
@@ -110,42 +94,23 @@ public class UndertowSolidServer {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
-                        Map<String, List<String>> headers = getHeaders(exchange);
-                        SecurityContext context = auth.authenticate(headers);
-                        Acl rights = auth.authorize(context, target);
-                        Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.put(request);
-                        } else {
-                            r = file.put(request);
-                        }
-
+                        Request request = UndertorwRequest.build(exchange, target);
+                        Response r = srv.forPod(request.getTarget().getHost()).put(request);
                         writeBody(exchange, r);
                     }
                 })))
+
 
                 .delete("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
-                        Map<String, List<String>> headers = getHeaders(exchange);
-                        SecurityContext context = auth.authenticate(headers);
-                        Acl rights = auth.authorize(context, target);
-                        Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.delete(request);
-                        } else {
-                            r = file.delete(request);
-                        }
-
+                        Request request = UndertorwRequest.build(exchange, target);
+                        Response r = srv.forPod(request.getTarget().getHost()).delete(request);
                         writeBody(exchange, r);
                     }
                 })))
-                 */
+
         ).build().start();
 
         log.info("-------\\ Frontd is running /-------");
