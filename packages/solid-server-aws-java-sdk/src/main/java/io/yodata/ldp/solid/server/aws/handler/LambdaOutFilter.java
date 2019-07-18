@@ -10,7 +10,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.model.data.Exchange;
 import io.yodata.ldp.solid.server.model.data.Response;
-import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;
+import io.yodata.ldp.solid.server.model.processor.ResponseFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +18,15 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-public abstract class LambdaOutValidationProcessor extends LambdaValidationProcessor implements OutputValidationProcessor {
+public abstract class LambdaOutFilter extends LambdaValidationProcessor implements ResponseFilter {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaOutValidationProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(LambdaOutFilter.class);
 
     private final AWSLambda lambda;
 
     protected abstract String getLambdaName();
 
-    public LambdaOutValidationProcessor() {
+    public LambdaOutFilter() {
         DefaultAWSCredentialsProviderChain credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
         lambda = AWSLambdaClientBuilder.standard()
                 .withCredentials(credentialsProvider)
@@ -67,6 +67,11 @@ public abstract class LambdaOutValidationProcessor extends LambdaValidationProce
 
         log.info("Exchange {}: Response validation: end", ex.getRequest().getId());
         return ex.getResponse();
+    }
+
+    @Override
+    public Response head(Exchange ex) {
+        return process(ex);
     }
 
     @Override

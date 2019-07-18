@@ -17,9 +17,7 @@
 package io.yodata.ldp.solid.server.aws;
 
 import io.undertow.server.HttpServerExchange;
-import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.data.Request;
-import io.yodata.ldp.solid.server.model.security.Acl;
 import io.yodata.ldp.solid.server.undertow.UndertowTarget;
 import org.apache.commons.io.IOUtils;
 
@@ -52,33 +50,6 @@ public class UndertorwRequest extends Request {
         return headers;
     }
 
-    public static UndertorwRequest build(
-            HttpServerExchange ex,
-            SecurityContext sc,
-            UndertowTarget target,
-            Acl acl,
-            Map<String, List<String>> headers
-    ) {
-        UndertorwRequest r = new UndertorwRequest();
-
-        r.setId(UUID.randomUUID().toString());
-        r.setTimestamp(Instant.now());
-        r.setSecurity(sc);
-        r.setTarget(target);
-        r.setAcl(acl);
-        r.setMethod(ex.getRequestMethod().toString());
-        r.setHeaders(new HashMap<>(headers));
-        r.setParameters(new HashMap<>());
-
-        ex.getQueryParameters().forEach((key, queue) -> queue.forEach(value -> {
-            r.parameters.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
-        }));
-
-        r.setBody(getBody(ex));
-
-        return r;
-    }
-
     public static UndertorwRequest build(HttpServerExchange ex, UndertowTarget target) {
         UndertorwRequest r = new UndertorwRequest();
 
@@ -88,6 +59,7 @@ public class UndertorwRequest extends Request {
         r.setTarget(target);
         r.setHeaders(getHeaders(ex));
         r.setParameters(new HashMap<>());
+        r.setBody(getBody(ex));
 
         return r;
     }

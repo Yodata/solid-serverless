@@ -79,7 +79,6 @@ public class UndertowSolidServer {
                     }
                 })))
 
-
                 .post("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
@@ -100,7 +99,6 @@ public class UndertowSolidServer {
                     }
                 })))
 
-
                 .delete("/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
@@ -110,7 +108,6 @@ public class UndertowSolidServer {
                         writeBody(exchange, r);
                     }
                 })))
-
         ).build().start();
 
         log.info("-------\\ Frontd is running /-------");

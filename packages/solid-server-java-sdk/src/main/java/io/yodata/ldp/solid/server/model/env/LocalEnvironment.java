@@ -17,10 +17,15 @@
 package io.yodata.ldp.solid.server.model.env;
 
 import io.yodata.EnvUtils;
+import io.yodata.ldp.solid.server.model.processor.RequestFilter;
+import io.yodata.ldp.solid.server.model.processor.ResponseFilter;
 import io.yodata.ldp.solid.server.model.store.BasicStore;
 import io.yodata.ldp.solid.server.model.store.Store;
 import io.yodata.ldp.solid.server.model.store.fs.Filesystem;
 import io.yodata.ldp.solid.server.model.store.fs.local.LocalFilesystem;
+
+import java.util.Collections;
+import java.util.List;
 
 public class LocalEnvironment extends Environment {
 
@@ -40,6 +45,16 @@ public class LocalEnvironment extends Environment {
     @Override
     public Store getStore() {
         return store;
+    }
+
+    @Override
+    public List<RequestFilter> getInputFilters() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<ResponseFilter> getOutputFilters() {
+        return Collections.emptyList();
     }
 
 }

@@ -23,11 +23,10 @@ import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.SolidPod;
 import io.yodata.ldp.solid.server.model.SolidSession;
-import io.yodata.ldp.solid.server.model.data.Page;
-import io.yodata.ldp.solid.server.model.data.Request;
-import io.yodata.ldp.solid.server.model.data.Response;
-import io.yodata.ldp.solid.server.model.data.Target;
+import io.yodata.ldp.solid.server.model.data.*;
 import io.yodata.ldp.solid.server.model.env.Environment;
+import io.yodata.ldp.solid.server.model.processor.RequestFilter;
+import io.yodata.ldp.solid.server.model.processor.ResponseFilter;
 import io.yodata.ldp.solid.server.model.store.PodStore;
 import io.yodata.ldp.solid.server.model.store.fs.*;
 import org.apache.commons.io.IOUtils;
@@ -38,6 +37,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class BasicPod implements SolidPod {
 
@@ -67,6 +69,14 @@ public class BasicPod implements SolidPod {
         return r;
     }
 
+    protected Exchange build(Request in) {
+        Target t = Objects.requireNonNull(in.getTarget());
+        in.setPolicy(env.getStore().getPolicies(t.getId()));
+        Exchange ex = new Exchange();
+        ex.setRequest(in);
+        return ex;
+    }
+
     @Override
     public SecurityContext getIdentity() {
         return creds;
@@ -82,28 +92,52 @@ public class BasicPod implements SolidPod {
         return new BasicSession();
     }
 
+    private Response run(Request req, BiConsumer<RequestFilter, Exchange> filterIn, BiConsumer<ResponseFilter, Exchange> filterOut, Function<Request, Response> toDo) {
+        Exchange ex = build(req);
+
+        for (RequestFilter filter : env.getInputFilters()) {
+            filterIn.accept(filter, ex);
+            if (Objects.nonNull(ex.getResponse())) {
+                return ex.getResponse();
+            }
+        }
+
+        Response r = toDo.apply(ex.getRequest());
+        ex.setResponse(r);
+
+        for (ResponseFilter filter : env.getOutputFilters()) {
+            filterOut.accept(filter, ex);
+            r = filter.get(ex);
+        }
+
+        return r;
+    }
+
     @Override
     public Response head(Request req) {
         log.info("Getting Resource meta {}", req.getTarget().getPath());
 
-        FsElementMeta meta = getStore().head(req.getTarget().getPath());
-        return build(meta);
+        return run(req, RequestFilter::head, ResponseFilter::head, req1 -> {
+            FsElementMeta meta = getStore().head(req.getTarget().getPath());
+            return build(meta);
+        });
     }
 
     @Override
     public Response get(Request req) {
         log.info("Getting Resource {}", req.getTarget().getPath());
 
-        try {
-            FsElement el = getStore().get(req.getTarget().getPath());
+        return run(req, RequestFilter::get, ResponseFilter::get, req1 -> {
+            try {
+                FsElement el = getStore().get(req.getTarget().getPath());
 
-            Response r = build(el.getMeta());
-            r.setBody(IOUtils.toByteArray(el.getData(), el.getMeta().getLength()));
-
-            return r;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+                Response r = build(el.getMeta());
+                r.setBody(IOUtils.toByteArray(el.getData(), el.getMeta().getLength()));
+                return r;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     @Override

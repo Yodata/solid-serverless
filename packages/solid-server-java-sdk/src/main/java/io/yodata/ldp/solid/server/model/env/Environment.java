@@ -17,6 +17,8 @@
 package io.yodata.ldp.solid.server.model.env;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
+import io.yodata.ldp.solid.server.model.processor.RequestFilter;
+import io.yodata.ldp.solid.server.model.processor.ResponseFilter;
 import io.yodata.ldp.solid.server.model.store.Store;
 
 import java.util.*;
@@ -51,5 +53,9 @@ public abstract class Environment {
     public abstract long getPriority();
 
     public abstract Store getStore();
+
+    public abstract List<RequestFilter> getInputFilters();
+
+    public abstract List<ResponseFilter> getOutputFilters();
 
 }

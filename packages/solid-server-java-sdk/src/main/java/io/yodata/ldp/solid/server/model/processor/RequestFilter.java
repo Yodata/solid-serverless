@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package io.yodata.ldp.solid.server.aws.handler;
+package io.yodata.ldp.solid.server.model.processor;
 
-import io.yodata.EnvUtils;
+import io.yodata.ldp.solid.server.model.data.Exchange;
 
-public class RequestCheckProcessor extends LambdaInFilter {
+public interface RequestFilter {
 
-    private final String name;
+    void head(Exchange ex);
 
-    public RequestCheckProcessor() {
-        name = EnvUtils.get("IN_MIDDLEWARE_LAMBDA");
-    }
+    void get(Exchange ex);
 
-    @Override
-    protected String getLambdaName() {
-        return name;
-    }
+    void post(Exchange ex);
+
+    void put(Exchange ex);
+
+    void delete(Exchange ex);
 
 }
