@@ -22,6 +22,7 @@ import io.yodata.ldp.solid.server.RawLdpResource;
 import io.yodata.ldp.solid.server.model.LdpResource;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -44,7 +45,7 @@ public class SimpleSolidClient implements SolidClient {
     private String apiKey;
 
     public SimpleSolidClient() {
-        client = HttpClients.createDefault();
+        client = HttpClients.createSystem();
     }
 
     public SimpleSolidClient(String apiKey) {
@@ -90,6 +91,25 @@ public class SimpleSolidClient implements SolidClient {
             }
 
             log.info("PUT {}: success", resourceId);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to save change", e);
+        }
+    }
+
+    @Override
+    public String append(URI resourceId, JsonObject data) {
+        HttpPost req = new HttpPost(resourceId);
+        getKey().ifPresent(key -> req.addHeader("X-API-Key", key));
+        req.setEntity(new StringEntity(GsonUtil.toJson(data), ContentType.APPLICATION_JSON));
+        try (CloseableHttpResponse res = client.execute(req)) {
+            int sc = res.getStatusLine().getStatusCode();
+            if (sc < 200 || sc > 299) {
+                throw new RuntimeException("Unable to save change: " + sc + " - " + EntityUtils.toString(res.getEntity()));
+            }
+
+            log.info("POST {}: success", resourceId);
+
+            return EntityUtils.toString(res.getEntity());
         } catch (IOException e) {
             throw new RuntimeException("Unable to save change", e);
         }

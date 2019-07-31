@@ -28,4 +28,6 @@ public interface SolidClient {
 
     void put(URI resourceId, JsonObject data);
 
+    String append(URI resourceId, JsonObject data);
+
 }

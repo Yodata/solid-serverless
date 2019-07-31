@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class InMemorySolidClient implements SolidClient {
 
@@ -46,6 +47,13 @@ public class InMemorySolidClient implements SolidClient {
     @Override
     public void put(URI resourceId, JsonObject data) {
         resources.put(resourceId, new RawLdpResource(GsonUtil.toJsonBytes(data)));
+    }
+
+    @Override
+    public String append(URI resourceId, JsonObject data) {
+        // FIXME not right
+        put(URI.create(resourceId.toString() + UUID.randomUUID().toString()), data);
+        return "";
     }
 
 }
