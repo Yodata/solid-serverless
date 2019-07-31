@@ -28,6 +28,7 @@ public class App implements RequestStreamHandler {
 
     private ContainerHandler storeHandler;
     private URI mainPod;
+    private boolean toSpecificPod;
 
     public App() {
         storeHandler = new ContainerHandler(S3Store.getDefault());
@@ -36,6 +37,12 @@ public class App implements RequestStreamHandler {
         if (StringUtils.isNotEmpty(mainPodUriRaw)) {
             mainPod = URI.create(mainPodUriRaw);
         }
+
+        String toSpecificPodRaw = System.getenv("TO_SPECIFIC_POD");
+        if (StringUtils.isEmpty(toSpecificPodRaw)) {
+            toSpecificPodRaw = "true";
+        }
+        toSpecificPod = StringUtils.equals(toSpecificPodRaw, "true");
     }
 
     @Override
@@ -90,7 +97,7 @@ public class App implements RequestStreamHandler {
         }
 
         JsonObject notification = new JsonObject();
-        notification.addProperty("topic", "realestate/profile#" + event.getType().toLowerCase());
+        notification.addProperty("topic", "realestate/profile#" + event.getType().toLowerCase().replace("action",""));
         notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
         notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
         notification.addProperty(ActionPropertyKey.Instrument.getId(), podId);
@@ -101,7 +108,10 @@ public class App implements RequestStreamHandler {
         sc.setInstrument(podId);
         sc.setAdmin(true);
 
-        send(objId, sc, notification);
+        if (toSpecificPod) {
+            send(objId, sc, notification);
+        }
+
         if (Objects.nonNull(mainPod)) {
             send(mainPod, sc,notification);
         }
