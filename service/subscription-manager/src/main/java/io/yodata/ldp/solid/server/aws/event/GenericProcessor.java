@@ -8,7 +8,7 @@ import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
-import io.yodata.ldp.solid.server.subscription.pusher.LambdaPusher;
+import io.yodata.ldp.solid.server.subscription.pusher.SqsPusher;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,13 +27,13 @@ public class GenericProcessor {
     private Store store;
     private ContainerHandler storeHandler;
     private TransformService transform;
-    private LambdaPusher pusher;
+    private SqsPusher pusher;
 
     public GenericProcessor(Store store) {
         this.store = store;
         this.storeHandler = new ContainerHandler(store);
         this.transform = new AWSTransformService();
-        this.pusher = new LambdaPusher();
+        this.pusher = new SqsPusher();
     }
 
     public void handleEvent(JsonObject event) {
