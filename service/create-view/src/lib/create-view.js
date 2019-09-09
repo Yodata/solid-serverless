@@ -1,8 +1,7 @@
-const { keyOrder, defaultValues, getContext } = require('@yodata/transform')
+const { getContext, plugin, mapAsync } = require('@yodata/transform')
 const pluginView = require('@yodata/transform-plugin-view')
 const get = require('lodash/get')
 const has = require('lodash/has')
-const logger = require('./logger')
 
 /**
  * creates a view
@@ -13,25 +12,23 @@ const logger = require('./logger')
  */
 module.exports = async (event) => {
 	if (event.context && event.object) {
-		logger.info('found event.context', event)
-		return processContext(event.context, event.object)
+		const context = await getContext(event.context)
+		return processContext(context, event.object)
 	}
-	if (has(event, 'object.topic') && has(event, ['scope', event.object.topic])) {
-		logger.info(`found topic (${event.object.topic}) and scope (${event.scope[event.object.topic]})`)
-		const contextHref = get(event, ['scope', event.object.topic])
-		return processContext(contextHref, event.object)
+	if (has(event, 'object.topic') && has(event, [ 'scope', event.object.topic ])) {
+		const context = await getContext(get(event, [ 'scope', event.object.topic ]))
+		return processContext(context, event.object)
 	}
 	return event.object
 }
 
+/** */
 async function processContext(cdef, data) {
 	const context = await getContext(cdef)
-	logger.debug('create-view:process:context', context)
-	logger.debug('create-view:process:data', data)
 	context
-		.use(keyOrder)
-		.use(defaultValues)
+		.use(plugin.defaultValues)
+		.use(plugin.keyOrder)
 		.use(pluginView)
-
-	return context.map(data)
+		.use(plugin.fetchJsonValue)
+	return mapAsync(context)(data)
 }
