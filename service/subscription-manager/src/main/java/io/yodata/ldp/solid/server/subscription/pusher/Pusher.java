@@ -57,28 +57,6 @@ public class Pusher {
         new Pusher().send(obj, target, cfg);
     }
 
-    private static class LazyLoadProvider<T> implements Supplier<T> {
-
-        private Supplier<T> builder;
-        private T obj;
-
-        private LazyLoadProvider(Supplier<T> builder) {
-            this.builder = builder;
-        }
-
-        @Override
-        public T get() {
-            synchronized (this) {
-                if (Objects.isNull(obj)) {
-                    obj = builder.get();
-                }
-            }
-
-            return obj;
-        }
-
-    }
-
     private static final Logger log = LoggerFactory.getLogger(Pusher.class);
 
     private Supplier<AmazonSNS> sns = new LazyLoadProvider<>(AmazonSNSClientBuilder::defaultClient);
@@ -87,6 +65,8 @@ public class Pusher {
     private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
     public void send(JsonObject data, String targetRaw, JsonObject cfg) {
+        log.info("Push of {}", GsonUtil.findString(data, "id").orElse("<NOT FOUND>"));
+
         log.debug("Sending data to {}: {}", targetRaw, data);
         try {
             String dataRaw = GsonUtil.toJson(data);

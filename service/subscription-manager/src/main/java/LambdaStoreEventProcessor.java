@@ -48,7 +48,13 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
                 } else if (record.has("body")) {
                     String body = record.getAsJsonPrimitive("body").getAsString();
                     log.debug("SQS data: {}", body);
-                    p.handleEvent(GsonUtil.parseObj(body));
+
+                    JsonObject message = GsonUtil.parseObj(body);
+                    if (message.has("TopicArn")) { // This is SNS to SQS without raw delivery
+                        message = GsonUtil.parseObj(GsonUtil.findString(obj, "Message").orElse("{}"));
+                    }
+
+                    p.handleEvent(message);
                 } else {
                     throw new IllegalArgumentException("This is not a SNS or SQS message, cannot process");
                 }

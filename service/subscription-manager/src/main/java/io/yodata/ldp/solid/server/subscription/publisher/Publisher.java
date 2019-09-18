@@ -92,7 +92,7 @@ public class Publisher {
                 // We send to store
                 Response res = dirHandler.post(r);
                 String eventId = GsonUtil.parseObj(res.getBody()
-                        .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                        .orElseGet(() -> GsonUtil.toJson(GsonUtil.makeObj("id", "<NOT RETURNED>")).getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Data was saved at {}", eventId);
 
                 Request d = new Request();
