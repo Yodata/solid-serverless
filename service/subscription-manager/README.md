@@ -174,7 +174,7 @@ Example of valid URIs:
 
 `config` is an arbitrary object depending on the scheme used in the URI. See below for more information.
 
---- 
+---
 
 `needContext` is a basic filter to remove personal/confidential/credentials data from the raw store event that triggered
 the subscription. It is `false` by default and will strip out those values.
@@ -199,7 +199,20 @@ the subscription. It is `false` by default and will strip out those values.
 }
 ```
 
+##### Signatures
+
+HTTP requests can be signed
+
+The following signature methods are available:
+
+- `sha1-salt`: Following Github's [signature method](https://developer.github.com/webhooks/securing/), this is a SHA-1 signature on the body content and a given salt, usually called "secret".
+
+##### Headers
+
+Arbitrary headers can be set. Header names are set has an object key, and the value is an array of strings, to be RFC compliant.
+
 ### Files
+
 #### Pod-specific
 Pod-specific subscriptions are stored at `/settings/subscriptions` and can be modified by the pod owner directly.
 
