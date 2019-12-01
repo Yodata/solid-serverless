@@ -17,6 +17,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,6 +40,7 @@ public class OutboxService {
 
             if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 target = new URIBuilder(target).setPath("/inbox/").setFragment("").build();
+                /*
                 log.info("Discovering inbox");
                 URI subUri = URI.create(target.toString());
                 HttpGet profileReq = new HttpGet(subUri);
@@ -69,6 +71,7 @@ public class OutboxService {
                     log.debug("Exception stacktrace", e);
                     log.warn("Using default inbox location: {}", target.toString());
                 }
+                 */
             }
         } catch (URISyntaxException e) {
             log.warn("Recipient {} is not a valid URI, skipping", recipient);
@@ -129,6 +132,8 @@ public class OutboxService {
             }
 
             log.info("Outbox item was successfully sent to {}", target);
+        } catch (SSLPeerUnverifiedException e) {
+            log.warn("Unable to send outbox item, will NOT retry: {}", e.getMessage());
         } catch (UnknownHostException e) {
             log.warn("Unable to send outbox item, will NOT retry: Unknown host: {}", e.getMessage());
         } catch (IOException e) {

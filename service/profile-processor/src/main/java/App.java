@@ -97,7 +97,7 @@ public class App implements RequestStreamHandler {
         }
 
         JsonObject notification = new JsonObject();
-        notification.addProperty("topic", "realestate/profile#" + event.getType().toLowerCase().replace("action",""));
+        notification.addProperty("topic", "realestate/profile#" + event.getType().replace("Action","").toLowerCase());
         notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
         notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
         notification.addProperty(ActionPropertyKey.Instrument.getId(), podId);

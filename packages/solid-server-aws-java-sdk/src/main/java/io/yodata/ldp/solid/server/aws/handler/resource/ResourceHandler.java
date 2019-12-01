@@ -103,7 +103,9 @@ public class ResourceHandler extends GenericHandler {
             return ex.getResponse();
         }
 
-        addIdIfPossible(in, in.getTarget().getId().toString());
+        String id = in.getTarget().getId().toString();
+        addIdIfPossible(in, id);
+        addKeyIfPossible(in, false, "id", id);
 
         ex.setResponse(storeProc.put(in));
         ex.setResponse(outCheck.put(ex));

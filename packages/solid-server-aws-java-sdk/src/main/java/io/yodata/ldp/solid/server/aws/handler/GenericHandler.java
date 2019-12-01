@@ -1,6 +1,7 @@
 package io.yodata.ldp.solid.server.aws.handler;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
@@ -56,15 +57,19 @@ public class GenericHandler {
                 return;
             }
 
-            keys.forEach((k, v) -> el.getAsJsonObject().add(k, v));
-
-            in.setBody(el);
+            JsonObject obj = el.getAsJsonObject();
+            keys.forEach(obj::add);
+            in.setBody(obj);
         } catch (RuntimeException e) {
             log.warn("Content type is JSON, but we could not parse it to add keys");
         }
     }
 
     protected void addIdIfPossible(Request in, String id) {
+        addKeyIfPossible(in, true, "@id", id);
+    }
+
+    protected void addKeyIfPossible(Request in, boolean force, String id, String value) {
         if (!StringUtils.equals(MimeTypes.APPLICATION_JSON, in.getContentType().orElse(""))) {
             // Ignoring content which is not JSON
             return;
@@ -78,8 +83,13 @@ public class GenericHandler {
                 return;
             }
 
-            el.getAsJsonObject().addProperty("id", id);
-            in.setBody(el);
+            JsonObject obj = el.getAsJsonObject();
+            if (obj.has(id) && !force) {
+                return;
+            }
+
+            obj.addProperty(id, value);
+            in.setBody(obj);
         } catch (RuntimeException e) {
             log.warn("Content type is JSON, but we could not parse it to add ID");
         }
