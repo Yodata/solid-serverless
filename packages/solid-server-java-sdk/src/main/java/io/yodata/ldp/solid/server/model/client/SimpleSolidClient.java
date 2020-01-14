@@ -90,7 +90,7 @@ public class SimpleSolidClient implements SolidClient {
                 throw new RuntimeException("Unable to save change: " + sc + " - " + EntityUtils.toString(res.getEntity()));
             }
 
-            log.info("PUT {}: success", resourceId);
+            log.debug("PUT {}: success", resourceId);
         } catch (IOException e) {
             throw new RuntimeException("Unable to save change", e);
         }
@@ -107,7 +107,7 @@ public class SimpleSolidClient implements SolidClient {
                 throw new RuntimeException("Unable to save change: " + sc + " - " + EntityUtils.toString(res.getEntity()));
             }
 
-            log.info("POST {}: success", resourceId);
+            log.debug("POST {}: success", resourceId);
 
             return EntityUtils.toString(res.getEntity());
         } catch (IOException e) {
