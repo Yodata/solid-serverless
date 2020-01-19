@@ -16,15 +16,17 @@
     "mime-types": "^2.1.21",
     "p-iteration": "^1.1.7",
     "parse-json": "^4.0.0",
-    "type-is": "^1.6.16"
+    "type-is": "^1.6.16",
+    "winston": "^3.2.1"
   },
   "scripts": {
     "test": "jest"
   },
   "devDependencies": {
-    "jest": "^24.8.0",
     "@types/jest": "^24.0.12",
     "@types/js-yaml": "^3.12.1",
-    "aws-sdk": "^2.380.0"
+    "@types/winston": "^2.4.4",
+    "aws-sdk": "^2.380.0",
+    "jest": "^24.8.0"
   }
 }
