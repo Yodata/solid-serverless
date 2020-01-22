@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 const finalize = require('../finalize-event')
 
-const encode = (data) => new Buffer(JSON.stringify(data)).toString('base64')
+const encode = (data) => Buffer.from(JSON.stringify(data)).toString('base64')
 
 const createEvent = (phase, contentType, contentTypeValue, data) => ({
 	[phase]: {
