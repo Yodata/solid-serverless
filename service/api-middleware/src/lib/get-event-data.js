@@ -11,7 +11,7 @@ const parseBody = (req) => {
 		return '{}'
 	}
 	if (req.isBase64Encoded) {
-		body = new Buffer(req.body, 'base64').toString()
+		body = Buffer.from(req.body, 'base64').toString()
 	}
 	return body
 }
@@ -36,17 +36,17 @@ module.exports = (event) => {
 		const req = event[stage]
 		const contentType = getHeader(req, 'content-type')
 		switch (typeis.is(contentType, ['json', '+json', 'application/x-yaml'])) {
-			case 'json':
-				data = parseJson(parseBody(req))
-				break
-			case 'application/ld+json':
-				data = parseJson(parseBody(req))
-				break
-			case 'application/x-yaml':
-				data = yaml.load(parseBody(req))
-				break
-			default:
-				data = null
+		case 'json':
+			data = parseJson(parseBody(req))
+			break
+		case 'application/ld+json':
+			data = parseJson(parseBody(req))
+			break
+		case 'application/x-yaml':
+			data = yaml.load(parseBody(req))
+			break
+		default:
+			data = null
 		}
 	}
 	logger.debug('get-event-data:result', { data })

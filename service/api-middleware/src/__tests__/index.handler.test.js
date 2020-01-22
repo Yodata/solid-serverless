@@ -10,12 +10,14 @@ test('returns a Promise', async () => {
 })
 
 test('example event/response', async () => {
+	expect.assertions(1)
 	const event = require('../example/event')
 	const response = require('../example/response')
-	expect(handler(event, {})).resolves.toEqual(response)
+	return expect(handler(event, {})).resolves.toEqual(response)
 })
 
 test('parses uri object keys', async () => {
+	expect.assertions(1)
 	const event = require('../example/test-event')
 	const data = getData(event)
 	const response = await handler(event, {})
@@ -37,7 +39,6 @@ test('get request with content-type header', async () => {
 		'policy': []
 	}
 	const result = await handler(event, {})
-	console.log({ result })
 	return expect(result).toHaveProperty('hasData', false)
 })
 

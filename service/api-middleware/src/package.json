@@ -2,30 +2,26 @@
   "name": "api-middleware",
   "version": "0.0.2",
   "description": "process REflex/SOLID requests for Real Living",
+  "private": true,
   "main": "src/index.js",
   "repository": "https://github.com/yodata/real-living",
   "author": "yodaveduran <dave@yodata.io>",
   "license": "MIT",
   "dependencies": {
-    "@yodata/solid-tools": "^0.0.8",
     "assert-plus": "^1.0.0",
     "fast-safe-stringify": "^2.0.6",
     "js-yaml": "^3.13.1",
-    "lodash": "^4.17.11",
-    "mime-types": "^2.1.21",
+    "lodash": "^4.17.15",
     "p-iteration": "^1.1.7",
     "parse-json": "^4.0.0",
     "type-is": "^1.6.16",
     "winston": "^3.2.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "npx jest --env node"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.12",
-    "@types/js-yaml": "^3.12.1",
-    "@types/winston": "^2.4.4",
-    "aws-sdk": "^2.380.0",
-    "jest": "^24.8.0"
+    "@types/aws-sdk": "^2.7.0",
+    "aws-sdk": "^2.608.0"
   }
 }
