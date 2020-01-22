@@ -1,20 +1,20 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Yodata API middleware for dev.yodata.io
+Description: solid-serverless api
 
 Globals:
   Function:
-    Timeout: 5
-    Runtime: nodejs8.10
+    Timeout: 30
+    Runtime: nodejs10.x
     Tags:
       app: solid-serverless
       component: api-middleware
     Environment:
       Variables:
         DEBUG_LEVEL: debug
-        NODE_ENV: development
+        NODE_ENV: production
         CHECK_SCOPE_FUNCTION_NAME: check-scope
-        CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view
+        CREATE_VIEW_FUNCTION_NAME: create-view
         APPLY_POLICY_FUNCTION_NAME: apply-policy
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
 
