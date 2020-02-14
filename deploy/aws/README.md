@@ -50,7 +50,7 @@ For each section:
 - First bullet point level is the AWS service
 - Second bullet point level are the actions to be allowed on the AWS service
 
-#### LambdaInvokeOnly
+#### SolidLambdaInvoke
 
 - Lamba
   - `InvokeFunction`
@@ -76,7 +76,7 @@ JSON equivalent:
 
 
 
-#### SQSSendMessageOnly
+#### SolidSQSSendMessage
 - SQS
   - `SendMessage`
   - `SendMessageBatch`
@@ -101,7 +101,7 @@ JSON equivalent:
 
 
 
-#### SNSPublishOnly
+#### SolidSNSPublish
 - SNS
   - `Publish`
 
@@ -120,7 +120,7 @@ JSON equivalent:
 
 
 
-#### S3WriteOnly
+#### SolidS3Write
 
 - S3
   - `DeleteObject`
@@ -153,10 +153,10 @@ The following new roles are to be created:
 - Service: Elastic Container Service
 - Use case: Elastic Container Service Task
 - Policies to be applied:
-  - `LambdaInvokeOnly`
-  - `SNSPublishOnly`
+  - `SolidLambdaInvoke`
+  - `SolidSNSPublish`
   - `AmazonS3ReadOnlyAccess`
-  - `S3WriteOnly`
+  - `SolidS3Write`
 - Name: `solid-server-api-front`
 
 #### Store events Lambda processor
@@ -166,10 +166,10 @@ The following new roles are to be created:
 - Policies to be applied:
   - `AWSLambdaSQSQueueExecutionRole`
   - `AmazonS3ReadOnlyAccess`
-  - `LambdaInvokeOnly`
-  - `S3WriteOnly`
-  - `SNSPublishOnly`
-  - `SQSSendMessageOnly`
+  - `SolidLambdaInvoke`
+  - `SolidS3Write`
+  - `SolidSNSPublish`
+  - `SolidSQSSendMessage`
 - Name: `solid-server-store-event-processor`
 
 #### Inbox Lambda processor
@@ -179,9 +179,9 @@ The following new roles are to be created:
 - Policies to be applied:
   - `AmazonS3ReadOnlyAccess`
   - `AWSLambdaSQSQueueExecutionRole`
-  - `LambdaInvokeOnly`
-  - `S3WriteOnly`
-  - `SNSPublishOnly`
+  - `SolidLambdaInvoke`
+  - `SolidS3Write`
+  - `SolidSNSPublish`
 - Name: `solid-server-inbox-processor`
 
 #### Outbox Lambda processor
@@ -191,9 +191,9 @@ The following new roles are to be created:
 - Policies to be applied:
   - `AWSLambdaSQSQueueExecutionRole`
   - `AmazonS3ReadOnlyAccess`
-  - `LambdaInvokeOnly`
-  - `S3WriteOnly`
-  - `SNSPublishOnly`
+  - `SolidLambdaInvoke`
+  - `SolidS3Write`
+  - `SolidSNSPublish`
 - Name: `solid-server-outbox-processor`
 
 #### Profile Processor
@@ -203,9 +203,9 @@ The following new roles are to be created:
 - Policies to be applied:
   - `AWSLambdaSQSQueueExecutionRole`
   - `AmazonS3ReadOnlyAccess`
-  - `LambdaInvokeOnly`
-  - `S3WriteOnly`
-  - `SNSPublishOnly`
+  - `SolidLambdaInvoke`
+  - `SolidS3Write`
+  - `SolidSNSPublish`
 - Name: `solid-server-profile-processor`
 
 #### Push Processor
@@ -215,9 +215,9 @@ The following new roles are to be created:
 - Policies to be applied:
   - `AWSLambdaSQSQueueExecutionRole`
   - `AmazonS3ReadOnlyAccess`
-  - `LambdaInvokeOnly`
-  - `S3WriteOnly`
-  - `SNSPublishOnly`
+  - `SolidLambdaInvoke`
+  - `SolidS3Write`
+  - `SolidSNSPublish`
 - Name: `solid-server-push-processor`
 
 #### Publish Processor
@@ -227,9 +227,9 @@ The following new roles are to be created:
 - Policies to be applied:
   - `AWSLambdaSQSQueueExecutionRole`
   - `AmazonS3ReadOnlyAccess`
-  - `LambdaInvokeOnly`
-  - `S3WriteOnly`
-  - `SNSPublishOnly`
+  - `SolidLambdaInvoke`
+  - `SolidS3Write`
+  - `SolidSNSPublish`
 - Name: `solid-server-publish-processor`
 
 ## SNS

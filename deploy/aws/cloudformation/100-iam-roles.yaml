@@ -1,0 +1,138 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "IAMR2I128": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-api-front",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "ecs-tasks.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    },
+    "IAMR2I129": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-inbox-processor",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    },
+    "IAMR2I130": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-outbox-processor",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    },
+    "IAMR2I131": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-profile-processor",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    },
+    "IAMR2I132": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-publish-processor",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    },
+    "IAMR2I133": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-push-processor",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    },
+    "IAMR2I134": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "solid-server-store-event-processor",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+          ]
+        }
+      }
+    }
+  }
+}

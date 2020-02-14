@@ -1,0 +1,38 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "IAMP21QY6": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": "SolidInternalProcessor",
+        "Roles": [
+          "solid-server-api-front",
+          "solid-server-inbox-processor",
+          "solid-server-outbox-processor",
+          "solid-server-profile-processor",
+          "solid-server-publish-processor",
+          "solid-server-push-processor",
+          "solid-server-store-event-processor"
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "lambda:InvokeFunction",
+              "lambda:InvokeAsync",
+              "sns:Publish",
+              "s3:PutObject",
+              "s3:DeleteObject",
+              "sqs:SendMessageBatch",
+              "sqs:SendMessage",
+            ],
+            "Resource": "*"
+          }
+          ]
+        }
+      }
+    }
+  }
+}
