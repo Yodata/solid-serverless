@@ -1,0 +1,11 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "S3B17AS6": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "yodata-dev-solid-serverless-storage"
+      }
+    }
+  }
+}

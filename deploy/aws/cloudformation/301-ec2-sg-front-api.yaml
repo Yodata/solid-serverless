@@ -1,0 +1,12 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "EC2SG5C17Q": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "solid-server-api-front",
+        "GroupName": "solid-server-api-front"
+      }
+    }
+  }
+}
