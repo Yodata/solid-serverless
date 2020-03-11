@@ -1,0 +1,11 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "SNST1L7VM": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "solid-server-store-events"
+      }
+    }
+  }
+}

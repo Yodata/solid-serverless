@@ -232,11 +232,6 @@ The following new roles are to be created:
   - `SolidSNSPublish`
 - Name: `solid-server-publish-processor`
 
-## SNS
-Create a new topic for the store events, consumed by the Subscription Manager:
-
-- Topic name: `solid-server-store-events`
-
 ## SQS
 Create the following queues:
 
@@ -352,7 +347,12 @@ Create the following access policy:
 - Principal: the account itself
 - Action: `SendMessage`
 
-Subscribe the SQS queue to the SNS topic `solid-server-store-events`.
+## SNS
+Create a new topic for the store events, consumed by the Subscription Manager:
+
+- Topic name: `solid-server-store-events`
+
+Subscribe the SQS queue `solid-server-store-events` to the topic with Raw message delivery enabled.
 
 ## S3
 
@@ -372,8 +372,6 @@ The last two steps can be done using the following commands:
 aws s3 cp --recursive --content-type 'application/json' ./ s3://yodata-realliving-solid-server-storage/
 aws s3 rm s3://yodata-realliving-solid-server-storage/global/security/api/key/.gitignore
 ```
-
-
 
 ## EC2
 ### Key Pairs
@@ -723,7 +721,7 @@ Create new Task Definition:
   - Memory Limits
 
     - Type: Soft
-    - Amount: `128`
+    - Amount: `256`
 
   - Port mapping:
 

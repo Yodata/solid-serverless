@@ -1,0 +1,75 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "SQSQ21XPA": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-store-events-processor",
+        "VisibilityTimeout": 60
+      }
+    },
+    "SQSQ21XPB": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-inbox-processor",
+        "VisibilityTimeout": 60
+      }
+    },
+    "SQSQ21XPC": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-outbox-processor",
+        "VisibilityTimeout": 60
+      }
+    },
+    "SQSQ21XPD": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-push-processor",
+        "VisibilityTimeout": 60
+      }
+    },
+    "SQSQ21XPE": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-publish-processor",
+        "VisibilityTimeout": 60
+      }
+    },
+    "SQSQ21XPF": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-profile-processor",
+        "VisibilityTimeout": 60
+      }
+    },
+    "SQSQ21XPG": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "DelaySeconds": 0,
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "solid-server-profile-patcher-processor",
+        "VisibilityTimeout": 60
+      }
+    }
+  }
+}
