@@ -87,7 +87,8 @@ public class Pusher {
     private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
     public void send(JsonObject data, String targetRaw, JsonObject cfg) {
-        log.debug("Sending data to {}: {}", targetRaw, data);
+        String id = GsonUtil.findString(data, "@id").orElseGet(() -> GsonUtil.findString(data, "id").orElse("<NOT PROVIDED>"));
+        log.debug("{} - Sending data to {}: {}", id, targetRaw, data);
         try {
             String dataRaw = GsonUtil.toJson(data);
             URI target = URI.create(targetRaw);
@@ -149,17 +150,16 @@ public class Pusher {
                     int sc = res.getStatusLine().getStatusCode();
                     String body = EntityUtils.toString(res.getEntity());
                     if (sc < 200 || sc >= 300) {
-                        log.error("Unable to send notification | sc: {}", sc);
+                        log.error("{} - Unable to send notification - HTTP Status code: {}", id, sc);
                         log.error("Error: {}", body);
-                        throw new RuntimeException("Status code when sending to " + target.toString() + ": " + sc);
+                    } else {
+                        log.info("{} - Message was successfully sent to {}", id, target);
+                        log.debug("Response body:\n{}", body);
                     }
-
-                    log.info("Message was successfully sent to {}", target);
-                    log.debug("Response body:\n{}", body);
                 } catch (UnknownHostException e) {
-                    log.warn("Unable to send Message, will NOT retry: Unknown host: {}", e.getMessage());
+                    log.warn("{} - Unable to send Message, will NOT retry: Unknown host: {}", id, e.getMessage());
                 } catch (IOException e) {
-                    log.error("Unable to send Message due to I/O error, will retry", e);
+                    log.error("{} - Unable to send Message due to I/O error, will retry", id, e);
                     throw new RuntimeException("Unable to send notification to " + target.toString(), e);
                 }
             } else {
