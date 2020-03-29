@@ -89,7 +89,7 @@ public class Pusher {
 
     public void send(JsonObject data, String targetRaw, JsonObject cfg) {
         String id = GsonUtil.findString(data, "@id").orElseGet(() -> GsonUtil.findString(data, "id").orElse("<NOT PROVIDED>"));
-        log.debug("{} - Sending data to {}: {}", id, targetRaw, data);
+        log.info("{} - Sending data to {}: {}", id, targetRaw, data);
         try {
             String dataRaw = GsonUtil.toJson(data);
             URI target = URI.create(targetRaw);
