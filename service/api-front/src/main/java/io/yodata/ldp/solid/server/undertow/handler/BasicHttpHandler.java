@@ -27,6 +27,10 @@ public abstract class BasicHttpHandler implements HttpHandler {
         return headers;
     }
 
+    protected void putHeader(HttpServerExchange ex, String name, String value) {
+        ex.getResponseHeaders().put(HttpString.tryFromString(name), value);
+    }
+
     protected void writeBody(HttpServerExchange ex, int statusCode, JsonElement e) {
         Response r = new Response();
         r.setStatus(statusCode);

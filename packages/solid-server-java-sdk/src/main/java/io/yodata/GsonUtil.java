@@ -240,6 +240,11 @@ public class GsonUtil {
         return findElement(o, key).filter(JsonElement::isJsonArray).map(JsonElement::getAsJsonArray);
     }
 
+    public static String extractString(JsonObject o, String key, String defaultValue) {
+        List<String> data = findArrayOrString(o, key);
+        return data.isEmpty() ? defaultValue : data.get(0);
+    }
+
     public static String toJson(Object o) {
         return get().toJson(o);
     }

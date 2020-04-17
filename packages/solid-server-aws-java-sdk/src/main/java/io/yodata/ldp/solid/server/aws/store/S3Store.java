@@ -13,7 +13,10 @@ import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
-import io.yodata.ldp.solid.server.model.*;
+import io.yodata.ldp.solid.server.model.EntityBasedStore;
+import io.yodata.ldp.solid.server.model.Page;
+import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.Target;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -112,14 +115,14 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
-    protected Optional<String> getData(String path) {
+    public Optional<String> getData(String path) {
         log.debug("Getting S3 object {}", path);
 
         return getFile(path).map(this::getData);
     }
 
     @Override
-    protected Optional<Map<String, String>> findMeta(String path) {
+    public Optional<Map<String, String>> findMeta(String path) {
         return getFileMeta(path).map(meta -> new HashMap<>(meta.getUserMetadata()));
     }
 

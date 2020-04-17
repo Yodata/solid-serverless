@@ -278,8 +278,8 @@ public abstract class EntityBasedStore implements Store {
 
     protected abstract void save(String contentType, byte[] bytes, String path, Map<String, String> meta);
 
-    protected abstract Optional<String> getData(String path);
+    public abstract Optional<String> getData(String path);
 
-    protected abstract Optional<Map<String, String>> findMeta(String path);
+    public abstract Optional<Map<String, String>> findMeta(String path);
 
 }
