@@ -7,17 +7,30 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public class LogAction {
 
     private String actionStatus;
-    private JsonObject object;
+    private String object;
+    private String target;
+    private JsonObject config;
     private JsonObject result;
     private JsonObject error;
 
     public LogAction() {
-        object = new JsonObject();
         result = new JsonObject();
     }
 
-    public LogAction setObject(JsonObject o) {
-        object = o;
+    public LogAction setObject(String s) {
+        object = s;
+
+        return this;
+    }
+
+    public LogAction setTarget(String s) {
+        target = s;
+
+        return this;
+    }
+
+    public LogAction setConfig(JsonObject o) {
+        config = o;
 
         return this;
     }
