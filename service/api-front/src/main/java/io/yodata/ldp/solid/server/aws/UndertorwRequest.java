@@ -6,8 +6,10 @@ import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.undertow.UndertowTarget;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 
@@ -23,6 +25,10 @@ public class UndertorwRequest extends Request {
         } catch (IOException e) {
             throw new RuntimeException("Error while fetching request body", e);
         }
+    }
+
+    public static String getBodyString(HttpServerExchange ex) {
+        return StringUtils.toEncodedString(getBody(ex), StandardCharsets.UTF_8);
     }
 
     public static UndertorwRequest build(

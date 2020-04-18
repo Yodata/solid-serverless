@@ -1,48 +1,178 @@
 package io.yodata.ldp.solid.server.undertow;
 
+import com.google.gson.JsonObject;
+import com.onelogin.saml2.settings.SettingsBuilder;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
+import io.undertow.server.handlers.Cookie;
+import io.undertow.server.handlers.CookieImpl;
+import io.undertow.server.handlers.RedirectHandler;
+import io.undertow.util.StatusCodes;
+import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.UndertorwRequest;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.*;
+import io.yodata.ldp.solid.server.saml.ReflexSamlResponse;
 import io.yodata.ldp.solid.server.undertow.handler.BasicHttpHandler;
 import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class UndertowSolidServer {
 
     private static final Logger log = LoggerFactory.getLogger(UndertowSolidServer.class);
 
     public static void main(String[] args) {
+        log.info("-------/ Frontd is starting \\-------");
+
         int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(System.getenv("FRONTD_LOAD_MULTIPLIER"), "1"));
+        String samlIdpUrl = System.getenv("REFLEX_AUTH_SAML_IDP_URL"); // FIXME use store to store config
+        String rootDomain = System.getenv("REFLEX_ROOT_DOMAIN"); // FIXME use store to store config
+        String samlAppRedirectUrl = System.getenv("REFLEX_AUTH_SAML_ACS_URL"); // FIXME use store to store config
         int workerThreads = multiplier * 2 * 8;
 
         int port = 9000;
         String host = "0.0.0.0";
 
-        log.info("-------/ Frontd is starting \\-------");
+        if (StringUtils.isBlank(rootDomain)) {
+            throw new RuntimeException("REFLEX_ROOT_DOMAIN cannot be empty/bank");
+        }
+
+        if (StringUtils.isBlank(samlIdpUrl)) {
+            throw new RuntimeException("REFLEX_AUTH_SAML_IDP_URL cannot be empty/bank");
+        }
+
+        if (StringUtils.isBlank(samlAppRedirectUrl)) {
+            throw new RuntimeException("REFLEX_AUTH_SAML_ACS_URL cannot be empty/bank");
+        }
+
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
 
+        EntityBasedStore store = S3Store.getDefault();
         ContainerHandler folder = new ContainerHandler();
         ResourceHandler file = new ResourceHandler();
-        SecurityProcessor auth = new SecurityProcessor(S3Store.getDefault());
+        SecurityProcessor auth = new SecurityProcessor(store);
 
         Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
                 .get("/status", exchange -> {
                     exchange.setStatusCode(200);
                     exchange.endExchange();
                 })
+
+                .add("OPTIONS", "/**", new ExceptionHandler(exchange -> {
+                }))
+
+                .get("/reflex/auth/saml/login", new ExceptionHandler(exchange -> {
+                    log.info("Got a GET for /reflex/auth/saml/login");
+                    log.info("Redirecting to the SAML IDP URL");
+                    new RedirectHandler(samlIdpUrl).handleRequest(exchange);
+                }))
+
+                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(exchange -> {
+                    log.info("Got a GET for /reflex/auth/logout");
+
+                    Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault("reflex_session_type", new CookieImpl("reflex_session_type"));
+                    Cookie sessionTokenCookie = exchange.getRequestCookies().getOrDefault("reflex_session_token", new CookieImpl("reflex_session_token"));
+
+                    String sessionType = sessionTypeCookie.getValue();
+                    String sessionToken = sessionTokenCookie.getValue();
+
+                    if (StringUtils.isNotBlank(sessionType)) {
+                        log.info("Clearing all active sessions");
+
+                        store.delete("global/security/api/token/" + sessionType + "/" + sessionToken);
+                    }
+
+                    sessionTypeCookie = sessionTypeCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
+                    sessionTokenCookie = sessionTokenCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
+
+                    exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
+                    exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
+                })))
+
+                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(exchange -> {
+                    log.info("Got a POST for /reflex/auth/saml/acs");
+                    String body = UndertorwRequest.getBodyString(exchange);
+                    log.debug("Body: {}", body);
+                    ReflexSamlResponse saml = new ReflexSamlResponse(new SettingsBuilder().build(), exchange.getRequestURL(), body);
+                    log.debug("SAML XML: \n{}", saml.getSAMLResponseXml());
+                    log.debug("-----------");
+                    log.debug("Attributes: {}", GsonUtil.getPrettyForLog(saml.getAttributes()));
+
+                    JsonObject samlAttributes = GsonUtil.makeObj(saml.getAttributes());
+                    String contactId = GsonUtil.extractString(samlAttributes, "contact_id", "");
+                    if (StringUtils.isBlank(contactId)) {
+                        throw new RuntimeException("IDP did not include mandatory data - key: contact_id");
+                    }
+
+                    // FIXME we should sign this
+                    String sessionToken = UUID.randomUUID().toString().replace("-", "");
+                    Instant expiresAt = Instant.now().plusSeconds(24 * 60 * 60); // 24H
+                    Cookie sessionTypeCookie = new ReflexCookieImpl("reflex_session_type", "saml")
+                            .setSecure(true)
+                            .setSameSiteMode("None")
+                            .setPath("/")
+                            .setExpires(Date.from(expiresAt));
+                    Cookie sessionTokenCookie = new ReflexCookieImpl("reflex_session_token", sessionToken)
+                            .setSecure(true)
+                            .setSameSiteMode("None")
+                            .setPath("/")
+                            .setExpires(Date.from(expiresAt));
+
+                    JsonObject sessionData = new JsonObject();
+                    sessionData.add("raw", samlAttributes);
+                    sessionData.addProperty("profile_id", "https://" + contactId + "." + rootDomain + "/profile/card#me");
+                    sessionData.addProperty("valid_not_after", expiresAt.toEpochMilli());
+                    store.save("global/security/api/token/saml/" + sessionToken, sessionData);
+
+                    exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
+                    exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
+
+                    new RedirectHandler(samlAppRedirectUrl).handleRequest(exchange);
+                    log.info("Redirected to App URL");
+                })))
+
+                .put("/reflex/auth/saml/acs", new ExceptionHandler(ex -> ex.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED)))
+
+                .get("/reflex/auth/whoami", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
+
+                    @Override
+                    public void handleRequest(HttpServerExchange ex) {
+                        Cookie sessionTypeCookie = ex.getRequestCookies().getOrDefault("reflex_session_type", new CookieImpl("reflex_session_type"));
+                        Cookie sessionTokenCookie = ex.getRequestCookies().getOrDefault("reflex_session_token", new CookieImpl("reflex_session_token"));
+
+                        String sessionType = sessionTypeCookie.getValue();
+                        String sessionToken = sessionTokenCookie.getValue();
+
+                        String path = "global/security/api/token/" + sessionType + "/" + sessionToken;
+                        Optional<String> sessionDataOpt = store.getData(path);
+                        JsonObject sessionData = sessionDataOpt.flatMap(GsonUtil::tryParseObj).orElseGet(JsonObject::new);
+
+                        if (StringUtils.isAnyBlank(sessionType, sessionToken) || sessionData.size() == 0) {
+                            //FIXME clear any possible remaining cookie
+                            ex.setStatusCode(401);
+                            ex.endExchange();
+                            return;
+                        }
+
+                        writeBody(ex, 200, sessionData);
+                    }
+
+                })))
 
                 .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new BasicHttpHandler() {
                     @Override

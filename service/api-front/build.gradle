@@ -27,6 +27,7 @@ dependencies {
     compile project(':aws-sdk')
     compile 'org.slf4j:slf4j-simple:1.7.25'
     compile 'io.undertow:undertow-core:2.0.15.Final'
+    compile 'com.onelogin:java-saml:2.5.0'
 
     testCompile 'junit:junit:4.12'
 }

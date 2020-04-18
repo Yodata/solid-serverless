@@ -1,9 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
-import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -62,12 +60,12 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    protected Optional<String> getData(String path) {
+    public Optional<String> getData(String path) {
         return Optional.ofNullable(entities.get(path)).map(d -> new String(d.getData(), StandardCharsets.UTF_8));
     }
 
     @Override
-    protected Optional<Map<String, String>> findMeta(String path) {
+    public Optional<Map<String, String>> findMeta(String path) {
         return Optional.empty();
     }
 
