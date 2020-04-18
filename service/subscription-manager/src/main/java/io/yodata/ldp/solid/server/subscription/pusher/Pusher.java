@@ -102,11 +102,9 @@ public class Pusher {
 
     public void send(LogAction tracer, JsonObject data, String targetRaw, JsonObject cfg) {
         String id = GsonUtil.findString(data, "@id").orElseGet(() -> GsonUtil.findString(data, "id").orElse("<NOT PROVIDED>"));
-        JsonObject logData = new JsonObject();
-        logData.addProperty("id", id);
-        logData.addProperty("target", targetRaw);
-        logData.add("config", cfg);
-        tracer.setObject(logData);
+        tracer.setObject(id);
+        tracer.setTarget(targetRaw);
+        tracer.setConfig(cfg);
 
         log.debug("{} - Sending data to {}: {}", id, targetRaw, data);
         try {
