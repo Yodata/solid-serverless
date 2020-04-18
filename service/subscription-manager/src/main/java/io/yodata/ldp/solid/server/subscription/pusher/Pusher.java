@@ -108,14 +108,14 @@ public class Pusher {
         logData.add("config", cfg);
         tracer.setObject(logData);
 
-        log.info("{} - Sending data to {}: {}", id, targetRaw, data);
+        log.debug("{} - Sending data to {}: {}", id, targetRaw, data);
         try {
             String dataRaw = GsonUtil.toJson(data);
             URI target = URI.create(targetRaw);
             if (StringUtils.equals("aws-sns", target.getScheme())) {
                 PublishRequest req = new PublishRequest();
                 String arn = target.getAuthority();
-                log.info("ARN: {}", arn);
+                log.debug("ARN: {}", arn);
                 req.setTopicArn(arn);
                 req.setMessage(dataRaw);
                 PublishResult result = sns.get().publish(req);
@@ -130,18 +130,15 @@ public class Pusher {
                         req.setMessageGroupId("default");
                     }
                     req.setMessageBody(dataRaw);
-                    sqs.get().sendMessage(req);
-                    log.info("Event dispatched to SQS queue {}", req.getQueueUrl());
+                    SendMessageResult result = sqs.get().sendMessage(req);
+                    tracer.setResult(result);
+                    log.debug("Event dispatched to SQS queue {}", req.getQueueUrl());
                 } catch (AmazonSQSException e) {
                     log.error("Failure to to SQS queue {}", queueUrl);
                     log.error("Message: {}", data);
                     log.error("Error: {}", e.getMessage(), e);
-                    throw e;
+                    tracer.setError(e);
                 }
-                req.setMessageBody(dataRaw);
-                SendMessageResult result = sqs.get().sendMessage(req);
-                tracer.setResult(result);
-                log.debug("Event dispatched to SQS queue {}", req.getQueueUrl());
             } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
                 String lName = target.getAuthority();
                 InvokeRequest i = new InvokeRequest();
