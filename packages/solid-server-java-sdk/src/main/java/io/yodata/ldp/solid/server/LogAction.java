@@ -29,7 +29,7 @@ public class LogAction {
     }
 
     public LogAction setResult(Object o) {
-        setObject(GsonUtil.makeObj(o));
+        setResult(GsonUtil.makeObj(o));
 
         return this;
     }
