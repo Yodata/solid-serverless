@@ -7,11 +7,14 @@ import com.amazonaws.services.lambda.model.InvokeResult;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.services.sqs.model.SendMessageResult;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.LogAction;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,11 +53,7 @@ public class Pusher {
         }
 
         JsonObject command = GsonUtil.parseObj(data);
-        JsonObject obj = GsonUtil.getObj(command, "object");
-        String target = GsonUtil.getStringOrThrow(command, "target");
-        JsonObject cfg = GsonUtil.findObj(command, "config").orElseGet(JsonObject::new);
-
-        new Pusher().send(obj, target, cfg);
+        new Pusher().send(command);
     }
 
     private static class LazyLoadProvider<T> implements Supplier<T> {
@@ -86,8 +85,28 @@ public class Pusher {
     private Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
     private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
-    public void send(JsonObject data, String targetRaw, JsonObject cfg) {
+    public void send(JsonObject command) {
+        LogAction tracer = new LogAction();
+        try {
+            JsonObject data = GsonUtil.getObj(command, "object");
+            String target = GsonUtil.getStringOrThrow(command, "target");
+            JsonObject cfg = GsonUtil.findObj(command, "config").orElseGet(JsonObject::new);
+            send(tracer, data, target, cfg);
+        } catch (RuntimeException e) {
+            tracer.setError(e);
+        } finally {
+            log.info(GsonUtil.toJson(tracer));
+        }
+    }
+
+    public void send(LogAction tracer, JsonObject data, String targetRaw, JsonObject cfg) {
         String id = GsonUtil.findString(data, "@id").orElseGet(() -> GsonUtil.findString(data, "id").orElse("<NOT PROVIDED>"));
+        JsonObject logData = new JsonObject();
+        logData.addProperty("id", id);
+        logData.addProperty("target", targetRaw);
+        logData.add("config", cfg);
+        tracer.setObject(logData);
+
         log.info("{} - Sending data to {}: {}", id, targetRaw, data);
         try {
             String dataRaw = GsonUtil.toJson(data);
@@ -98,8 +117,9 @@ public class Pusher {
                 log.info("ARN: {}", arn);
                 req.setTopicArn(arn);
                 req.setMessage(dataRaw);
-                sns.get().publish(req);
-                log.info("Event dispatched to SNS topic {}", req.getTopicArn());
+                PublishResult result = sns.get().publish(req);
+                tracer.setResult(result);
+                log.debug("Event dispatched to SNS topic {}", req.getTopicArn());
             } else if (StringUtils.equals("aws-sqs", target.getScheme())) {
                 SendMessageRequest req = new SendMessageRequest();
                 req.setQueueUrl(new URIBuilder(target).setScheme("https").build().toURL().toString());
@@ -107,8 +127,9 @@ public class Pusher {
                     req.setMessageGroupId("default");
                 }
                 req.setMessageBody(dataRaw);
-                sqs.get().sendMessage(req);
-                log.info("Event dispatched to SQS queue {}", req.getQueueUrl());
+                SendMessageResult result = sqs.get().sendMessage(req);
+                tracer.setResult(result);
+                log.debug("Event dispatched to SQS queue {}", req.getQueueUrl());
             } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
                 String lName = target.getAuthority();
                 InvokeRequest i = new InvokeRequest();
@@ -118,9 +139,10 @@ public class Pusher {
                 int statusCode = r.getStatusCode();
                 String functionError = r.getFunctionError();
                 if (statusCode != 200 || StringUtils.isNotEmpty(functionError)) {
+                    tracer.setResult(r);
                     throw new RuntimeException("Error when calling lambda " + lName + " | Status code: " + statusCode + " | Error: " + functionError);
                 }
-                log.info("Lambda {} was successfully called", lName);
+                log.debug("Lambda {} was successfully called", lName);
             } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 HttpConfig httpCfg = GsonUtil.get().fromJson(cfg, HttpConfig.class);
                 HttpPost req = new HttpPost(target);
@@ -149,28 +171,39 @@ public class Pusher {
                 try (CloseableHttpResponse res = http.get().execute(req)) {
                     int sc = res.getStatusLine().getStatusCode();
                     String body = EntityUtils.toString(res.getEntity());
+                    JsonObject r = new JsonObject();
+                    r.addProperty("statusCode", sc);
+                    r.addProperty("body", body);
+                    tracer.setResult(r);
                     if (sc < 200 || sc >= 300) {
-                        log.error("{} - Unable to send notification - HTTP Status code: {}", id, sc);
-                        log.error("Error: {}", body);
+                        tracer.setSuccess(false);
+                        log.debug("{} - Unable to send notification - HTTP Status code: {}", id, sc);
+                        log.debug("Error: {}", body);
                     } else {
-                        log.info("{} - Message was successfully sent to {}", id, target);
+                        log.debug("{} - Message was successfully sent to {}", id, target);
                         log.debug("Response body:\n{}", body);
                     }
                 } catch (UnknownHostException e) {
-                    log.warn("{} - Unable to send Message, will NOT retry: Unknown host: {}", id, e.getMessage());
+                    tracer.setError(e);
+                    log.debug("{} - Unable to send Message, will NOT retry: Unknown host: {}", id, e.getMessage());
                 } catch (IOException e) {
-                    log.error("{} - Unable to send Message due to I/O error, will retry", id, e);
+                    tracer.setError(e);
+                    log.debug("{} - Unable to send Message due to I/O error, will retry", id, e);
                     throw new RuntimeException("Unable to send notification to " + target.toString(), e);
                 }
             } else {
-                throw new RuntimeException("Scheme " + target.getScheme() + " is not supported");
+                String msg = "Scheme " + target.getScheme() + " is not supported";
+                tracer.setResult(GsonUtil.makeObj("reason", msg)).setSuccess(false);
             }
         } catch (IllegalArgumentException e) {
             log.error("Target destination is not understood: {}", targetRaw);
+            tracer.setError(e);
         } catch (URISyntaxException e) {
             log.error("Cannot build URI", e);
+            tracer.setError(e);
         } catch (MalformedURLException e) {
             log.error("Cannot build URL", e);
+            tracer.setError(e);
         }
     }
 
