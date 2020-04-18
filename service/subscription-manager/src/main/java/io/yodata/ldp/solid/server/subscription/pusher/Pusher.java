@@ -10,6 +10,7 @@ import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.AmazonSQSException;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 import com.google.gson.JsonObject;
@@ -121,15 +122,23 @@ public class Pusher {
                 tracer.setResult(result);
                 log.debug("Event dispatched to SNS topic {}", req.getTopicArn());
             } else if (StringUtils.equals("aws-sqs", target.getScheme())) {
-                SendMessageRequest req = new SendMessageRequest();
-                req.setQueueUrl(new URIBuilder(target).setScheme("https").build().toURL().toString());
-                if (StringUtils.endsWith(req.getQueueUrl(), ".fifo")) {
-                    req.setMessageGroupId("default");
+                String queueUrl = new URIBuilder(target).setScheme("https").build().toURL().toString();
+                try {
+                    SendMessageRequest req = new SendMessageRequest();
+                    req.setQueueUrl(queueUrl);
+                    if (StringUtils.endsWith(req.getQueueUrl(), ".fifo")) {
+                        req.setMessageGroupId("default");
+                    }
+                    req.setMessageBody(dataRaw);
+                    SendMessageResult result = sqs.get().sendMessage(req);
+                    tracer.setResult(result);
+                    log.debug("Event dispatched to SQS queue {}", req.getQueueUrl());
+                } catch (AmazonSQSException e) {
+                    log.error("Failure to to SQS queue {}", queueUrl);
+                    log.error("Message: {}", data);
+                    log.error("Error: {}", e.getMessage(), e);
+                    tracer.setError(e);
                 }
-                req.setMessageBody(dataRaw);
-                SendMessageResult result = sqs.get().sendMessage(req);
-                tracer.setResult(result);
-                log.debug("Event dispatched to SQS queue {}", req.getQueueUrl());
             } else if (StringUtils.equals(target.getScheme(), "aws-lambda")) {
                 String lName = target.getAuthority();
                 InvokeRequest i = new InvokeRequest();
