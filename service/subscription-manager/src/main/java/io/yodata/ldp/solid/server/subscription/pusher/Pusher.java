@@ -13,7 +13,9 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.AmazonSQSException;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.LogAction;
 import org.apache.commons.codec.binary.Hex;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class Pusher {
@@ -93,15 +97,20 @@ public class Pusher {
             String target = GsonUtil.getStringOrThrow(command, "target");
             JsonObject cfg = GsonUtil.findObj(command, "config").orElseGet(JsonObject::new);
             send(tracer, data, target, cfg);
+            log.info(GsonUtil.toJson(tracer));
         } catch (RuntimeException e) {
             tracer.setError(e);
-        } finally {
             log.info(GsonUtil.toJson(tracer));
+            throw e;
         }
     }
 
     public void send(LogAction tracer, JsonObject data, String targetRaw, JsonObject cfg) {
-        String id = GsonUtil.findString(data, "@id").orElseGet(() -> GsonUtil.findString(data, "id").orElse("<NOT PROVIDED>"));
+        Optional<String> idRaw = GsonUtil.findString(data, "@id");
+        if (!idRaw.isPresent()) {
+            idRaw = GsonUtil.findString(data, "id");
+        }
+        JsonElement id = idRaw.isPresent() ? new JsonPrimitive(idRaw.get()) : data;
         tracer.setObject(id);
         tracer.setTarget(targetRaw);
         tracer.setConfig(cfg);
@@ -145,11 +154,17 @@ public class Pusher {
                 InvokeResult r = lambda.get().invoke(i);
                 int statusCode = r.getStatusCode();
                 String functionError = r.getFunctionError();
-                if (statusCode != 200 || StringUtils.isNotEmpty(functionError)) {
+                if (statusCode != 200) {
                     tracer.setResult(r);
                     throw new RuntimeException("Error when calling lambda " + lName + " | Status code: " + statusCode + " | Error: " + functionError);
                 }
-                log.debug("Lambda {} was successfully called", lName);
+                if (StringUtils.isNotEmpty(functionError)) {
+                    tracer.setResult(r);
+                    tracer.setSuccess(false, false);
+                    log.debug("Lambda {} failed to process the content, will not retry as error is remote", lName);
+                } else {
+                    log.debug("Lambda {} was successfully called", lName);
+                }
             } else if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 HttpConfig httpCfg = GsonUtil.get().fromJson(cfg, HttpConfig.class);
                 HttpPost req = new HttpPost(target);
@@ -190,9 +205,9 @@ public class Pusher {
                         log.debug("{} - Message was successfully sent to {}", id, target);
                         log.debug("Response body:\n{}", body);
                     }
-                } catch (UnknownHostException e) {
-                    tracer.setError(e);
-                    log.debug("{} - Unable to send Message, will NOT retry: Unknown host: {}", id, e.getMessage());
+                } catch (UnknownHostException | SSLPeerUnverifiedException e) {
+                    tracer.setErrorHandled(e);
+                    log.debug("{} - Unable to send Message, will NOT retry: {}", id, e.getMessage());
                 } catch (IOException e) {
                     tracer.setError(e);
                     log.debug("{} - Unable to send Message due to I/O error, will retry", id, e);
