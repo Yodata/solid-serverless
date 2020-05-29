@@ -11,6 +11,7 @@ import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.util.StatusCodes;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.UndertorwRequest;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
@@ -38,25 +39,25 @@ public class UndertowSolidServer {
     public static void main(String[] args) {
         log.info("-------/ Frontd is starting \\-------");
 
-        int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(System.getenv("FRONTD_LOAD_MULTIPLIER"), "1"));
-        String samlIdpUrl = System.getenv("REFLEX_AUTH_SAML_IDP_URL"); // FIXME use store to store config
-        String rootDomain = System.getenv("REFLEX_ROOT_DOMAIN"); // FIXME use store to store config
-        String samlAppRedirectUrl = System.getenv("REFLEX_AUTH_SAML_ACS_URL"); // FIXME use store to store config
+        int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(Configs.get().findOrBlank("FRONTD_LOAD_MULTIPLIER"), "1"));
+        String samlIdpUrl = Configs.get().findOrBlank("reflex.auth.saml.idp.url"); // FIXME use store to store config
+        String rootDomain = Configs.get().findOrBlank("reflex.root.domain"); // FIXME use store to store config
+        String samlAppRedirectUrl = Configs.get().findOrBlank("reflex.auth.saml.acs.url"); // FIXME use store to store config
         int workerThreads = multiplier * 2 * 8;
 
         int port = 9000;
         String host = "0.0.0.0";
 
         if (StringUtils.isBlank(rootDomain)) {
-            throw new RuntimeException("REFLEX_ROOT_DOMAIN cannot be empty/bank");
+            throw new RuntimeException("reflex.root.domain cannot be empty/bank");
         }
 
         if (StringUtils.isBlank(samlIdpUrl)) {
-            throw new RuntimeException("REFLEX_AUTH_SAML_IDP_URL cannot be empty/bank");
+            throw new RuntimeException("reflex.auth.saml.idp.url cannot be empty/bank");
         }
 
         if (StringUtils.isBlank(samlAppRedirectUrl)) {
-            throw new RuntimeException("REFLEX_AUTH_SAML_ACS_URL cannot be empty/bank");
+            throw new RuntimeException("reflex.auth.saml.acs.url cannot be empty/bank");
         }
 
         log.info("Load multiplier: {}", multiplier);

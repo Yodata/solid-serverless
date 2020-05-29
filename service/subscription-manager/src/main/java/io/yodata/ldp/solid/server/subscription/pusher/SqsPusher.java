@@ -6,6 +6,7 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.Configs;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ public class SqsPusher {
 
     private static final Logger log = LoggerFactory.getLogger(SqsPusher.class);
 
-    private final String sqsUrl = EnvUtils.get("PUSHER_SQS_URL");
+    private final String sqsUrl = Configs.get().get("aws.sqs.pusher.url");
     private Supplier<AmazonSQS> sqs = new LazyLoadProvider<>(AmazonSQSClientBuilder::defaultClient);
 
     public void send(JsonObject data, String targetRaw, JsonObject config) {

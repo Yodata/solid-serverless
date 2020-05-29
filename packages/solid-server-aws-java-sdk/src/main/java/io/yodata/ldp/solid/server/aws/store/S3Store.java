@@ -11,6 +11,7 @@ import com.google.gson.JsonPrimitive;
 import io.yodata.Base64Util;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 import io.yodata.ldp.solid.server.model.EntityBasedStore;
@@ -62,7 +63,7 @@ public class S3Store extends EntityBasedStore {
                 .build();
 
         buckets = new ArrayList<>();
-        String raw = EnvUtils.find("S3_BUCKET_NAMES").orElseGet(() -> EnvUtils.get("S3_BUCKET_NAME"));
+        String raw = Configs.get().find("S3_BUCKET_NAMES").orElseGet(() -> Configs.get().get("aws.s3.bucket.name"));
         JsonElement el = new JsonParser().parse(raw);
         if (el.isJsonPrimitive()) {
             buckets.add(el.getAsString());
