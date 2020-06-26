@@ -1,5 +1,6 @@
 package io.yodata.ldp.solid.server.aws.event;
 
+import com.amazonaws.HttpMethod;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
@@ -122,7 +123,7 @@ public class GenericProcessor {
 
                     // We build the store request
                     Request r = new Request();
-                    r.setMethod("POST");
+                    r.setMethod(HttpMethod.POST.name());
                     r.setTarget(Target.forPath(new Target(id), "/outbox/"));
                     r.setBody(msg);
 
@@ -151,7 +152,7 @@ public class GenericProcessor {
 
                     // We build the store request
                     Request r = new Request();
-                    r.setMethod("POST");
+                    r.setMethod(HttpMethod.POST.name());
                     r.setTarget(Target.forPath(new Target(id), "/notify/"));
                     r.setBody(publication);
 
