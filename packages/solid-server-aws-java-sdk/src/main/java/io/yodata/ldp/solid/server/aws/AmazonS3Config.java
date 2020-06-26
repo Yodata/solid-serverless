@@ -7,14 +7,18 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.config.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
 public class AmazonS3Config implements Config {
 
+    private static final Logger log = LoggerFactory.getLogger(AmazonS3Config.class);
+
     private String configBucket;
-    private String configKeyName = "solid-serverless.json";
+    private final String configKeyName = "solid-serverless.json";
 
     private Config parent;
     private AmazonS3 s3;
@@ -45,13 +49,22 @@ public class AmazonS3Config implements Config {
             return;
         }
 
-        parent.find("bootstrap.config.aws.s3.bucket").ifPresent(s -> {
+        Optional<String> b = parent.find("bootstrap.config.aws.s3.bucket");
+        if (!b.isPresent()) {
+            b = parent.find("aws.s3.bucket.name");
+        }
+        if (!b.isPresent()) {
+            b = parent.find("s3.bucket.name");
+        }
+
+        b.ifPresent(s -> {
             if (!s3.doesBucketExistV2(s)) {
                 throw new IllegalStateException("S3 bucket does not exist: " + s);
             }
 
             configBucket = s;
 
+            log.info("Getting config from {}/{}", configBucket, configKeyName);
             if (!s3.doesObjectExist(configBucket, configKeyName)) {
                 return;
             }
