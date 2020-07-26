@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.Cookie;
@@ -69,6 +70,32 @@ public class UndertowSolidServer {
         ContainerHandler folder = new ContainerHandler();
         ResourceHandler file = new ResourceHandler();
         SecurityProcessor auth = new SecurityProcessor(store);
+
+        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+
+            @Override
+            public void handleRequest(HttpServerExchange ex) {
+                Cookie sessionTypeCookie = ex.getRequestCookies().getOrDefault("reflex_session_type", new CookieImpl("reflex_session_type"));
+                Cookie sessionTokenCookie = ex.getRequestCookies().getOrDefault("reflex_session_token", new CookieImpl("reflex_session_token"));
+
+                String sessionType = sessionTypeCookie.getValue();
+                String sessionToken = sessionTokenCookie.getValue();
+
+                String path = "global/security/api/token/" + sessionType + "/" + sessionToken;
+                Optional<String> sessionDataOpt = store.getData(path);
+                JsonObject sessionData = sessionDataOpt.flatMap(GsonUtil::tryParseObj).orElseGet(JsonObject::new);
+
+                if (StringUtils.isAnyBlank(sessionType, sessionToken) || sessionData.size() == 0) {
+                    //FIXME clear any possible remaining cookie
+                    ex.setStatusCode(401);
+                    ex.endExchange();
+                    return;
+                }
+
+                writeBody(ex, 200, sessionData);
+            }
+
+        })));
 
         Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
                 .get("/status", exchange -> {
@@ -151,31 +178,8 @@ public class UndertowSolidServer {
 
                 .put("/reflex/auth/saml/acs", new ExceptionHandler(ex -> ex.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED)))
 
-                .get("/reflex/auth/whoami", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
-
-                    @Override
-                    public void handleRequest(HttpServerExchange ex) {
-                        Cookie sessionTypeCookie = ex.getRequestCookies().getOrDefault("reflex_session_type", new CookieImpl("reflex_session_type"));
-                        Cookie sessionTokenCookie = ex.getRequestCookies().getOrDefault("reflex_session_token", new CookieImpl("reflex_session_token"));
-
-                        String sessionType = sessionTypeCookie.getValue();
-                        String sessionToken = sessionTokenCookie.getValue();
-
-                        String path = "global/security/api/token/" + sessionType + "/" + sessionToken;
-                        Optional<String> sessionDataOpt = store.getData(path);
-                        JsonObject sessionData = sessionDataOpt.flatMap(GsonUtil::tryParseObj).orElseGet(JsonObject::new);
-
-                        if (StringUtils.isAnyBlank(sessionType, sessionToken) || sessionData.size() == 0) {
-                            //FIXME clear any possible remaining cookie
-                            ex.setStatusCode(401);
-                            ex.endExchange();
-                            return;
-                        }
-
-                        writeBody(ex, 200, sessionData);
-                    }
-
-                }))))
+                .get("/reflex/auth/whoami", samlWhoamiHandler)
+                .post("/reflex/auth/whoami", samlWhoamiHandler)
 
                 .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
                     @Override
