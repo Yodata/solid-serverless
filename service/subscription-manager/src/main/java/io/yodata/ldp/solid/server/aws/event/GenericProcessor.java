@@ -39,11 +39,11 @@ public class GenericProcessor {
 
     public void handleEvent(JsonObject event) {
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        URI id = URI.create(action.getId());
+        URI id = URI.create(StringUtils.defaultIfBlank(action.getId(), "https://fail.yodata.io/unknown/id"));
         URI target = URI.create(action.getTarget());
         log.info("Processing storage event {} about {}", action.getType(), action.getId());
 
-        List<Subscription> subs = store.getSubscriptions(id);
+        List<Subscription> subs = store.getAllSubscriptions(id);
         if (subs.isEmpty()) {
             log.info("No subscription found");
             return;

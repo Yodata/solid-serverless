@@ -1,7 +1,9 @@
 package io.yodata.ldp.solid.server.model;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
@@ -142,16 +144,45 @@ public abstract class EntityBasedStore implements Store {
             throw new IllegalArgumentException("Some subscription(s) do not have an agent");
         }
 
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), "entities/" + entity.getHost() + "/settings/subscriptions");
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), "entities/" + entity.getHost() + "/data/by-id/settings/subscriptions");
+    }
+
+    @Override
+    public void setEntitySubscriptions(URI entity, JsonObject subs) {
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), "entities/" + entity.getHost() + "/data/by-id/settings/subscriptions");
     }
 
     private List<Subscription> extractSubs(String path, String obj, boolean needContext) {
-        List<Subscription> subs = new ArrayList<>();
         JsonElement el = GsonUtil.parse(obj);
-        if (el.isJsonObject()) {
-            el = el.getAsJsonObject().get("items");
+        if (el.isJsonArray()) {
+            el = GsonUtil.makeObj("items", el);
         }
-        List<Subscription> list = GsonUtil.get().fromJson(el, subListType);
+
+        if (!el.isJsonObject()) {
+            log.warn("{} is not a JSON array or object, skipping", path);
+            return new ArrayList<>();
+        }
+
+        String version = GsonUtil.findString(el.getAsJsonObject(), "version").orElse("0");
+
+        List<Subscription> list;
+        if (StringUtils.equals(version, "0")) {
+            list = GsonUtil.get().fromJson(GsonUtil.findArray(el.getAsJsonObject(), "items").orElseGet(JsonArray::new), subListType);
+        } else {
+            if (!StringUtils.equals(version, "1")) {
+                log.warn("Subscription file at {} is of unsupported version {}, will try to parse regardless", path, version);
+            }
+
+            try {
+                Subscriptions subs = GsonUtil.get().fromJson(el, Subscriptions.class);
+                list = subs.toList();
+            } catch (JsonSyntaxException e) {
+                log.warn("Invalid subscription file at {}, ignoring", path);
+                list = new ArrayList<>();
+            }
+        }
+
+        List<Subscription> subs = new ArrayList<>();
         int i = 1;
         for (Subscription sub : list) {
             if (StringUtils.isBlank(sub.getId())) {
@@ -182,12 +213,35 @@ public abstract class EntityBasedStore implements Store {
         return subs;
     }
 
-    public List<Subscription> getSubscriptions(URI entity) {
+    @Override
+    public List<Subscription> getAllSubscriptions(URI entity) {
         log.info("Getting all subscriptions for {}", entity);
         List<Subscription> subs = getInternalSubscriptions();
         subs.addAll(getGlobalSubscriptions());
         subs.addAll(getEntitySubscriptions(entity));
         return subs;
+    }
+
+    @Override
+    public Subscriptions getSubscriptions(URI entity) {
+        String raw = findEntityData(entity, "data/by-id/settings/subscriptions") // FIXME use a constant for the path
+                .orElse("{}");
+
+        JsonElement rawEl = GsonUtil.parse(raw);
+        if (rawEl.isJsonArray()) { // old format, we turn info an object
+            rawEl = GsonUtil.makeObj("items", rawEl);
+        }
+
+        if (!rawEl.isJsonObject()) { // invalid format, we ignore
+            rawEl = GsonUtil.makeObj("version", "1");
+        }
+
+        try {
+            return GsonUtil.get().fromJson(rawEl, Subscriptions.class);
+        } catch (JsonSyntaxException e) {
+            log.warn("Invalid subscriptions file for {}, returning empty", entity);
+            return new Subscriptions();
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.model.transform.Policies;
 
 import java.net.URI;
@@ -43,7 +44,11 @@ public interface Store {
 
     void setEntitySubscriptions(URI entity, List<Subscription> subs);
 
-    List<Subscription> getSubscriptions(URI entity);
+    void setEntitySubscriptions(URI entity, JsonObject subs);
+
+    List<Subscription> getAllSubscriptions(URI entity);
+
+    Subscriptions getSubscriptions(URI entity);
 
     Policies getPolicies(URI entity);
 
