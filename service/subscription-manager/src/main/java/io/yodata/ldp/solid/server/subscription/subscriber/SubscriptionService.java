@@ -62,6 +62,7 @@ public class SubscriptionService {
         log.info("Setting new permissions for {} on {}", action.getObject().getAgent(), pod.getHost());
         log.info("New permissions: {}", GsonUtil.toJson(action));
         Subscriptions subs = store.getSubscriptions(pod);
+        log.info("Current subs: {}", GsonUtil.toJson(subs));
         subs.getItems().put(action.getObject().getAgent(), action.getObject());
         log.info("New subs: {}", GsonUtil.toJson(subs));
         JsonObject newSubs = subs.toJson();

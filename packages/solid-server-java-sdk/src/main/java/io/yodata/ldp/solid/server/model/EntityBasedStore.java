@@ -224,24 +224,43 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public Subscriptions getSubscriptions(URI entity) {
-        String raw = findEntityData(entity, "data/by-id/settings/subscriptions") // FIXME use a constant for the path
-                .orElse("{}");
+        Optional<String> rawOpt = findEntityData(entity, "/settings/subscriptions"); // FIXME use a constant for the path
+
+        String raw;
+        if (rawOpt.isPresent()) {
+            raw = rawOpt.get();
+        } else {
+            log.info("No subscriptions file for {}, using empty", entity);
+            raw = "{}";
+        }
 
         JsonElement rawEl = GsonUtil.parse(raw);
-        if (rawEl.isJsonArray()) { // old format, we turn info an object
+        if (rawEl.isJsonArray()) {
+            log.info("Old format, we turn info an object");
             rawEl = GsonUtil.makeObj("items", rawEl);
         }
 
-        if (!rawEl.isJsonObject()) { // invalid format, we ignore
+        if (!rawEl.isJsonObject()) { //
+            log.info("Invalid format, we ignore");
             rawEl = GsonUtil.makeObj("version", "1");
         }
 
-        try {
-            return GsonUtil.get().fromJson(rawEl, Subscriptions.class);
-        } catch (JsonSyntaxException e) {
-            log.warn("Invalid subscriptions file for {}, returning empty", entity);
-            return new Subscriptions();
+        Subscriptions subs = new Subscriptions();
+        JsonArray subsRaw = GsonUtil.findArray(rawEl.getAsJsonObject(), "items").orElseGet(JsonArray::new);
+        for (JsonElement el : subsRaw) {
+            if (!el.isJsonObject()) {
+                continue;
+            }
+
+            try {
+                SubscriptionEvent.Subscription sub = GsonUtil.get().fromJson(el, SubscriptionEvent.Subscription.class);
+                subs.getItems().put(sub.getAgent(), sub);
+            } catch (JsonSyntaxException e) {
+                log.warn("Invalid subscription element, skipping");
+            }
         }
+
+        return subs;
     }
 
     @Override
