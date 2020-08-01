@@ -4,8 +4,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
-import io.yodata.ldp.solid.server.model.event.StorageAction;
+import io.yodata.ldp.solid.server.aws.Configs;
+import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
+import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.model.Request;
+import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -29,6 +35,7 @@ public class OutboxService {
 
     private final Logger log = LoggerFactory.getLogger(OutboxService.class);
     private CloseableHttpClient client = HttpClients.createMinimal();
+    private final ContainerHandler containers = new ContainerHandler(S3Store.getDefault());
 
     private Optional<URI> findTarget(String recipient) {
         URI target;
@@ -39,8 +46,7 @@ public class OutboxService {
             }
 
             if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
-                target = new URIBuilder(target).setPath("/inbox/").setFragment("").build();
-                /*
+                target = new URIBuilder(target).setPath("/inbox/").setFragment(null).build();
                 log.info("Discovering inbox");
                 URI subUri = URI.create(target.toString());
                 HttpGet profileReq = new HttpGet(subUri);
@@ -71,7 +77,6 @@ public class OutboxService {
                     log.debug("Exception stacktrace", e);
                     log.warn("Using default inbox location: {}", target.toString());
                 }
-                 */
             }
         } catch (URISyntaxException e) {
             log.warn("Recipient {} is not a valid URI, skipping", recipient);
@@ -82,11 +87,11 @@ public class OutboxService {
     }
 
     public void process(JsonObject event) {
-        log.debug("Processing event data: {}", GsonUtil.toJson(event));
+        log.info("Processing event data: {}", GsonUtil.toJson(event));
 
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        if (!StringUtils.equals(StorageAction.Add, action.getType())) {
-            log.warn("Event is not about adding data, not supported for now, skipping");
+        if (!StorageAction.isAddOrUpdate(action.getType())) {
+            log.warn("Event is not about new/updated data, nothing to do, skipping");
             return;
         }
 
@@ -101,44 +106,72 @@ public class OutboxService {
             log.warn("Destination is invalid, skipping - Value: {}", recipient);
             return;
         }
-        data.remove("@to");
+        data.remove("@to"); // We get rid of the special @to key for the outbox
 
+        // We clean out a possible leftover # at the end of the URL to keep things clean
         if (recipient.endsWith("#")) {
             recipient = recipient.substring(0, recipient.length() - 1);
         }
 
-        Optional<URI> targetOpt = findTarget(recipient);
-        if (!targetOpt.isPresent()) {
+        Optional<URI> recipientOpt = findTarget(recipient);
+        if (!recipientOpt.isPresent()) {
             log.warn("Recipient {} is not a valid URI, skipping", recipient);
             return;
         }
-        URI target = targetOpt.get();
+        URI recipientUri = recipientOpt.get();
 
         String dataRaw = GsonUtil.toJson(data);
 
         log.debug("Push content: {}", dataRaw);
+        Target recipientProfile = Target.forProfileCard(recipientUri);
+        String recipientHost = recipientProfile.getHost();
 
-        HttpPost req = new HttpPost(target);
-        req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
-        // FIXME need to find a good solution
-        req.setHeader("X-YoData-Instrument", Target.forPath(URI.create(action.getTarget()), "/profile/card#me").getId().toString());
-        req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
-        try (CloseableHttpResponse res = client.execute(req)) {
-            int sc = res.getStatusLine().getStatusCode();
-            if (sc < 200 || sc >= 300) {
-                log.error("Unable to send notification | sc: {}", sc);
-                log.error("Error: {}", res.getEntity().getContent());
-                throw new RuntimeException("Status code when sending to " + target + ": " + sc);
+        String baseDomain = StringUtils.defaultIfBlank(Configs.get().get("reflex.domain.base"), "");
+        boolean isLocal = StringUtils.equalsIgnoreCase(recipientHost, baseDomain) || StringUtils.endsWithIgnoreCase(recipientHost, "." + baseDomain);
+
+        // We are sending something internally, using the store directly
+        if (StringUtils.isNotBlank(baseDomain) && isLocal) {
+            log.info("Domain {} is local, bypassing API", recipientHost);
+
+            // We build the security context to identify the sending pod
+            SecurityContext sc = new SecurityContext();
+            sc.setInstrument(Target.forProfileCard(action.getId()));
+            sc.setAgent(sc.getInstrument());
+
+            // We build an internal request
+            Request r = Request.post();
+            r.setSecurity(sc);
+            r.setTarget(new Target(recipientUri));
+            r.setBody(data);
+
+            // We send
+            Response res = containers.post(r);
+            String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
+            log.info("Message was saved at {}", eventId);
+        } else {
+            log.info("Domain {} is external, sending regular HTTP", recipientHost);
+
+            // FIXME move this to pusher
+            HttpPost req = new HttpPost(recipientUri);
+            req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
+            req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
+            try (CloseableHttpResponse res = client.execute(req)) {
+                int sc = res.getStatusLine().getStatusCode();
+                if (sc < 200 || sc >= 300) {
+                    log.error("Unable to send notification | sc: {}", sc);
+                    log.error("Error: {}", res.getEntity().getContent());
+                    throw new RuntimeException("Status code when sending to " + recipientUri + ": " + sc);
+                }
+
+                log.info("Outbox item was successfully sent to {}", recipientUri);
+            } catch (SSLPeerUnverifiedException e) {
+                log.warn("Unable to send outbox item, will NOT retry: {}", e.getMessage());
+            } catch (UnknownHostException e) {
+                log.warn("Unable to send outbox item, will NOT retry: Unknown host: {}", e.getMessage());
+            } catch (IOException e) {
+                log.error("Unable to send outbox item due to I/O error, will retry", e);
+                throw new RuntimeException("Unable to send notification to " + recipientUri, e);
             }
-
-            log.info("Outbox item was successfully sent to {}", target);
-        } catch (SSLPeerUnverifiedException e) {
-            log.warn("Unable to send outbox item, will NOT retry: {}", e.getMessage());
-        } catch (UnknownHostException e) {
-            log.warn("Unable to send outbox item, will NOT retry: Unknown host: {}", e.getMessage());
-        } catch (IOException e) {
-            log.error("Unable to send outbox item due to I/O error, will retry", e);
-            throw new RuntimeException("Unable to send notification to " + target, e);
         }
     }
 

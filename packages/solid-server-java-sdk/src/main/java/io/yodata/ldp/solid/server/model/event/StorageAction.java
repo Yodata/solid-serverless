@@ -2,6 +2,7 @@ package io.yodata.ldp.solid.server.model.event;
 
 import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.model.Request;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 
@@ -10,6 +11,10 @@ public class StorageAction {
     public static final String Add = "AddAction";
     public static final String Update = "UpdateAction";
     public static final String Delete = "DeleteAction";
+
+    public static boolean isAddOrUpdate(String match) {
+        return StringUtils.equalsAny(match, Add, Update);
+    }
 
     private String type;
     private String id;

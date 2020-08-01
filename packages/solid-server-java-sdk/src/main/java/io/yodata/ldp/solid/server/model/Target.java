@@ -17,6 +17,14 @@ public class Target {
         return t;
     }
 
+    public static Target forProfileCard(URI base) {
+        return forPath(base, "/profile/card#me");
+    }
+
+    public static Target forProfileCard(String base) {
+        return forProfileCard(URI.create(base));
+    }
+
     protected URI id;
     protected String host;
     protected String path;
@@ -71,7 +79,6 @@ public class Target {
     public boolean pathMatches(String globPattern) {
         String regexBuild = globPattern.replace("/*", "[^/]+(/?)").replace("*", "[^/]*(/?)");
         String regex = "^" + regexBuild + "$";
-        System.out.println("Regex: " + regex);
         return Pattern.compile(regex).matcher(getPath()).matches();
     }
 

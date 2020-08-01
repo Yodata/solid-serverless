@@ -36,45 +36,36 @@ public class SecurityProcessor {
     }
 
     public SecurityContext authenticate(Map<String, List<String>> headers) {
-        List<String> instruments = headers.getOrDefault("X-YoData-Instrument".toLowerCase(), Collections.emptyList());
-        if (!instruments.isEmpty()) {
-            SecurityContext sc = new SecurityContext();
-            sc.setInstrument(instruments.get(0));
-            sc.setAdmin(false);
-            sc.setDefaultAllowed(false);
-            return sc;
-        }
-
         List<String> keys = headers.getOrDefault("x-api-key", Collections.emptyList());
         if (keys.isEmpty()) {
-            log.info("API Key: <Not provided>");
+            log.debug("API Key: <Not provided>");
             return SecurityContext.asAnonymous();
         }
 
         String key = keys.get(0);
         if (StringUtils.isEmpty(key)) {
-            log.info("API Key: <Empty>");
+            log.debug("API Key: <Empty>");
             throw new UnauthorizedException("No API key provided");
         }
 
         log.info("API Key: {}", key);
         SecurityContext apiKeyContext = store.findForApiKey(key).orElseGet(SecurityContext::new);
         if (apiKeyContext.isAnonymous()) {
-            log.info("API key is unknown");
+            log.debug("API key is unknown");
             throw new UnauthorizedException("Invalid API Key");
         }
 
-        log.info("API Key Agent: {}", apiKeyContext.getAgent().orElse("<Empty>"));
-        log.info("API Key Instrument: {}", apiKeyContext.getInstrument());
-        log.info("API Key is admin? {}", apiKeyContext.isAdmin());
-        log.info("API Key is default allowed? {}", apiKeyContext.isDefaultAllowed());
+        log.debug("API Key Agent: {}", apiKeyContext.getAgent().orElse("<Empty>"));
+        log.debug("API Key Instrument: {}", apiKeyContext.getInstrument());
+        log.debug("API Key is admin? {}", apiKeyContext.isAdmin());
+        log.debug("API Key is default allowed? {}", apiKeyContext.isDefaultAllowed());
 
         return apiKeyContext;
     }
 
     public Acl authorize(SecurityContext sc, Target target) {
         String id = sc.getIdentity();
-        log.info("Authorizing access to {} for {}", target.getId(), id);
+        log.debug("Authorizing access to {} for {}", target.getId(), id);
 
         Acl acl = store.getEntityAcl(target).orElseGet(() -> {
             if (sc.isDefaultAllowed()) {

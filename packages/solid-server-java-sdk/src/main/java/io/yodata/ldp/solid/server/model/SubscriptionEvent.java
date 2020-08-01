@@ -1,5 +1,6 @@
 package io.yodata.ldp.solid.server.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +14,8 @@ public class SubscriptionEvent {
         private String agent;
         private String instrument;
         private String host;
-        private List<String> subscribes;
-        private List<String> publishes;
+        private List<String> subscribes = new ArrayList<>();
+        private List<String> publishes = new ArrayList<>();
         private Map<String, String> scopes = new HashMap<>();
 
         public String getType() {

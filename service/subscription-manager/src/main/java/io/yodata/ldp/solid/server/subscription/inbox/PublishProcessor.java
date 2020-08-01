@@ -2,12 +2,11 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
 import org.apache.commons.lang3.StringUtils;
@@ -24,18 +23,26 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
 
     private final Logger log = LoggerFactory.getLogger(PublishProcessor.class);
 
-    private ContainerHandler storeHandler;
-    private TransformService transform;
+    public static final String Type = "ReflexPublishAction";
+
+    private final Store store;
+    private final ContainerHandler containers;
+    private final TransformService transform;
 
     public PublishProcessor() {
-        storeHandler = new ContainerHandler(S3Store.getDefault());
-        transform = new AWSTransformService();
+        this(S3Store.getDefault());
+    }
+
+    public PublishProcessor(Store store) {
+        this.store = store;
+        this.containers = new ContainerHandler(store);
+        this.transform = new AWSTransformService();
     }
 
     @Override
     public void accept(InboxService.Wrapper c) {
-        if (!StringUtils.equals("ReflexPublishAction", GsonUtil.getStringOrNull(c.message, "type"))) {
-            log.info("type is not REflex Publish Action, ignoring");
+        if (!StringUtils.equals(Type, GsonUtil.getStringOrNull(c.message, "type"))) {
+            log.info("type is not {}, ignoring", Type);
             return;
         }
 
@@ -49,6 +56,39 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         List<String> topics = GsonUtil.findArrayOrString(message, "topic");
         if (topics.isEmpty()) {
             log.info("No topic found, ignoring as Topic event");
+            return;
+        }
+
+        URI hostId;
+        try {
+            hostId = URI.create(c.ev.getRequest().getSecurity().getIdentity());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            log.info("Identity is not a valid URI, skipping");
+            return;
+        }
+
+        String identity = c.ev.getRequest().getSecurity().getIdentity();
+        log.info("Checking for permissions of {}", identity);
+
+        Subscriptions subs = store.getSubscriptions(hostId);
+        String subManager = Configs.get().find("reflex.subscription.manager.domain").orElse("");
+        if (StringUtils.isNotBlank(subManager)) {
+            String subManagerId = Target.forProfileCard("https://" + subManager).getId().toString();
+            SubscriptionEvent.Subscription sub = new SubscriptionEvent.Subscription();
+            sub.getPublishes().add("yodata/subscription#authorize");
+            sub.getPublishes().add("yodata/subscription#revoke");
+            subs.getItems().put(subManagerId, sub);
+        }
+
+        Optional<SubscriptionEvent.Subscription> subOpt = Optional.ofNullable(subs.getItems().get(identity));
+        if (!subOpt.isPresent()) {
+            log.info("No subscription(s) present at {}, skipping", hostId);
+            return;
+        }
+
+        SubscriptionEvent.Subscription sub = subOpt.get();
+        if (sub.getPublishes().stream().noneMatch(topics::contains)) {
+            log.info("{} is not allowed to publish to any of the event topics, skipping", identity);
             return;
         }
 
@@ -71,6 +111,11 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         for (String topic : topics) {
+            if (!sub.getPublishes().contains(topic)) {
+                // Not allowed to publish to that topic, we skip
+                continue;
+            }
+
             String topicPath = StringUtils.defaultIfBlank(topic, "");
             if (topicPath.contains(":")) {
                 String[] splitValues = StringUtils.split(topicPath, ":", 2);
@@ -87,13 +132,12 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             }
 
             Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
-            Request r = new Request();
-            r.setMethod("POST");
-            r.setTarget(target);
+            Request r = Request.post();
             r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
+            r.setTarget(target);
             r.setBody(message);
 
-            Response res = storeHandler.post(r);
+            Response res = containers.post(r);
             String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
             log.info("Topic event was saved at {}", eventId);
         }
