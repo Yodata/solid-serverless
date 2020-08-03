@@ -13,6 +13,8 @@ public class Configs {
 
     private static final Logger log = LoggerFactory.getLogger(Configs.class);
 
+    public static final String DOM_BASE = "reflex.domain.base";
+
     private static Config cfg;
 
     public static Config get() {

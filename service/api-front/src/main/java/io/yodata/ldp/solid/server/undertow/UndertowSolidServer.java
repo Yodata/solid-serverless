@@ -35,24 +35,29 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static io.yodata.ldp.solid.server.aws.Configs.DOM_BASE;
+
 public class UndertowSolidServer {
 
     private static final Logger log = LoggerFactory.getLogger(UndertowSolidServer.class);
+
+    public static final String AUTH_COOKIE_TY_NAME = "reflex_session_type";
+    public static final String AUTH_COOKIE_TO_NAME = "reflex_session_token";
 
     public static void main(String[] args) {
         log.info("-------/ Frontd is starting \\-------");
 
         int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(EnvConfig.get().findOrBlank("FRONTD_LOAD_MULTIPLIER"), "1"));
-        String samlIdpUrl = Configs.get().findOrBlank("reflex.auth.saml.idp.url"); // FIXME use store to store config
-        String baseDomain = Configs.get().findOrBlank("reflex.domain.base"); // FIXME use store to store config
-        String samlAppRedirectUrl = Configs.get().findOrBlank("reflex.auth.saml.acs.url"); // FIXME use store to store config
+        String samlIdpUrl = Configs.get().findOrBlank("reflex.auth.saml.idp.url");
+        String baseDomain = Configs.get().findOrBlank(DOM_BASE);
+        String samlAppRedirectUrl = Configs.get().findOrBlank("reflex.auth.saml.acs.url");
         int workerThreads = multiplier * 2 * 8;
 
         int port = 9000;
         String host = "0.0.0.0";
 
         if (StringUtils.isBlank(baseDomain)) {
-            throw new RuntimeException("reflex.domain.base cannot be empty/bank");
+            throw new RuntimeException(DOM_BASE + " cannot be empty/bank");
         }
 
         if (StringUtils.isBlank(samlIdpUrl)) {
@@ -67,16 +72,16 @@ public class UndertowSolidServer {
         log.info("Will use {} HTTP worker threads", workerThreads);
 
         EntityBasedStore store = S3Store.getDefault();
-        ContainerHandler folder = new ContainerHandler();
-        ResourceHandler file = new ResourceHandler();
+        ContainerHandler folder = new ContainerHandler(store);
+        ResourceHandler file = new ResourceHandler(store);
         SecurityProcessor auth = new SecurityProcessor(store);
 
         HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
 
             @Override
             public void handleRequest(HttpServerExchange ex) {
-                Cookie sessionTypeCookie = ex.getRequestCookies().getOrDefault("reflex_session_type", new CookieImpl("reflex_session_type"));
-                Cookie sessionTokenCookie = ex.getRequestCookies().getOrDefault("reflex_session_token", new CookieImpl("reflex_session_token"));
+                Cookie sessionTypeCookie = ex.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
+                Cookie sessionTokenCookie = ex.getRequestCookies().getOrDefault(AUTH_COOKIE_TO_NAME, new CookieImpl(AUTH_COOKIE_TO_NAME));
 
                 String sessionType = sessionTypeCookie.getValue();
                 String sessionToken = sessionTokenCookie.getValue();
@@ -97,6 +102,8 @@ public class UndertowSolidServer {
 
         })));
 
+        HttpHandler redirectHandler = new RedirectHandler(samlIdpUrl);
+
         Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
                 .get("/status", exchange -> {
                     exchange.setStatusCode(200);
@@ -109,14 +116,14 @@ public class UndertowSolidServer {
                 .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
                     log.info("Got a GET for /reflex/auth/saml/login");
                     log.info("Redirecting to the SAML IDP URL");
-                    new RedirectHandler(samlIdpUrl).handleRequest(exchange);
+                    redirectHandler.handleRequest(exchange);
                 })))
 
                 .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
                     log.info("Got a GET for /reflex/auth/logout");
 
-                    Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault("reflex_session_type", new CookieImpl("reflex_session_type"));
-                    Cookie sessionTokenCookie = exchange.getRequestCookies().getOrDefault("reflex_session_token", new CookieImpl("reflex_session_token"));
+                    Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
+                    Cookie sessionTokenCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TO_NAME, new CookieImpl(AUTH_COOKIE_TO_NAME));
 
                     String sessionType = sessionTypeCookie.getValue();
                     String sessionToken = sessionTokenCookie.getValue();
@@ -152,12 +159,12 @@ public class UndertowSolidServer {
                     // FIXME we should sign this
                     String sessionToken = UUID.randomUUID().toString().replace("-", "");
                     Instant expiresAt = Instant.now().plusSeconds(24 * 60 * 60); // 24H
-                    Cookie sessionTypeCookie = new ReflexCookieImpl("reflex_session_type", "saml")
+                    Cookie sessionTypeCookie = new ReflexCookieImpl(AUTH_COOKIE_TY_NAME, "saml")
                             .setSecure(true)
                             .setSameSiteMode("None")
                             .setPath("/")
                             .setExpires(Date.from(expiresAt));
-                    Cookie sessionTokenCookie = new ReflexCookieImpl("reflex_session_token", sessionToken)
+                    Cookie sessionTokenCookie = new ReflexCookieImpl(AUTH_COOKIE_TO_NAME, sessionToken)
                             .setSecure(true)
                             .setSameSiteMode("None")
                             .setPath("/")

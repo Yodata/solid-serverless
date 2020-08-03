@@ -26,8 +26,11 @@ import java.util.*;
 public abstract class EntityBasedStore implements Store {
 
     private static final Logger log = LoggerFactory.getLogger(EntityBasedStore.class);
-    private static final Type subListType = new TypeToken<List<Subscription>>() {}.getType();
-    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
+    private static final Type subListType = new TypeToken<List<Subscription>>() {
+    }.getType();
+    private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
+
+    public static final String SUBS_PATH = "/settings/subscriptions";
 
     protected String buildEntityPath(String entity, String path) {
         return "entities/" + entity + "/data/by-id" + path;
@@ -93,7 +96,7 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public boolean save(Request in) {
-        String path = "entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath();
+        String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
         boolean exists = exists(path);
         save(in.getContentType().orElse("application/octet-stream"), in.getBody(), path);
         return exists;
@@ -133,8 +136,7 @@ public abstract class EntityBasedStore implements Store {
         String host = entity.getHost();
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
-        String entPath = "/settings/subscriptions";
-        findEntityData(entity, entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj, false)));
+        findEntityData(entity, SUBS_PATH).ifPresent(obj -> subs.addAll(extractSubs(SUBS_PATH, obj, false)));
         return subs;
     }
 
@@ -144,12 +146,12 @@ public abstract class EntityBasedStore implements Store {
             throw new IllegalArgumentException("Some subscription(s) do not have an agent");
         }
 
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), "entities/" + entity.getHost() + "/data/by-id/settings/subscriptions");
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), buildEntityPath(entity.getHost(), SUBS_PATH));
     }
 
     @Override
     public void setEntitySubscriptions(URI entity, JsonObject subs) {
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), "entities/" + entity.getHost() + "/data/by-id/settings/subscriptions");
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), buildEntityPath(entity.getHost(), SUBS_PATH));
     }
 
     private List<Subscription> extractSubs(String path, String obj, boolean needContext) {
@@ -224,7 +226,7 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public Subscriptions getSubscriptions(URI entity) {
-        Optional<String> rawOpt = findEntityData(entity, "/settings/subscriptions"); // FIXME use a constant for the path
+        Optional<String> rawOpt = findEntityData(entity, SUBS_PATH);
 
         String raw;
         if (rawOpt.isPresent()) {
@@ -292,7 +294,7 @@ public abstract class EntityBasedStore implements Store {
         log.info("Id: {}", id);
         Path idPath = Paths.get(id.getPath());
         log.info("Path: {}", id.getPath());
-        String byIdPath = "entities/" + in.getDestination().getHost() + "/data/by-id" + in.getDestination().getPath();
+        String byIdPath = buildEntityPath(in.getDestination().getHost(), in.getDestination().getPath());
         ensureNotExisting(byIdPath);
 
         Map<String, String> meta = new HashMap<>();
@@ -304,7 +306,6 @@ public abstract class EntityBasedStore implements Store {
         if (Objects.nonNull(timestamp)) {
             log.info("Timestamp: {}", timestamp.toEpochMilli());
             LocalDateTime ldt = LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC);
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
             String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
             link(byIdPath, tsPath);
         }
@@ -314,7 +315,7 @@ public abstract class EntityBasedStore implements Store {
     public void delete(Request in) {
         URI id = in.getDestination().getId();
         Path idPath = Paths.get(id.getPath());
-        String path = "entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath();
+        String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
 
         findMeta(path).ifPresent(meta -> {
             String tsRaw = meta.get("X-Solid-Serverless-Timestamp".toLowerCase());
@@ -322,7 +323,6 @@ public abstract class EntityBasedStore implements Store {
                 try {
                     Instant ts = Instant.ofEpochMilli(Long.parseLong(tsRaw));
                     LocalDateTime ldt = LocalDateTime.ofInstant(ts, ZoneOffset.UTC);
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
                     String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
                     delete(tsPath);
                     log.info("Deleted by TS index: {}", tsPath);

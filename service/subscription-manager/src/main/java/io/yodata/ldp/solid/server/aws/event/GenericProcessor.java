@@ -25,10 +25,10 @@ public class GenericProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
-    private Store store;
-    private ContainerHandler storeHandler;
-    private TransformService transform;
-    private SqsPusher pusher;
+    private final Store store;
+    private final ContainerHandler storeHandler;
+    private final TransformService transform;
+    private final SqsPusher pusher;
 
     public GenericProcessor(Store store) {
         this.store = store;

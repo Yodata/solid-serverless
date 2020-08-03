@@ -2,7 +2,6 @@ package io.yodata.ldp.solid.server.undertow.handler;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.config.Config;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import org.apache.commons.lang3.StringUtils;
@@ -10,16 +9,18 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.yodata.ldp.solid.server.aws.Configs.DOM_BASE;
+
 public class HostControlHandler extends BasicHttpHandler {
 
-    private List<String> domains = new ArrayList<>();
-    private HttpHandler h;
+    private final List<String> domains = new ArrayList<>();
+    private final HttpHandler h;
 
-    public HostControlHandler(Config cfg, HttpHandler h) {
-        String baseDomain = Configs.get().findOrBlank("reflex.domain.base"); // FIXME use store to store config
+    public HostControlHandler(Config cfg, HttpHandler h) { // FIXME this does not handle runtime update of the config
+        String baseDomain = cfg.findOrBlank(DOM_BASE);
 
         if (StringUtils.isBlank(baseDomain)) {
-            throw new RuntimeException("reflex.domain.base cannot be empty/bank");
+            throw new RuntimeException(DOM_BASE + " cannot be empty/bank");
         }
 
         domains.add(StringUtils.lowerCase(baseDomain));
