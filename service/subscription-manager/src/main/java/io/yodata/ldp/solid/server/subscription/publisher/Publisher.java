@@ -5,7 +5,10 @@ import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
-import io.yodata.ldp.solid.server.model.*;
+import io.yodata.ldp.solid.server.model.Request;
+import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.Target;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -64,7 +67,7 @@ public class Publisher {
             log.warn("Message did not contain any recipient to send to, ignoring");
             return;
         }
-        message.remove("recipient");
+        message.add("originalRecipient", message.remove("recipient"));
 
         publish(from, recipients, message);
     }
