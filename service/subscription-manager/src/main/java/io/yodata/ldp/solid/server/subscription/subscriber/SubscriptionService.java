@@ -50,6 +50,10 @@ public class SubscriptionService {
             return authorize(action);
         }
 
+        if (StringUtils.equals(action.getType(), SubscriptionEvent.SubscriptionAction.Update)) {
+            return authorize(action);
+        }
+
         if (StringUtils.equals(action.getType(), SubscriptionEvent.SubscriptionAction.Revoke)) {
             return revoke(action);
         }

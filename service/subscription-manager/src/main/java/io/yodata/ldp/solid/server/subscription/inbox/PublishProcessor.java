@@ -71,11 +71,12 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         log.info("Checking for permissions of {}", identity);
 
         Subscriptions subs = store.getSubscriptions(hostId);
-        String subManager = Configs.get().find("reflex.subscription.manager.domain").orElse("");
+        String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
         if (StringUtils.isNotBlank(subManager)) {
-            String subManagerId = Target.forProfileCard("https://" + subManager).getId().toString();
+            String subManagerId = Target.forProfileCard(subManager).getId().toString();
             SubscriptionEvent.Subscription sub = new SubscriptionEvent.Subscription();
             sub.getPublishes().add("yodata/subscription#authorize");
+            sub.getPublishes().add("yodata/subscription#update");
             sub.getPublishes().add("yodata/subscription#revoke");
             subs.getItems().put(subManagerId, sub);
         }

@@ -55,6 +55,7 @@ public class SubscriptionEvent {
     public static class SubscriptionAction {
 
         public static String Authorize = "AuthorizeAction";
+        public static String Update = "UpdateAction";
         public static String Revoke = "RevokeAction";
 
         private String type;
