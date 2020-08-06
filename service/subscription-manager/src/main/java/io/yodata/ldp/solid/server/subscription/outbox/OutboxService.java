@@ -34,7 +34,7 @@ import java.util.Optional;
 public class OutboxService {
 
     private final Logger log = LoggerFactory.getLogger(OutboxService.class);
-    private CloseableHttpClient client = HttpClients.createMinimal();
+    private final CloseableHttpClient client = HttpClients.createMinimal();
     private final ContainerHandler containers = new ContainerHandler(S3Store.getDefault());
 
     private Optional<URI> findTarget(String recipient) {
