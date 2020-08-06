@@ -3,7 +3,6 @@ package io.yodata.ldp.solid.server.subscription.outbox;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
@@ -12,12 +11,12 @@ import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.Target;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
+import io.yodata.ldp.solid.server.subscription.pusher.LambdaPusher;
+import io.yodata.ldp.solid.server.subscription.pusher.SqsPusher;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -27,14 +26,13 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class OutboxService {
 
     private final Logger log = LoggerFactory.getLogger(OutboxService.class);
     private final CloseableHttpClient client = HttpClients.createMinimal();
+    private final SqsPusher pusher = new SqsPusher();
     private final ContainerHandler containers = new ContainerHandler(S3Store.getDefault());
 
     private Optional<URI> findTarget(String recipient) {
@@ -146,32 +144,12 @@ public class OutboxService {
 
             // We send
             Response res = containers.post(r);
-            String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
+            String eventId = GsonUtil.parseObj(res.getBody().orElseGet("{}"::getBytes)).get("id").getAsString();
             log.info("Message was saved at {}", eventId);
         } else {
-            log.info("Domain {} is external, sending regular HTTP", recipientHost);
-
-            // FIXME move this to pusher
-            HttpPost req = new HttpPost(recipientUri);
-            req.setHeader("Content-Type", MimeTypes.APPLICATION_JSON);
-            req.setEntity(new StringEntity(dataRaw, StandardCharsets.UTF_8));
-            try (CloseableHttpResponse res = client.execute(req)) {
-                int sc = res.getStatusLine().getStatusCode();
-                if (sc < 200 || sc >= 300) {
-                    log.error("Unable to send notification | sc: {}", sc);
-                    log.error("Error: {}", res.getEntity().getContent());
-                    throw new RuntimeException("Status code when sending to " + recipientUri + ": " + sc);
-                }
-
-                log.info("Outbox item was successfully sent to {}", recipientUri);
-            } catch (SSLPeerUnverifiedException e) {
-                log.warn("Unable to send outbox item, will NOT retry: {}", e.getMessage());
-            } catch (UnknownHostException e) {
-                log.warn("Unable to send outbox item, will NOT retry: Unknown host: {}", e.getMessage());
-            } catch (IOException e) {
-                log.error("Unable to send outbox item due to I/O error, will retry", e);
-                throw new RuntimeException("Unable to send notification to " + recipientUri, e);
-            }
+            log.info("Domain {} is external, sending using pusher", recipientHost);
+            pusher.send(data, recipientUri.toString(), new JsonObject());
+            log.info("Outbox item was successfully sent via pusher");
         }
     }
 
