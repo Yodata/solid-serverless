@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Subscriptions {
 
@@ -19,8 +20,14 @@ public class Subscriptions {
                 continue; // FIXME must be able to handle multi-format!
             }
 
-            for (String topic : sub.getSubscribes()) {
+            List<String> topics = sub.getSubscribes().stream()
+                    .map(t -> StringUtils.substringBefore(t, "#"))
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            for (String topic : topics) {
                 Subscription subNew = new Subscription();
+                subNew.setAgent(sub.getAgent());
                 subNew.setObject("/event/topic/" + topic);
                 subNew.setTarget(sub.getAgent());
                 subsList.add(subNew);
@@ -43,7 +50,7 @@ public class Subscriptions {
 
     }
 
-    private Map<String, SubscriptionEvent.Subscription> items = new HashMap<>();
+    private final Map<String, SubscriptionEvent.Subscription> items = new HashMap<>();
 
     public List<Subscription> toList() {
         return Subscriptions.toList(this);

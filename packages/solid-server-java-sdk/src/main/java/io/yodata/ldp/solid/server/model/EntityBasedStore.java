@@ -154,7 +154,7 @@ public abstract class EntityBasedStore implements Store {
         save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), buildEntityPath(entity.getHost(), SUBS_PATH));
     }
 
-    private List<Subscription> extractSubs(String path, String obj, boolean needContext) {
+    public List<Subscription> extractSubs(String path, String obj, boolean needContext) {
         JsonElement el = GsonUtil.parse(obj);
         if (el.isJsonArray()) {
             el = GsonUtil.makeObj("items", el);
@@ -176,10 +176,10 @@ public abstract class EntityBasedStore implements Store {
             }
 
             try {
-                Subscriptions subs = GsonUtil.get().fromJson(el, Subscriptions.class);
-                list = subs.toList();
+                SubscriptionsLoader subs = GsonUtil.get().fromJson(el, SubscriptionsLoader.class);
+                list = subs.toMap().toList();
             } catch (JsonSyntaxException e) {
-                log.warn("Invalid subscription file at {}, ignoring", path);
+                log.warn("Invalid subscription file at {}, ignoring", path, e);
                 list = new ArrayList<>();
             }
         }

@@ -34,7 +34,11 @@ public class MemoryStore extends EntityBasedStore {
 
     }
 
-    private Map<String, Entity> entities = new ConcurrentHashMap<>();
+    private final Map<String, Entity> entities = new ConcurrentHashMap<>();
+
+    public Map<String, Entity> getEntities() {
+        return entities;
+    }
 
     @Override
     protected String getTsPrefix(String from, String namespace) {

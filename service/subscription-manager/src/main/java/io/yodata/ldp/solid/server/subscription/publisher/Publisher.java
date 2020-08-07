@@ -22,6 +22,8 @@ import java.util.Optional;
 
 public class Publisher {
 
+    public static final String ORIGINAL_RECIPIENT = "originalRecipient";
+
     private static final Logger log = LoggerFactory.getLogger(Publisher.class);
 
     private ContainerHandler dirHandler;
@@ -67,7 +69,10 @@ public class Publisher {
             log.warn("Message did not contain any recipient to send to, ignoring");
             return;
         }
-        message.add("originalRecipient", message.remove("recipient"));
+
+        if (!message.has(ORIGINAL_RECIPIENT)) {
+            message.add(ORIGINAL_RECIPIENT, rRaw);
+        }
 
         publish(from, recipients, message);
     }

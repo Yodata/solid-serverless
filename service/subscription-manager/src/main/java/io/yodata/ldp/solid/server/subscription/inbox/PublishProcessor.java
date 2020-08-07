@@ -61,9 +61,9 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
 
         URI hostId;
         try {
-            hostId = URI.create(c.ev.getRequest().getSecurity().getIdentity());
+            hostId = URI.create(c.ev.getId());
         } catch (IllegalArgumentException | NullPointerException e) {
-            log.info("Identity is not a valid URI, skipping");
+            log.info("Source {} is not a valid URI, skipping", c.ev.getId());
             return;
         }
 
