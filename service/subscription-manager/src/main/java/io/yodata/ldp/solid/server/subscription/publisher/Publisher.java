@@ -10,7 +10,6 @@ import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.Target;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +25,8 @@ public class Publisher {
 
     private static final Logger log = LoggerFactory.getLogger(Publisher.class);
 
-    private ContainerHandler dirHandler;
-    private ResourceHandler fileHandler;
+    private final ContainerHandler dirHandler;
+    private final ResourceHandler fileHandler;
 
     public Publisher(Store store) {
         this.dirHandler = new ContainerHandler(store);
@@ -36,8 +35,8 @@ public class Publisher {
 
     public void handle(JsonObject event) {
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        if (!StringUtils.equals(StorageAction.Add, action.getType())) {
-            log.debug("Storage action is not Add, so not for us");
+        if (!StorageAction.isAddOrUpdate(action.getType())) {
+            log.debug("Storage action is not Add or Update, so not for us");
             return;
         }
 
