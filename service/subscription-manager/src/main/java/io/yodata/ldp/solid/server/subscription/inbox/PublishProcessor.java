@@ -82,15 +82,16 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         Optional<SubscriptionEvent.Subscription> subOpt = Optional.ofNullable(subs.getItems().get(identity));
+        SubscriptionEvent.Subscription sub;
         if (!subOpt.isPresent()) {
-            log.info("No subscription(s) present at {}, skipping", hostId);
-            return;
-        }
-
-        SubscriptionEvent.Subscription sub = subOpt.get();
-        if (sub.getPublishes().stream().noneMatch(topics::contains)) {
-            log.info("{} is not allowed to publish to any of the event topics, skipping", identity);
-            return;
+            log.info("No subscription(s) present at {}, we allow per default", hostId);
+            sub = SubscriptionEvent.Subscription.with(identity, topics);
+        } else {
+            sub = subOpt.get();
+            if (sub.getPublishes().stream().noneMatch(topics::contains)) {
+                log.info("{} is not allowed to publish to any of the event topics, skipping", identity);
+                return;
+            }
         }
 
         log.info("Normalizing event {}", c.ev.getId());

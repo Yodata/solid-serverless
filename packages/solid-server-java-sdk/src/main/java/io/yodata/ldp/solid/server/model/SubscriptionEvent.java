@@ -9,6 +9,13 @@ public class SubscriptionEvent {
 
     public static class Subscription {
 
+        public static Subscription with(String agent, List<String> publishes) {
+            Subscription sub = new Subscription();
+            sub.agent = agent;
+            sub.publishes = new ArrayList<>(publishes);
+            return sub;
+        }
+
         private String type;
         private String version;
         private String agent;
