@@ -5,8 +5,8 @@ import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
 import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.google.gson.JsonObject;
-import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.Configs;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ public class LambdaPusher {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaPusher.class);
 
-    private final String lName = EnvUtils.get("PUSHER_LAMBDA_NAME");
+    private final String lName = Configs.get().get("aws.lambda.pusher.name");
     private final AWSLambda lambda = AWSLambdaClientBuilder.defaultClient();
 
     public void send(JsonObject data, String targetRaw, JsonObject config) {

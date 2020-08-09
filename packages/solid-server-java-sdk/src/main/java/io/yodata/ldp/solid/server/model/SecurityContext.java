@@ -41,6 +41,10 @@ public class SecurityContext {
         this.instrument = instrument;
     }
 
+    public void setInstrument(Target t) {
+        setInstrument(t.getId().toString());
+    }
+
     public String getIdentity() {
         return getAgent().orElseGet(() -> Optional.ofNullable(getInstrument()).orElse(""));
     }

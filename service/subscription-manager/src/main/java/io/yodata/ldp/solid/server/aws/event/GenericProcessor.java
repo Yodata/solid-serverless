@@ -1,5 +1,6 @@
 package io.yodata.ldp.solid.server.aws.event;
 
+import com.amazonaws.HttpMethod;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
@@ -24,10 +25,10 @@ public class GenericProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
-    private Store store;
-    private ContainerHandler storeHandler;
-    private TransformService transform;
-    private SqsPusher pusher;
+    private final Store store;
+    private final ContainerHandler storeHandler;
+    private final TransformService transform;
+    private final SqsPusher pusher;
 
     public GenericProcessor(Store store) {
         this.store = store;
@@ -38,11 +39,11 @@ public class GenericProcessor {
 
     public void handleEvent(JsonObject event) {
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        URI id = URI.create(action.getId());
+        URI id = URI.create(StringUtils.defaultIfBlank(action.getId(), "https://fail.yodata.io/unknown/id"));
         URI target = URI.create(action.getTarget());
         log.info("Processing storage event {} about {}", action.getType(), action.getId());
 
-        List<Subscription> subs = store.getSubscriptions(id);
+        List<Subscription> subs = store.getAllSubscriptions(id);
         if (subs.isEmpty()) {
             log.info("No subscription found");
             return;
@@ -51,6 +52,11 @@ public class GenericProcessor {
 
         for (Subscription sub : subs) {
             log.info("Processing subscription ID {} on target {}", sub.getId(), target.toString());
+
+            if (StringUtils.isBlank(sub.getObject())) {
+                log.warn("Object is blank, ignoring");
+                continue;
+            }
 
             URI subTarget = URI.create(sub.getObject());
             String host = subTarget.getHost();
@@ -122,7 +128,7 @@ public class GenericProcessor {
 
                     // We build the store request
                     Request r = new Request();
-                    r.setMethod("POST");
+                    r.setMethod(HttpMethod.POST.name());
                     r.setTarget(Target.forPath(new Target(id), "/outbox/"));
                     r.setBody(msg);
 
@@ -144,14 +150,14 @@ public class GenericProcessor {
                         actionNew.addProperty(ActionPropertyKey.Object.getId(), action.getId());
                     }
 
-                    // We publish the event - Publisher will handle the wrapping and routing for us
+                    // We notify about the event - Notifier will handle the wrapping and routing for us
                     JsonObject publication = new JsonObject();
                     publication.add("recipient", GsonUtil.asArray(sub.getAgent()));
                     publication.add("payload", actionNew);
 
                     // We build the store request
                     Request r = new Request();
-                    r.setMethod("POST");
+                    r.setMethod(HttpMethod.POST.name());
                     r.setTarget(Target.forPath(new Target(id), "/notify/"));
                     r.setBody(publication);
 

@@ -6,7 +6,6 @@ import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +29,8 @@ public class Notifier {
 
     public void handle(JsonObject event) {
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        if (!StringUtils.equals(StorageAction.Add, action.getType())) {
-            log.debug("Storage action is not Add, so not for us");
+        if (!StorageAction.isAddOrUpdate(action.getType())) {
+            log.debug("Storage action is not Add or Update, so not for us");
             return;
         }
 
@@ -45,7 +44,7 @@ public class Notifier {
     }
 
     public void notify(URI from, JsonObject message) {
-        Optional<JsonObject> payloadOpt = GsonUtil.findObj(message,"payload");
+        Optional<JsonObject> payloadOpt = GsonUtil.findObj(message, "payload");
         if (!payloadOpt.isPresent()) {
             log.warn("Message did not contain a payload, ignoring");
             return;

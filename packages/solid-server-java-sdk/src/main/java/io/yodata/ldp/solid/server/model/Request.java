@@ -1,7 +1,6 @@
 package io.yodata.ldp.solid.server.model;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import io.yodata.Base64Util;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
@@ -12,6 +11,12 @@ import java.time.Instant;
 import java.util.*;
 
 public class Request {
+
+    public static Request post() {
+        Request r = new Request();
+        r.setMethod("POST");
+        return r;
+    }
 
     protected String id;
     protected Instant timestamp = Instant.now();

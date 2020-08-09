@@ -13,5 +13,6 @@ deploy:
 	@lambda-gradle-deploy outbox-processor
 	@lambda-gradle-deploy push-processor
 	@lambda-gradle-deploy publish-processor
+	@lambda-gradle-deploy subscription-processor
 
 push: prepare package deploy

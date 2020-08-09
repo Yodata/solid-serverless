@@ -2,12 +2,11 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -24,18 +22,26 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
 
     private final Logger log = LoggerFactory.getLogger(PublishProcessor.class);
 
-    private ContainerHandler storeHandler;
-    private TransformService transform;
+    public static final String Type = "ReflexPublishAction";
+
+    private final Store store;
+    private final ContainerHandler containers;
+    private final TransformService transform;
 
     public PublishProcessor() {
-        storeHandler = new ContainerHandler(S3Store.getDefault());
-        transform = new AWSTransformService();
+        this(S3Store.getDefault());
+    }
+
+    public PublishProcessor(Store store) {
+        this.store = store;
+        this.containers = new ContainerHandler(store);
+        this.transform = new AWSTransformService();
     }
 
     @Override
     public void accept(InboxService.Wrapper c) {
-        if (!StringUtils.equals("ReflexPublishAction", GsonUtil.getStringOrNull(c.message, "type"))) {
-            log.info("type is not REflex Publish Action, ignoring");
+        if (!StringUtils.equals(Type, GsonUtil.getStringOrNull(c.message, "type"))) {
+            log.info("type is not {}, ignoring", Type);
             return;
         }
 
@@ -46,10 +52,44 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         JsonObject message = opt.get();
-        List<String> topics = GsonUtil.findArrayOrString(message, "topic");
-        if (topics.isEmpty()) {
+        String topic = GsonUtil.findString(message, "topic").orElse("");
+        if (StringUtils.isBlank(topic)) {
             log.info("No topic found, ignoring as Topic event");
             return;
+        }
+
+        URI hostId;
+        try {
+            hostId = URI.create(c.ev.getId());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            log.info("Source {} is not a valid URI, skipping", c.ev.getId());
+            return;
+        }
+
+        String identity = c.ev.getRequest().getSecurity().getIdentity();
+        log.info("Checking for permissions of {}", identity);
+
+        Subscriptions subs = store.getSubscriptions(hostId);
+        String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
+        if (StringUtils.isNotBlank(subManager)) {
+            String subManagerId = Target.forProfileCard(subManager).getId().toString();
+            Subscription sub = new Subscription();
+            sub.setId("subscription-manager-onthefly-add");
+            sub.setAgent(subManagerId);
+            sub.getPublishes().add("yodata/subscription");
+            subs.getItems().add(sub);
+        }
+
+        Optional<Subscription> subOpt = Optional.ofNullable(subs.toAgentMap().get(identity));
+        Subscription sub;
+        if (!subOpt.isPresent()) {
+            log.info("No subscription(s) present for {}, we allow per default", identity);
+        } else {
+            sub = subOpt.get();
+            if (sub.getPublishes().stream().noneMatch(t -> Topic.matches(t, topic))) {
+                log.info("{} is not allowed to publish to the topic {}, skipping", identity, topic);
+                return;
+            }
         }
 
         log.info("Normalizing event {}", c.ev.getId());
@@ -70,33 +110,30 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             message = data;
         }
 
-        for (String topic : topics) {
-            String topicPath = StringUtils.defaultIfBlank(topic, "");
-            if (topicPath.contains(":")) {
-                String[] splitValues = StringUtils.split(topicPath, ":", 2);
-                topicPath = splitValues[1];
-            }
-
-            if (topicPath.contains("#")) {
-                String[] splitValues = StringUtils.split(topicPath, "#", 2);
-                topicPath = splitValues[0];
-            }
-
-            if (!topicPath.endsWith("/")) {
-                topicPath = topicPath + "/";
-            }
-
-            Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
-            Request r = new Request();
-            r.setMethod("POST");
-            r.setTarget(target);
-            r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
-            r.setBody(message);
-
-            Response res = storeHandler.post(r);
-            String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
-            log.info("Topic event was saved at {}", eventId);
+        String topicPath = StringUtils.defaultIfBlank(topic, "");
+        if (topicPath.contains(":")) {
+            String[] splitValues = StringUtils.split(topicPath, ":", 2);
+            topicPath = splitValues[1];
         }
+
+        if (topicPath.contains("#")) {
+            String[] splitValues = StringUtils.split(topicPath, "#", 2);
+            topicPath = splitValues[0];
+        }
+
+        if (!topicPath.endsWith("/")) {
+            topicPath = topicPath + "/";
+        }
+
+        Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
+        Request r = Request.post();
+        r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
+        r.setTarget(target);
+        r.setBody(message);
+
+        Response res = containers.post(r);
+        String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
+        log.info("Topic event was saved at {}", eventId);
     }
 
 }

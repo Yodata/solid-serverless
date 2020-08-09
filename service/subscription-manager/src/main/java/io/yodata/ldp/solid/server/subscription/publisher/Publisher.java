@@ -5,9 +5,11 @@ import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
-import io.yodata.ldp.solid.server.model.*;
+import io.yodata.ldp.solid.server.model.Request;
+import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.Target;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +21,12 @@ import java.util.Optional;
 
 public class Publisher {
 
+    public static final String ORIGINAL_RECIPIENT = "originalRecipient";
+
     private static final Logger log = LoggerFactory.getLogger(Publisher.class);
 
-    private ContainerHandler dirHandler;
-    private ResourceHandler fileHandler;
+    private final ContainerHandler dirHandler;
+    private final ResourceHandler fileHandler;
 
     public Publisher(Store store) {
         this.dirHandler = new ContainerHandler(store);
@@ -31,8 +35,8 @@ public class Publisher {
 
     public void handle(JsonObject event) {
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        if (!StringUtils.equals(StorageAction.Add, action.getType())) {
-            log.debug("Storage action is not Add, so not for us");
+        if (!StorageAction.isAddOrUpdate(action.getType())) {
+            log.debug("Storage action is not Add or Update, so not for us");
             return;
         }
 
@@ -63,6 +67,10 @@ public class Publisher {
         if (recipients.isEmpty()) {
             log.warn("Message did not contain any recipient to send to, ignoring");
             return;
+        }
+
+        if (!message.has(ORIGINAL_RECIPIENT)) {
+            message.add(ORIGINAL_RECIPIENT, rRaw);
         }
         message.remove("recipient");
 
