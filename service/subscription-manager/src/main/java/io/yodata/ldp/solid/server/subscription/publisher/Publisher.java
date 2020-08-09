@@ -72,6 +72,7 @@ public class Publisher {
         if (!message.has(ORIGINAL_RECIPIENT)) {
             message.add(ORIGINAL_RECIPIENT, rRaw);
         }
+        message.remove("recipient");
 
         publish(from, recipients, message);
     }

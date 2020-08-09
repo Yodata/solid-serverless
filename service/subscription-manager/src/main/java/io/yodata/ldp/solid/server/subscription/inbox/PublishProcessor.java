@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -53,8 +52,8 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         JsonObject message = opt.get();
-        List<String> topics = GsonUtil.findArrayOrString(message, "topic");
-        if (topics.isEmpty()) {
+        String topic = GsonUtil.findString(message, "topic").orElse("");
+        if (StringUtils.isBlank(topic)) {
             log.info("No topic found, ignoring as Topic event");
             return;
         }
@@ -74,22 +73,21 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
         if (StringUtils.isNotBlank(subManager)) {
             String subManagerId = Target.forProfileCard(subManager).getId().toString();
-            SubscriptionEvent.Subscription sub = new SubscriptionEvent.Subscription();
-            sub.getPublishes().add("yodata/subscription#authorize");
-            sub.getPublishes().add("yodata/subscription#update");
-            sub.getPublishes().add("yodata/subscription#revoke");
-            subs.getItems().put(subManagerId, sub);
+            Subscription sub = new Subscription();
+            sub.setId("subscription-manager-onthefly-add");
+            sub.setAgent(subManagerId);
+            sub.getPublishes().add("yodata/subscription");
+            subs.getItems().add(sub);
         }
 
-        Optional<SubscriptionEvent.Subscription> subOpt = Optional.ofNullable(subs.getItems().get(identity));
-        SubscriptionEvent.Subscription sub;
+        Optional<Subscription> subOpt = Optional.ofNullable(subs.toAgentMap().get(identity));
+        Subscription sub;
         if (!subOpt.isPresent()) {
-            log.info("No subscription(s) present at {}, we allow per default", hostId);
-            sub = SubscriptionEvent.Subscription.with(identity, topics);
+            log.info("No subscription(s) present for {}, we allow per default", identity);
         } else {
             sub = subOpt.get();
-            if (sub.getPublishes().stream().noneMatch(topics::contains)) {
-                log.info("{} is not allowed to publish to any of the event topics, skipping", identity);
+            if (sub.getPublishes().stream().noneMatch(t -> Topic.matches(t, topic))) {
+                log.info("{} is not allowed to publish to the topic {}, skipping", identity, topic);
                 return;
             }
         }
@@ -112,37 +110,30 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             message = data;
         }
 
-        for (String topic : topics) {
-            if (!sub.getPublishes().contains(topic)) {
-                // Not allowed to publish to that topic, we skip
-                continue;
-            }
-
-            String topicPath = StringUtils.defaultIfBlank(topic, "");
-            if (topicPath.contains(":")) {
-                String[] splitValues = StringUtils.split(topicPath, ":", 2);
-                topicPath = splitValues[1];
-            }
-
-            if (topicPath.contains("#")) {
-                String[] splitValues = StringUtils.split(topicPath, "#", 2);
-                topicPath = splitValues[0];
-            }
-
-            if (!topicPath.endsWith("/")) {
-                topicPath = topicPath + "/";
-            }
-
-            Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
-            Request r = Request.post();
-            r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
-            r.setTarget(target);
-            r.setBody(message);
-
-            Response res = containers.post(r);
-            String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
-            log.info("Topic event was saved at {}", eventId);
+        String topicPath = StringUtils.defaultIfBlank(topic, "");
+        if (topicPath.contains(":")) {
+            String[] splitValues = StringUtils.split(topicPath, ":", 2);
+            topicPath = splitValues[1];
         }
+
+        if (topicPath.contains("#")) {
+            String[] splitValues = StringUtils.split(topicPath, "#", 2);
+            topicPath = splitValues[0];
+        }
+
+        if (!topicPath.endsWith("/")) {
+            topicPath = topicPath + "/";
+        }
+
+        Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
+        Request r = Request.post();
+        r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
+        r.setTarget(target);
+        r.setBody(message);
+
+        Response res = containers.post(r);
+        String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
+        log.info("Topic event was saved at {}", eventId);
     }
 
 }

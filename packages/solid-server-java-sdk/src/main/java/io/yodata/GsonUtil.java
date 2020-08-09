@@ -58,8 +58,18 @@ public class GsonUtil {
         return l;
     }
 
+    public static List<JsonElement> asList(JsonArray a) {
+        List<JsonElement> l = new ArrayList<>();
+        a.forEach(l::add);
+        return l;
+    }
+
     public static <T> List<T> asList(JsonObject obj, String member, Class<T> c) {
         return asList(getArray(obj, member), c);
+    }
+
+    public static List<JsonElement> asList(JsonObject obj, String member) {
+        return asList(getArray(obj, member));
     }
 
     public static JsonObject makeObj(Object o) {

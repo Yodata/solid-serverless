@@ -176,8 +176,7 @@ public abstract class EntityBasedStore implements Store {
             }
 
             try {
-                SubscriptionsLoader subs = GsonUtil.get().fromJson(el, SubscriptionsLoader.class);
-                list = subs.toMap().toList();
+                list = GsonUtil.get().fromJson(el, Subscriptions.class).toMatchList();
             } catch (JsonSyntaxException e) {
                 log.warn("Invalid subscription file at {}, ignoring", path, e);
                 list = new ArrayList<>();
@@ -226,6 +225,11 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public Subscriptions getSubscriptions(URI entity) {
+        return GsonUtil.get().fromJson(getRawSubscriptions(entity), Subscriptions.class);
+    }
+
+    @Override
+    public JsonObject getRawSubscriptions(URI entity) {
         Optional<String> rawOpt = findEntityData(entity, SUBS_PATH);
 
         String raw;
@@ -247,22 +251,7 @@ public abstract class EntityBasedStore implements Store {
             rawEl = GsonUtil.makeObj("version", "1");
         }
 
-        Subscriptions subs = new Subscriptions();
-        JsonArray subsRaw = GsonUtil.findArray(rawEl.getAsJsonObject(), "items").orElseGet(JsonArray::new);
-        for (JsonElement el : subsRaw) {
-            if (!el.isJsonObject()) {
-                continue;
-            }
-
-            try {
-                SubscriptionEvent.Subscription sub = GsonUtil.get().fromJson(el, SubscriptionEvent.Subscription.class);
-                subs.getItems().put(sub.getAgent(), sub);
-            } catch (JsonSyntaxException e) {
-                log.warn("Invalid subscription element, skipping");
-            }
-        }
-
-        return subs;
+        return rawEl.getAsJsonObject();
     }
 
     @Override

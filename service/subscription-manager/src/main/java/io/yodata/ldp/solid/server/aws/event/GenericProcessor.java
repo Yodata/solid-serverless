@@ -53,6 +53,11 @@ public class GenericProcessor {
         for (Subscription sub : subs) {
             log.info("Processing subscription ID {} on target {}", sub.getId(), target.toString());
 
+            if (StringUtils.isBlank(sub.getObject())) {
+                log.warn("Object is blank, ignoring");
+                continue;
+            }
+
             URI subTarget = URI.create(sub.getObject());
             String host = subTarget.getHost();
             if (!StringUtils.isBlank(host)) {
@@ -145,7 +150,7 @@ public class GenericProcessor {
                         actionNew.addProperty(ActionPropertyKey.Object.getId(), action.getId());
                     }
 
-                    // We publish the event - Publisher will handle the wrapping and routing for us
+                    // We notify about the event - Notifier will handle the wrapping and routing for us
                     JsonObject publication = new JsonObject();
                     publication.add("recipient", GsonUtil.asArray(sub.getAgent()));
                     publication.add("payload", actionNew);

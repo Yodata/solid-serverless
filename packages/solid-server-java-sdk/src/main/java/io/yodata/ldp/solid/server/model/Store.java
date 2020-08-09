@@ -50,6 +50,8 @@ public interface Store {
 
     Subscriptions getSubscriptions(URI entity);
 
+    JsonObject getRawSubscriptions(URI entity);
+
     Policies getPolicies(URI entity);
 
     Page getPage(Target t, String by, String from, boolean isFullFormat, boolean isTemporal);

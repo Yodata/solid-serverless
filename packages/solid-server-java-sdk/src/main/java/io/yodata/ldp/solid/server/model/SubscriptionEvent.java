@@ -1,63 +1,8 @@
 package io.yodata.ldp.solid.server.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.JsonObject;
 
 public class SubscriptionEvent {
-
-    public static class Subscription {
-
-        public static Subscription with(String agent, List<String> publishes) {
-            Subscription sub = new Subscription();
-            sub.agent = agent;
-            sub.publishes = new ArrayList<>(publishes);
-            return sub;
-        }
-
-        private String type;
-        private String version;
-        private String agent;
-        private String instrument;
-        private String host;
-        private List<String> subscribes = new ArrayList<>();
-        private List<String> publishes = new ArrayList<>();
-        private Map<String, String> scopes = new HashMap<>();
-
-        public String getType() {
-            return type;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public String getAgent() {
-            return agent;
-        }
-
-        public String getInstrument() {
-            return instrument;
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public List<String> getSubscribes() {
-            return subscribes;
-        }
-
-        public List<String> getPublishes() {
-            return publishes;
-        }
-
-        public Map<String, String> getScopes() {
-            return scopes;
-        }
-
-    }
 
     public static class SubscriptionAction {
 
@@ -68,7 +13,7 @@ public class SubscriptionEvent {
         private String type;
         private String agent;
         private String instrument;
-        private Subscription object;
+        private JsonObject object;
 
         public static String getAuthorize() {
             return Authorize;
@@ -90,7 +35,7 @@ public class SubscriptionEvent {
             return instrument;
         }
 
-        public Subscription getObject() {
+        public JsonObject getObject() {
             return object;
         }
 
