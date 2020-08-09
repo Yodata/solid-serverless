@@ -44,7 +44,7 @@ public class Notifier {
     }
 
     public void notify(URI from, JsonObject message) {
-        Optional<JsonObject> payloadOpt = GsonUtil.findObj(message,"payload");
+        Optional<JsonObject> payloadOpt = GsonUtil.findObj(message, "payload");
         if (!payloadOpt.isPresent()) {
             log.warn("Message did not contain a payload, ignoring");
             return;

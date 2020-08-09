@@ -11,7 +11,6 @@ import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.SecurityContext;
 import io.yodata.ldp.solid.server.model.Target;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
-import io.yodata.ldp.solid.server.subscription.pusher.LambdaPusher;
 import io.yodata.ldp.solid.server.subscription.pusher.SqsPusher;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -22,7 +21,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

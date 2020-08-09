@@ -5,7 +5,6 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.SecurityProcessor;
 import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
 import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
@@ -15,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.logging.FileHandler;
-import java.util.stream.Collectors;
 
 public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
@@ -221,7 +218,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         for (Map.Entry<String, List<Scope>> entries : toRemovePath.entrySet()) {
             log.info("Removing scopes under {}", entries.getKey());
 
-            Target aclTarget =  Target.forPath(pod, entries.getKey());
+            Target aclTarget = Target.forPath(pod, entries.getKey());
             store.getEntityAcl(aclTarget, false)
                     .ifPresent(acl -> {
                         log.info("We have an ACL to check at {}", aclTarget.getPath());
@@ -282,7 +279,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         for (Map.Entry<String, List<Scope>> entries : toAddPath.entrySet()) {
-            Target aclTarget =  Target.forPath(pod, entries.getKey());
+            Target aclTarget = Target.forPath(pod, entries.getKey());
             Acl acl = store.getEntityAcl(aclTarget).orElseGet(Acl::forInit);
             log.info("ACL read: {}", GsonUtil.toJson(acl));
             Acl.Entry entry = acl.computeEntity(newAction.getObject());

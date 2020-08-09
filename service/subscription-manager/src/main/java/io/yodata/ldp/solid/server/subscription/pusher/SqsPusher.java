@@ -4,7 +4,6 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
-import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.Configs;
 import org.apache.commons.lang3.StringUtils;

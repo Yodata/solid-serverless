@@ -47,7 +47,7 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
                     p.handleEvent(GsonUtil.parseObj(dataRaw));
                 } else if (record.has("body")) {
                     String body = record.getAsJsonPrimitive("body").getAsString();
-		            log.debug("SQS data: {}", body);
+                    log.debug("SQS data: {}", body);
 
                     JsonObject message = GsonUtil.parseObj(body);
                     if (message.has("TopicArn")) { // This is SNS to SQS without raw delivery
