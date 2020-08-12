@@ -28,7 +28,8 @@ import java.util.Optional;
 
 public class OutboxService {
 
-    private final Logger log = LoggerFactory.getLogger(OutboxService.class);
+    private static final Logger log = LoggerFactory.getLogger(OutboxService.class);
+
     private final CloseableHttpClient client = HttpClients.createMinimal();
     private final SqsPusher pusher = new SqsPusher();
     private final ContainerHandler containers = new ContainerHandler(S3Store.getDefault());
@@ -83,13 +84,14 @@ public class OutboxService {
     }
 
     public void process(JsonObject event) {
-        log.info("Processing event data: {}", GsonUtil.toJson(event));
+        log.debug("Processing event data: {}", GsonUtil.toJson(event));
 
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
         if (!StorageAction.isAddOrUpdate(action.getType())) {
             log.warn("Event is not about new/updated data, nothing to do, skipping");
             return;
         }
+        log.info("Processing {}", action.getId());
 
         if (!action.getObject().isPresent()) {
             log.warn("Event has no data, assuming non-RDF for now and skipping");
