@@ -21,11 +21,11 @@ import java.util.UUID;
 
 public class ContainerHandler extends GenericHandler {
 
-    private final Logger log = LoggerFactory.getLogger(ContainerHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ContainerHandler.class);
 
-    private RequestCheckProcessor inCheck;
-    private ResponseCheckProcessor outCheck;
-    private ContainerStoreProcessor storeProc;
+    private final RequestCheckProcessor inCheck;
+    private final ResponseCheckProcessor outCheck;
+    private final ContainerStoreProcessor storeProc;
 
     public ContainerHandler() {
         this(S3Store.getDefault());
@@ -69,9 +69,9 @@ public class ContainerHandler extends GenericHandler {
 
         // We produce a unique ID for this message
         String uuid = UUID.randomUUID().toString().replace("-", "");
-        log.info("Generated internal ID: {}", uuid);
+        log.debug("Generated internal ID: {}", uuid);
         String id = in.getTarget().getId().toString() + uuid;
-        log.info("Data ID: {}", id);// We update the request with the relevant data to store
+        log.debug("Data ID: {}", id);// We update the request with the relevant data to store
         in.setDestination(new Target(URI.create(id)));
 
         Map<String, JsonElement> keys = new HashMap<>();

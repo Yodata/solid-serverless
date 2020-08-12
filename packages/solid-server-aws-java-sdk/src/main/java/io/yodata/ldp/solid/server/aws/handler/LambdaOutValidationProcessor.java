@@ -20,7 +20,7 @@ import java.util.Objects;
 
 public abstract class LambdaOutValidationProcessor extends LambdaValidationProcessor implements OutputValidationProcessor {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaOutValidationProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaOutValidationProcessor.class);
 
     private final AWSLambda lambda;
 
@@ -39,8 +39,8 @@ public abstract class LambdaOutValidationProcessor extends LambdaValidationProce
             return ex.getResponse();
         }
 
-        log.info("Exchange {}: Response validation: start", ex.getRequest().getId());
-        log.info("Using lambda {}", getLambdaName());
+        log.debug("Exchange {}: Response validation: start", ex.getRequest().getId());
+        log.debug("Using lambda {}", getLambdaName());
 
         JsonObject exJson = toJson(ex);
         String payload = GsonUtil.toJson(exJson);
@@ -49,17 +49,17 @@ public abstract class LambdaOutValidationProcessor extends LambdaValidationProce
         invokeReq.setFunctionName(getLambdaName());
         invokeReq.setPayload(payload);
 
-        log.info("Calling lambda {}", getLambdaName());
+        log.debug("Calling lambda {}", getLambdaName());
         InvokeResult invokeRes = lambda.invoke(invokeReq);
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
             throw new RuntimeException("Lambda " + getLambdaName() + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }
-        log.info("Got reply from lambda {}", getLambdaName());
+        log.debug("Got reply from lambda {}", getLambdaName());
 
         String p = new String(invokeRes.getPayload().array(), StandardCharsets.UTF_8);
         Exchange exNew = GsonUtil.parse(p, Exchange.class);
         if (Objects.nonNull(exNew.getResponse())) {
-            log.info("Got response object");
+            log.debug("Got response object");
             ex.setResponse(exNew.getResponse());
         } else {
             log.warn("DID NOT get a response object, returning pre-call response");

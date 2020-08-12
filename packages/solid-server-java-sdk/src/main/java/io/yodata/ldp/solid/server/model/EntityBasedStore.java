@@ -280,9 +280,9 @@ public abstract class EntityBasedStore implements Store {
         Instant timestamp = in.getTimestamp();
 
         URI id = in.getDestination().getId();
-        log.info("Id: {}", id);
+        log.debug("Id: {}", id);
         Path idPath = Paths.get(id.getPath());
-        log.info("Path: {}", id.getPath());
+        log.debug("Path: {}", id.getPath());
         String byIdPath = buildEntityPath(in.getDestination().getHost(), in.getDestination().getPath());
         ensureNotExisting(byIdPath);
 
@@ -293,7 +293,7 @@ public abstract class EntityBasedStore implements Store {
         save(in.getContentType().orElse("application/octet-stream"), in.getBody(), byIdPath, meta);
 
         if (Objects.nonNull(timestamp)) {
-            log.info("Timestamp: {}", timestamp.toEpochMilli());
+            log.debug("Timestamp: {}", timestamp.toEpochMilli());
             LocalDateTime ldt = LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC);
             String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
             link(byIdPath, tsPath);
@@ -314,7 +314,7 @@ public abstract class EntityBasedStore implements Store {
                     LocalDateTime ldt = LocalDateTime.ofInstant(ts, ZoneOffset.UTC);
                     String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
                     delete(tsPath);
-                    log.info("Deleted by TS index: {}", tsPath);
+                    log.debug("Deleted by TS index: {}", tsPath);
                 } catch (NumberFormatException e) {
                     log.warn("Invalid TS header value: {}", tsRaw);
                 }
@@ -322,7 +322,7 @@ public abstract class EntityBasedStore implements Store {
         });
 
         delete(path);
-        log.info("Deleted by ID: {}", path);
+        log.info("Deleted ID: {}", path);
     }
 
     @Override

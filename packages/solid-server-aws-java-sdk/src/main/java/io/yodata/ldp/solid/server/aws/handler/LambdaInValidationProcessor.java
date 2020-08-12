@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public abstract class LambdaInValidationProcessor extends LambdaValidationProcessor implements InputValidationProcessor {
 
-    private final Logger log = LoggerFactory.getLogger(LambdaInValidationProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(LambdaInValidationProcessor.class);
 
     private final AWSLambda lambda;
 
@@ -33,8 +33,8 @@ public abstract class LambdaInValidationProcessor extends LambdaValidationProces
             return;
         }
 
-        log.info("Request {} validation: start", ex.getRequest().getId());
-        log.info("Using lambda {}", getLambdaName());
+        log.debug("Request {} validation: start", ex.getRequest().getId());
+        log.debug("Using lambda {}", getLambdaName());
 
         JsonObject exJson = toJson(ex);
         String payload = GsonUtil.toJson(exJson);
@@ -42,16 +42,16 @@ public abstract class LambdaInValidationProcessor extends LambdaValidationProces
         invokeReq.setFunctionName(getLambdaName());
         invokeReq.setPayload(payload);
 
-        log.info("Calling lambda {}", getLambdaName());
+        log.debug("Calling lambda {}", getLambdaName());
         InvokeResult invokeRes = lambda.invoke(invokeReq);
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
             throw new RuntimeException("Lambda " + getLambdaName() + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }
-        log.info("Got reply from lambda {}", getLambdaName());
+        log.debug("Got reply from lambda {}", getLambdaName());
 
         byte[] invokeResBody = invokeRes.getPayload().array();
         JsonObject exProcessed = GsonUtil.parseObj(invokeResBody);
-        GsonUtil.findObj(exProcessed, "response").ifPresent(resJson -> log.info("Got response object"));
+        GsonUtil.findObj(exProcessed, "response").ifPresent(resJson -> log.debug("Got response object"));
         Exchange exNew = GsonUtil.parse(invokeResBody, Exchange.class);
 
         if (Objects.nonNull(exNew.getRequest())) {
