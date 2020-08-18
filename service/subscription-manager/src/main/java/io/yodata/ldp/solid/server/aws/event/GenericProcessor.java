@@ -43,17 +43,6 @@ public class GenericProcessor {
         URI target = URI.create(action.getTarget());
         log.info("Processing storage event {} about {}", action.getType(), action.getId());
 
-        if (!action.getObject().isPresent()) {
-            log.info("Object is not present in the event: Fetching data from store to process");
-            Optional<String> obj = store.findEntityData(id, id.getPath());
-            if (!obj.isPresent()) {
-                log.info("We got a notification about {} which doesn't exist anymore, setting empty object", id);
-                action.setObject(new JsonObject());
-            } else {
-                action.setObject(GsonUtil.parseObj(obj.get()));
-            }
-        }
-
         List<Subscription> subs = store.getAllSubscriptions(id);
         if (subs.isEmpty()) {
             log.info("No subscription found");
@@ -105,6 +94,17 @@ public class GenericProcessor {
 
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
         URI id = URI.create(StringUtils.defaultIfBlank(action.getId(), "https://fail.yodata.io/unknown/id"));
+
+        if (!action.getObject().isPresent()) {
+            log.info("Object is not present in the event: Fetching data from store to process");
+            Optional<String> obj = store.findEntityData(id, id.getPath());
+            if (!obj.isPresent()) {
+                log.info("We got a notification about {} which doesn't exist anymore, setting empty object", id);
+                action.setObject(new JsonObject());
+            } else {
+                action.setObject(GsonUtil.parseObj(obj.get()));
+            }
+        }
 
         if (Objects.nonNull(sub.getScope())) {
             log.info("Subscription has a scope, processing");
