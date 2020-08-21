@@ -12,6 +12,7 @@ public class Target {
     }
 
     public static Target forPath(URI base, String path) {
+        base = URI.create(base.toString().toLowerCase());
         Target t = new Target(base.resolve(path));
         t.setAccessType(AclMode.Read);
         return t;
@@ -22,7 +23,7 @@ public class Target {
     }
 
     public static Target forProfileCard(String base) {
-        return forProfileCard(URI.create(base));
+        return forProfileCard(URI.create(base.toLowerCase()));
     }
 
     protected URI id;
@@ -53,7 +54,7 @@ public class Target {
     }
 
     public void setHost(String host) {
-        this.host = host;
+        this.host = host.toLowerCase();
     }
 
     public String getPath() {

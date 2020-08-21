@@ -82,7 +82,7 @@ public class SecurityProcessor {
         } else {
             sc.setAllowedModes(acl.getEntity(id).orElseGet(() -> {
                 for (Map.Entry<String, Acl.Entry> pattern : acl.getPatterns().entrySet()) {
-                    String resolvedPattern = pattern.getKey().replace("%BASE_URL%", "https://" + target.getId().getHost());
+                    String resolvedPattern = pattern.getKey().replace("%BASE_URL%", "https://" + target.getHost());
                     if (StringUtils.equals(resolvedPattern, id)) {
                         return pattern.getValue();
                     }

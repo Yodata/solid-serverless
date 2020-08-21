@@ -33,7 +33,7 @@ public abstract class EntityBasedStore implements Store {
     public static final String SUBS_PATH = "/settings/subscriptions";
 
     protected String buildEntityPath(String entity, String path) {
-        return "entities/" + entity + "/data/by-id" + path;
+        return "entities/" + entity.toLowerCase() + "/data/by-id" + path;
     }
 
     protected String buildEntityPath(URI entity, String path) {
@@ -45,6 +45,8 @@ public abstract class EntityBasedStore implements Store {
     }
 
     private Optional<Acl> fetchAcl(String entity, String path, boolean recursive) {
+        entity = entity.toLowerCase(); // Host is case-insensitive
+
         log.info("Fetching ACL in {} for {}", entity, path);
 
         List<String> paths = new ArrayList<>();
@@ -133,7 +135,7 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public List<Subscription> getEntitySubscriptions(URI entity) {
-        String host = entity.getHost();
+        String host = new Target(entity).getHost();
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
         findEntityData(entity, SUBS_PATH).ifPresent(obj -> subs.addAll(extractSubs(SUBS_PATH, obj, false)));

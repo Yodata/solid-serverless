@@ -82,7 +82,7 @@ public class S3Store extends EntityBasedStore {
     }
 
     private Optional<S3Object> getEntityFile(String entity, String path) {
-        return getFile("entities/" + entity + "/data/by-id" + path);
+        return getFile("entities/" + entity.toLowerCase() + "/data/by-id" + path);
     }
 
     private Optional<S3Object> getFile(String path) {
