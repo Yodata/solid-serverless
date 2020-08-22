@@ -5,6 +5,7 @@ import io.yodata.Base64Util;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.model.transform.Policies;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -53,7 +54,11 @@ public class Request {
     }
 
     public Optional<String> getContentType() {
-        return rawHeaders.getOrDefault("content-type", Collections.emptyList()).stream().findFirst();
+        return rawHeaders.getOrDefault("content-type", Collections.emptyList()).stream()
+                .findFirst()
+                .map(ct -> StringUtils.substringBefore(ct, ";"))
+                .map(StringUtils::trimToEmpty)
+                .map(String::toLowerCase);
     }
 
     public void setContentType(String contentType) {

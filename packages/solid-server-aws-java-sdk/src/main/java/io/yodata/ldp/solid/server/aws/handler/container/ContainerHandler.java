@@ -74,8 +74,10 @@ public class ContainerHandler extends GenericHandler {
         log.debug("Data ID: {}", id);// We update the request with the relevant data to store
         in.setDestination(new Target(URI.create(id)));
 
+        addIdIfPossible(in, id);
+        addKeyIfPossible(in, false, "id", id);
+
         Map<String, JsonElement> keys = new HashMap<>();
-        keys.put("@id", new JsonPrimitive(id));
         if (in.getTarget().getPath().startsWith("/inbox/")) {
             keys.put("agent", new JsonPrimitive(in.getSecurity().getIdentity()));
         }
@@ -85,7 +87,6 @@ public class ContainerHandler extends GenericHandler {
             keys.put("time", new JsonPrimitive(ts.toString()));
         }
         addKeysIfPossible(in, keys);
-        addKeyIfPossible(in, false, "id", id);
 
         // We store
         storeProc.post(in);
