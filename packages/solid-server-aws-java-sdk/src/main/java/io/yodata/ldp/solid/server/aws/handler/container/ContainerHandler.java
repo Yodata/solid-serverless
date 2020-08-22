@@ -79,7 +79,9 @@ public class ContainerHandler extends GenericHandler {
 
         Map<String, JsonElement> keys = new HashMap<>();
         if (in.getTarget().getPath().startsWith("/inbox/")) {
-            keys.put("agent", new JsonPrimitive(in.getSecurity().getIdentity()));
+            if (!in.getSecurity().isAnonymous()) {
+                keys.put("agent", new JsonPrimitive(in.getSecurity().getIdentity()));
+            }
         }
         if (in.getTarget().getPath().startsWith("/publish/")) {
             Instant ts = Instant.now();
