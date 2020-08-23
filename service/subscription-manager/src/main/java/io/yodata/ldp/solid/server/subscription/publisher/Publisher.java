@@ -64,6 +64,16 @@ public class Publisher {
         if (rRaw.isJsonPrimitive()) {
             recipients.add(rRaw.getAsJsonPrimitive().getAsString());
         }
+
+        GsonUtil.findElement(message, "source").ifPresent(sEl -> {
+            if (sEl.isJsonArray()) {
+                recipients.addAll(GsonUtil.asList(sEl.getAsJsonArray(), String.class));
+            }
+            if (sEl.isJsonPrimitive()) {
+                recipients.add(sEl.getAsJsonPrimitive().getAsString());
+            }
+        });
+
         if (recipients.isEmpty()) {
             log.warn("Message did not contain any recipient to send to, ignoring");
             return;
@@ -98,17 +108,19 @@ public class Publisher {
                 Response res = dirHandler.post(r);
                 String eventId = GsonUtil.parseObj(res.getBody()
                         .orElse("{\"id\":\"<NOT RETURNED>\"}".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
-                log.info("Data was saved at {}", eventId);
+                log.info("Publish to {} - Data was saved at {}", recipient, eventId);
 
-                Request d = new Request();
-                d.setMethod("DELETE");
-                d.setTarget(new Target(from));
-                Response dRes = fileHandler.delete(d);
-                log.info("{} delete status: {}", from, dRes.getStatus());
+
             } catch (RuntimeException e) {
-                log.warn("Unable to produce notification from {} for {}", from, recipient, e);
+                log.error("Unable to produce notification about {} for {}", from, recipient, e);
             }
         }
+
+        Request d = new Request();
+        d.setMethod("DELETE");
+        d.setTarget(new Target(from));
+        Response dRes = fileHandler.delete(d);
+        log.info("{} delete status: {}", from, dRes.getStatus());
     }
 
 }
