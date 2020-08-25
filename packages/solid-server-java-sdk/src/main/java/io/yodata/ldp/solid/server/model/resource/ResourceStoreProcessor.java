@@ -1,4 +1,4 @@
-package io.yodata.ldp.solid.server.aws.handler.resource;
+package io.yodata.ldp.solid.server.model.resource;
 
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;

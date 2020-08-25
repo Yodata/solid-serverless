@@ -2,9 +2,6 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.SecurityProcessor;
-import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
@@ -138,16 +135,10 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
     }
 
-    private Store store;
-    private ContainerHandler storeMgr;
-    private ResourceHandler fileMgr;
-    private SecurityProcessor sec;
+    private final SolidServer srv;
 
-    public AppAuthProcessor(Store store) {
-        this.store = store;
-        storeMgr = new ContainerHandler(store);
-        fileMgr = new ResourceHandler(store);
-        sec = SecurityProcessor.getDefault();
+    public AppAuthProcessor(SolidServer srv) {
+        this.srv = srv;
     }
 
     private Scope parse(String raw) {
@@ -219,7 +210,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
             log.info("Removing scopes under {}", entries.getKey());
 
             Target aclTarget = Target.forPath(pod, entries.getKey());
-            store.getEntityAcl(aclTarget, false)
+            srv.store().getEntityAcl(aclTarget, false)
                     .ifPresent(acl -> {
                         log.info("We have an ACL to check at {}", aclTarget.getPath());
                         acl.getEntity(newAction.getObject()).ifPresent(entry -> {
@@ -235,7 +226,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                                 }
                             }
 
-                            store.setEntityAcl(aclTarget, acl);
+                            srv.store().setEntityAcl(aclTarget, acl);
                             log.info("ACL updated at {}", aclTarget.getPath());
                         });
                     });
@@ -245,7 +236,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 log.info("Found scope acting as subscription, removing from pod");
 
                 boolean hadSub = false;
-                List<Subscription> subs = store.getEntitySubscriptions(pod.getId());
+                List<Subscription> subs = srv.store().getEntitySubscriptions(pod.getId());
                 Iterator<Subscription> i = subs.iterator();
                 while (i.hasNext()) {
                     Subscription sub = i.next();
@@ -271,7 +262,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                     in.setTimestamp(Instant.now());
                     in.setTarget(Target.forPath(pod, "/settings/subscriptions"));
                     in.setBody(GsonUtil.makeObj("items", GsonUtil.asArrayObj(subs)));
-                    fileMgr.put(in);
+                    srv.put(in);
 
                     log.info("Existing subscription for {} on {} removed", newAction.getObject(), entries.getKey());
                 }
@@ -280,7 +271,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
         for (Map.Entry<String, List<Scope>> entries : toAddPath.entrySet()) {
             Target aclTarget = Target.forPath(pod, entries.getKey());
-            Acl acl = store.getEntityAcl(aclTarget).orElseGet(Acl::forInit);
+            Acl acl = srv.store().getEntityAcl(aclTarget).orElseGet(Acl::forInit);
             log.info("ACL read: {}", GsonUtil.toJson(acl));
             Acl.Entry entry = acl.computeEntity(newAction.getObject());
             log.info("ACL compute: {}", GsonUtil.toJson(acl));
@@ -299,13 +290,13 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
             log.info("ACL before: {}", GsonUtil.toJson(acl));
             acl.getEntities().put(newAction.getObject(), entry);
             log.info("ACL after: {}", GsonUtil.toJson(acl));
-            store.setEntityAcl(aclTarget, acl);
+            srv.store().setEntityAcl(aclTarget, acl);
             log.info("ACL updated at {}", aclTarget.getPath());
 
             if (entries.getValue().stream().anyMatch(Scope::isSubscribe)) {
                 log.info("Found scope acting as subscription, adding to pod");
 
-                List<Subscription> subs = store.getEntitySubscriptions(pod.getId());
+                List<Subscription> subs = srv.store().getEntitySubscriptions(pod.getId());
                 boolean foundMatching = subs.stream()
                         .anyMatch(sub -> {
                             if (!StringUtils.equals(entries.getKey(), sub.getObject())) {
@@ -333,7 +324,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                     in.setTimestamp(Instant.now());
                     in.setTarget(Target.forPath(pod, "/settings/subscriptions"));
                     in.setBody(GsonUtil.makeObj("items", GsonUtil.asArrayObj(subs)));
-                    fileMgr.put(in);
+                    srv.put(in);
 
                     log.info("New subscription for {} on {} added", newAction.getObject(), entries.getKey());
                 }
@@ -348,9 +339,9 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         pod.setAccessType(AclMode.Control);
 
         try {
-            sec.authorize(request.getSecurity(), pod);
+            srv.security().authorize(request.getSecurity(), pod);
 
-            JsonObject data = store.findEntityData(pod.getId(), "/settings/auth/entities")
+            JsonObject data = srv.store().findEntityData(pod.getId(), "/settings/auth/entities")
                     .flatMap(GsonUtil::tryParseObj)
                     .orElseGet(JsonObject::new);
 
@@ -378,14 +369,14 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 r.setMethod("POST");
                 r.setTarget(Target.forPath(pod, "/outbox/"));
                 r.setBody(subPending);
-                Response res = storeMgr.post(r);
+                Response res = srv.post(r);
                 log.info("SC for sending potential subscribe: {}", res.getStatus());
             }
 
             // We update the master state
             items.add(newAction.getObject(), message);
             data.add("items", items);
-            store.saveEntityData(pod.getId(), "/settings/auth/entities", data);
+            srv.store().saveEntityData(pod.getId(), "/settings/auth/entities", data);
         } catch (ForbiddenException e) {
             log.warn("AuthorizeAction was denied at {}: {}", request.getTarget().getId(), e.getMessage());
         }
@@ -408,7 +399,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         pod.setAccessType(AclMode.Control);
 
         try {
-            JsonObject items = store.findEntityData(pod.getId(), "/settings/auth/entities")
+            JsonObject items = srv.store().findEntityData(pod.getId(), "/settings/auth/entities")
                     .flatMap(GsonUtil::tryParseObj)
                     .flatMap(obj -> GsonUtil.findObj(obj, "items"))
                     .orElseGet(JsonObject::new);
@@ -442,9 +433,9 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
         Target pod = new Target(request.getTarget().getId().resolve("/profile/card#me"));
         pod.setAccessType(AclMode.Control);
         try {
-            sec.authorize(request.getSecurity(), pod);
+            srv.security().authorize(request.getSecurity(), pod);
 
-            JsonObject data = store.findEntityData(pod.getId(), "/settings/auth/entities")
+            JsonObject data = srv.store().findEntityData(pod.getId(), "/settings/auth/entities")
                     .flatMap(GsonUtil::tryParseObj)
                     .orElseGet(JsonObject::new);
 
@@ -466,7 +457,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
 
             log.info("Removing entity authorization entry for {}", object);
             items.remove(object);
-            store.saveEntityData(pod.getId(), "/settings/auth/entities", data);
+            srv.store().saveEntityData(pod.getId(), "/settings/auth/entities", data);
         } catch (ForbiddenException e) {
             log.warn("AuthorizeAction was denied at {}: {}", request.getTarget().getId(), e.getMessage());
         }

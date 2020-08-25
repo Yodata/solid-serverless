@@ -1,12 +1,7 @@
-package io.yodata.ldp.solid.server.aws;
+package io.yodata.ldp.solid.server.model;
 
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.exception.UnauthorizedException;
-import io.yodata.ldp.solid.server.model.Acl;
-import io.yodata.ldp.solid.server.model.SecurityContext;
-import io.yodata.ldp.solid.server.model.Store;
-import io.yodata.ldp.solid.server.model.Target;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +16,9 @@ public class SecurityProcessor {
     private static final Logger log = LoggerFactory.getLogger(SecurityProcessor.class);
     private static SecurityProcessor o;
 
-    public synchronized static SecurityProcessor getDefault() {
+    public synchronized static SecurityProcessor getDefault(Store store) {
         if (Objects.isNull(o)) {
-            o = new SecurityProcessor(S3Store.getDefault());
+            o = new SecurityProcessor(store);
         }
 
         return o;

@@ -1,4 +1,4 @@
-package io.yodata.ldp.solid.server.aws.handler;
+package io.yodata.ldp.solid.server.model;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -6,7 +6,6 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
-import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

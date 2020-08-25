@@ -1,4 +1,4 @@
-package io.yodata.ldp.solid.server.aws.handler.resource.input;
+package io.yodata.ldp.solid.server.model.resource.input;
 
 import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;

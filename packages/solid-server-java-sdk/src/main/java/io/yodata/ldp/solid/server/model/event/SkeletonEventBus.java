@@ -1,37 +1,17 @@
-package io.yodata.ldp.solid.server.notification;
+package io.yodata.ldp.solid.server.model.event;
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
-import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
-public class EventBus {
+public abstract class SkeletonEventBus implements EventBus {
 
-    private static final Logger log = LoggerFactory.getLogger(EventBus.class);
-
-    private AmazonSNS sns;
-    private String storeTopic;
-
-    public EventBus() {
-        this.storeTopic = Configs.get().get("aws.sns.event.store.topic");
-        if (StringUtils.isBlank(storeTopic)) {
-            throw new IllegalStateException("Event store SNS topic ARN is not valid");
-        }
-
-        DefaultAWSCredentialsProviderChain credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
-        sns = AmazonSNSClientBuilder.standard()
-                .withCredentials(credentialsProvider)
-                .build();
-    }
+    private static final Logger log = LoggerFactory.getLogger(SkeletonEventBus.class);
 
     public void sendStoreEvent(Request in) {
         StorageAction event = new StorageAction();
@@ -63,9 +43,9 @@ public class EventBus {
         in.setBody("".getBytes(StandardCharsets.UTF_8));
         event.setRequest(in);
 
-        log.info("Publishing store event to SNS topic {}", storeTopic);
-        sns.publish(storeTopic, GsonUtil.get().toJson(event));
-        log.info("Published store event");
+        doSend(event);
     }
+
+    protected abstract void doSend(StorageAction msg);
 
 }

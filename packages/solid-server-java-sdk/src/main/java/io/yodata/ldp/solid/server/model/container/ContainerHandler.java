@@ -1,14 +1,12 @@
-package io.yodata.ldp.solid.server.aws.handler.container;
+package io.yodata.ldp.solid.server.model.container;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.handler.GenericHandler;
-import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
-import io.yodata.ldp.solid.server.aws.handler.ResponseCheckProcessor;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.model.*;
-import io.yodata.ldp.solid.server.notification.EventBus;
+import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;
+import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,20 +21,15 @@ public class ContainerHandler extends GenericHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ContainerHandler.class);
 
-    private final RequestCheckProcessor inCheck;
-    private final ResponseCheckProcessor outCheck;
+    private final InputValidationProcessor inCheck;
+    private final OutputValidationProcessor outCheck;
     private final ContainerStoreProcessor storeProc;
 
-    public ContainerHandler() {
-        this(S3Store.getDefault());
-    }
-
-    public ContainerHandler(Store store) {
-        super(store);
-
-        this.inCheck = new RequestCheckProcessor();
-        this.outCheck = new ResponseCheckProcessor();
-        this.storeProc = new ContainerStoreProcessor(store, new EventBus());
+    public ContainerHandler(ServerBackend backend) {
+        super(backend.store());
+        this.storeProc = new ContainerStoreProcessor(backend);
+        inCheck = backend.inValProc();
+        outCheck = backend.outValProc();
     }
 
     @Override

@@ -3,13 +3,13 @@ package io.yodata.ldp.solid.server.subscription.publisher;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
 import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.Target;
+import io.yodata.ldp.solid.server.model.container.ContainerHandler;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
+import io.yodata.ldp.solid.server.model.resource.ResourceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
