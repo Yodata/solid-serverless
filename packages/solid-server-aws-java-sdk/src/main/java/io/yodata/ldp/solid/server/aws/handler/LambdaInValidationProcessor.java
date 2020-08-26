@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.model.InvokeResult;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
+import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.model.Exchange;
 import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;
 import org.apache.commons.lang3.StringUtils;
@@ -15,16 +16,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-public abstract class LambdaInValidationProcessor extends LambdaValidationProcessor implements InputValidationProcessor {
+public class LambdaInValidationProcessor extends LambdaValidationProcessor implements InputValidationProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaInValidationProcessor.class);
 
+    private final String lambdaName;
     private final AWSLambda lambda;
 
-    protected abstract String getLambdaName();
-
     public LambdaInValidationProcessor() {
-        this.lambda = AWSLambdaClientBuilder.defaultClient();
+        lambdaName = Configs.get().get("aws.lambda.middleware.in");
+        lambda = AWSLambdaClientBuilder.defaultClient();
     }
 
     protected void process(Exchange ex) {
@@ -34,20 +35,20 @@ public abstract class LambdaInValidationProcessor extends LambdaValidationProces
         }
 
         log.debug("Request {} validation: start", ex.getRequest().getId());
-        log.debug("Using lambda {}", getLambdaName());
+        log.debug("Using lambda {}", lambdaName);
 
         JsonObject exJson = toJson(ex);
         String payload = GsonUtil.toJson(exJson);
         InvokeRequest invokeReq = new InvokeRequest();
-        invokeReq.setFunctionName(getLambdaName());
+        invokeReq.setFunctionName(lambdaName);
         invokeReq.setPayload(payload);
 
-        log.debug("Calling lambda {}", getLambdaName());
+        log.debug("Calling lambda {}", lambdaName);
         InvokeResult invokeRes = lambda.invoke(invokeReq);
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
-            throw new RuntimeException("Lambda " + getLambdaName() + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
+            throw new RuntimeException("Lambda " + lambdaName + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }
-        log.debug("Got reply from lambda {}", getLambdaName());
+        log.debug("Got reply from lambda {}", lambdaName);
 
         byte[] invokeResBody = invokeRes.getPayload().array();
         JsonObject exProcessed = GsonUtil.parseObj(invokeResBody);

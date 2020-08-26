@@ -4,7 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.subscription.subscriber.SubscriptionService;
 import org.apache.commons.io.IOUtils;
@@ -19,12 +20,14 @@ import java.net.URI;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class LambdaSubscriptionProcessor extends SubscriptionService implements RequestStreamHandler {
+public class LambdaSubscriptionProcessor implements RequestStreamHandler {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaSubscriptionProcessor.class);
 
+    private final SubscriptionService svc;
+
     public LambdaSubscriptionProcessor() {
-        super(S3Store.getDefault());
+        svc = new SubscriptionService(new SolidServer(new AwsServerBackend()));
     }
 
     @Override
@@ -40,7 +43,7 @@ public class LambdaSubscriptionProcessor extends SubscriptionService implements 
     private void handleRequest(JsonObject obj) {
         if (!obj.has("Records")) { // This is not from SNS/SQS
             log.debug("This is a regular message");
-            process(obj);
+            svc.process(obj);
         } else {
             log.debug("Processing as wrapped messages");
             JsonArray records = obj.getAsJsonArray("Records");
@@ -75,7 +78,7 @@ public class LambdaSubscriptionProcessor extends SubscriptionService implements 
 
         URI id = URI.create(action.getId());
         log.info("Processing {}", id);
-        process(action.getObject().get());
+        svc.process(action.getObject().get());
     }
 
 }

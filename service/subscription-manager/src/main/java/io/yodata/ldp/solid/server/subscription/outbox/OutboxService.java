@@ -5,12 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.SqsPusher;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
-import io.yodata.ldp.solid.server.model.Request;
-import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.SecurityContext;
-import io.yodata.ldp.solid.server.model.Target;
-import io.yodata.ldp.solid.server.model.container.ContainerHandler;
+import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -32,7 +27,11 @@ public class OutboxService {
 
     private final CloseableHttpClient client = HttpClients.createMinimal();
     private final SqsPusher pusher = new SqsPusher();
-    private final ContainerHandler containers = new ContainerHandler(S3Store.getDefault());
+    private final SolidServer srv;
+
+    public OutboxService(SolidServer srv) {
+        this.srv = srv;
+    }
 
     private Optional<URI> findTarget(String recipient) {
         URI target;
@@ -143,7 +142,7 @@ public class OutboxService {
             r.setBody(data);
 
             // We send
-            Response res = containers.post(r);
+            Response res = srv.post(r);
             String eventId = GsonUtil.parseObj(res.getBody().orElseGet("{}"::getBytes)).get("id").getAsString();
             log.info("Message was saved at {}", eventId);
         } else {

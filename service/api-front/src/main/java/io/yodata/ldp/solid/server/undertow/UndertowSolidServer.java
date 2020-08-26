@@ -12,13 +12,11 @@ import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.util.StatusCodes;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.AwsServerBackend;
 import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.UndertorwRequest;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.config.EnvConfig;
 import io.yodata.ldp.solid.server.model.*;
-import io.yodata.ldp.solid.server.model.container.ContainerHandler;
-import io.yodata.ldp.solid.server.model.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.saml.ReflexSamlResponse;
 import io.yodata.ldp.solid.server.undertow.handler.BasicHttpHandler;
 import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
@@ -70,10 +68,8 @@ public class UndertowSolidServer {
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
 
-        EntityBasedStore store = S3Store.getDefault();
-        ContainerHandler folder = new ContainerHandler(store);
-        ResourceHandler file = new ResourceHandler(store);
-        SecurityProcessor auth = new SecurityProcessor(store);
+        SolidServer srv = new SolidServer(new AwsServerBackend());
+        SecurityProcessor auth = new SecurityProcessor(srv.store());
 
         HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
 
@@ -86,7 +82,7 @@ public class UndertowSolidServer {
                 String sessionToken = sessionTokenCookie.getValue();
 
                 String path = "global/security/api/token/" + sessionType + "/" + sessionToken;
-                Optional<String> sessionDataOpt = store.getData(path);
+                Optional<String> sessionDataOpt = srv.store().getData(path);
                 JsonObject sessionData = sessionDataOpt.flatMap(GsonUtil::tryParseObj).orElseGet(JsonObject::new);
 
                 if (StringUtils.isAnyBlank(sessionType, sessionToken) || sessionData.size() == 0) {
@@ -130,7 +126,7 @@ public class UndertowSolidServer {
                     if (StringUtils.isNotBlank(sessionType)) {
                         log.info("Clearing all active sessions");
 
-                        store.delete("global/security/api/token/" + sessionType + "/" + sessionToken);
+                        srv.store().delete("global/security/api/token/" + sessionType + "/" + sessionToken);
                     }
 
                     sessionTypeCookie = sessionTypeCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
@@ -173,7 +169,7 @@ public class UndertowSolidServer {
                     sessionData.add("raw", samlAttributes);
                     sessionData.addProperty("profile_id", "https://" + contactId + "." + baseDomain + "/profile/card#me");
                     sessionData.addProperty("valid_not_after", expiresAt.toEpochMilli());
-                    store.save("global/security/api/token/saml/" + sessionToken, sessionData);
+                    srv.store().save("global/security/api/token/saml/" + sessionToken, sessionData);
 
                     exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
                     exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
@@ -195,14 +191,7 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.head(request);
-                        } else {
-                            r = file.head(request);
-                        }
-
+                        Response r = srv.head(request);
                         writeBody(exchange, r);
                     }
                 }))))
@@ -215,14 +204,7 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.get(request);
-                        } else {
-                            r = file.get(request);
-                        }
-
+                        Response r = srv.get(request);
                         writeBody(exchange, r);
                     }
                 }))))
@@ -235,14 +217,7 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.post(request);
-                        } else {
-                            r = file.post(request);
-                        }
-
+                        Response r = srv.post(request);
                         writeBody(exchange, r);
                     }
                 }))))
@@ -255,14 +230,7 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.put(request);
-                        } else {
-                            r = file.put(request);
-                        }
-
+                        Response r = srv.put(request);
                         writeBody(exchange, r);
                     }
                 }))))
@@ -275,14 +243,7 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.delete(request);
-                        } else {
-                            r = file.delete(request);
-                        }
-
+                        Response r = srv.delete(request);
                         writeBody(exchange, r);
                     }
                 }))))).build().start();

@@ -6,7 +6,6 @@ import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.*;
-import io.yodata.ldp.solid.server.model.container.ContainerHandler;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
 import org.apache.commons.lang3.StringUtils;
@@ -24,17 +23,11 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
 
     public static final String Type = "ReflexPublishAction";
 
-    private final Store store;
-    private final ContainerHandler containers;
+    private final SolidServer srv;
     private final TransformService transform;
 
-    public PublishProcessor() {
-        this(S3Store.getDefault());
-    }
-
-    public PublishProcessor(Store store) {
-        this.store = store;
-        this.containers = new ContainerHandler(store);
+    public PublishProcessor(SolidServer srv) {
+        this.srv = srv;
         this.transform = new AWSTransformService();
     }
 
@@ -69,7 +62,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         String identity = c.ev.getRequest().getSecurity().getIdentity();
         log.info("Checking for permissions of {}", identity);
 
-        Subscriptions subs = store.getSubscriptions(hostId);
+        Subscriptions subs = srv.store().getSubscriptions(hostId);
         String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
         if (StringUtils.isNotBlank(subManager)) {
             String subManagerId = Target.forProfileCard(subManager).getId().toString();
@@ -131,7 +124,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         r.setTarget(target);
         r.setBody(message);
 
-        Response res = containers.post(r);
+        Response res = srv.post(r);
         String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
         log.info("Topic event was saved at {}", eventId);
     }

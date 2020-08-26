@@ -49,7 +49,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class Pusher {
+public class PusherService {
 
     public static void main(String[] args) throws IOException {
         String data;
@@ -58,12 +58,12 @@ public class Pusher {
         }
 
         JsonObject command = GsonUtil.parseObj(data);
-        new Pusher().send(command);
+        new PusherService().send(command);
     }
 
     private static class LazyLoadProvider<T> implements Supplier<T> {
 
-        private Supplier<T> builder;
+        private final Supplier<T> builder;
         private T obj;
 
         private LazyLoadProvider(Supplier<T> builder) {
@@ -83,12 +83,12 @@ public class Pusher {
 
     }
 
-    private static final Logger log = LoggerFactory.getLogger(Pusher.class);
+    private static final Logger log = LoggerFactory.getLogger(PusherService.class);
 
-    private Supplier<AmazonSNS> sns = new LazyLoadProvider<>(AmazonSNSClientBuilder::defaultClient);
-    private Supplier<AmazonSQS> sqs = new LazyLoadProvider<>(AmazonSQSClientBuilder::defaultClient);
-    private Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
-    private Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
+    private final Supplier<AmazonSNS> sns = new LazyLoadProvider<>(AmazonSNSClientBuilder::defaultClient);
+    private final Supplier<AmazonSQS> sqs = new LazyLoadProvider<>(AmazonSQSClientBuilder::defaultClient);
+    private final Supplier<AWSLambda> lambda = new LazyLoadProvider<>(AWSLambdaClientBuilder::defaultClient);
+    private final Supplier<CloseableHttpClient> http = new LazyLoadProvider<>(HttpClients::createDefault);
 
     public void send(JsonObject command) {
         LogAction tracer = new LogAction();

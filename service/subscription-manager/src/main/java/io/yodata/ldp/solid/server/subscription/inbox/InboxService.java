@@ -29,7 +29,7 @@ public class InboxService {
     public InboxService(SolidServer srv) {
         typeProcessors = new HashMap<>();
         typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor(srv));
-        typeProcessors.put(PublishProcessor.Type, new PublishProcessor());
+        typeProcessors.put(PublishProcessor.Type, new PublishProcessor(srv));
 
         AppAuthProcessor p = new AppAuthProcessor(srv);
         for (String type : AppAuthProcessor.Types) {

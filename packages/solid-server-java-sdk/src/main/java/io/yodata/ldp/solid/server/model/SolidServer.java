@@ -1,5 +1,6 @@
 package io.yodata.ldp.solid.server.model;
 
+import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.model.container.ContainerHandler;
 import io.yodata.ldp.solid.server.model.resource.ResourceHandler;
 
@@ -10,10 +11,10 @@ public class SolidServer {
     private final ResourceHandler file;
     private final SecurityProcessor sec;
 
-    public SolidServer(Store store) {
-        this.store = store;
-        this.folder = new ContainerHandler(store);
-        this.file = new ResourceHandler(store);
+    public SolidServer(ServerBackend backend) {
+        this.store = backend.store();
+        this.folder = new ContainerHandler(backend);
+        this.file = new ResourceHandler(backend);
         this.sec = SecurityProcessor.getDefault(store);
     }
 

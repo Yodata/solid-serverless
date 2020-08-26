@@ -5,11 +5,9 @@ import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.model.Target;
-import io.yodata.ldp.solid.server.model.container.ContainerHandler;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
-import io.yodata.ldp.solid.server.model.resource.ResourceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +24,10 @@ public class Publisher {
 
     private static final Logger log = LoggerFactory.getLogger(Publisher.class);
 
-    private final ContainerHandler dirHandler;
-    private final ResourceHandler fileHandler;
+    private final SolidServer srv;
 
-    public Publisher(Store store) {
-        this.dirHandler = new ContainerHandler(store);
-        this.fileHandler = new ResourceHandler(store);
+    public Publisher(SolidServer srv) {
+        this.srv = srv;
     }
 
     public void handle(JsonObject event) {
@@ -106,12 +102,10 @@ public class Publisher {
                 r.setBody(publication);
 
                 // We send to store
-                Response res = dirHandler.post(r);
+                Response res = srv.post(r);
                 String eventId = GsonUtil.parseObj(res.getBody()
                         .orElse("{\"id\":\"<NOT RETURNED>\"}".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Publish to {} - Data was saved at {}", recipient, eventId);
-
-
             } catch (RuntimeException e) {
                 log.error("Unable to produce notification about {} for {}", from, recipient, e);
             }
@@ -120,7 +114,7 @@ public class Publisher {
         Request d = new Request();
         d.setMethod("DELETE");
         d.setTarget(new Target(from));
-        Response dRes = fileHandler.delete(d);
+        Response dRes = srv.delete(d);
         log.info("{} delete status: {}", from, dRes.getStatus());
     }
 

@@ -1,31 +1,28 @@
 package io.yodata.ldp.solid.server.model.resource;
 
+import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Store;
-import io.yodata.ldp.solid.server.notification.EventBus;
 
 public class ResourceStoreProcessor {
 
-    private Store store;
-    private EventBus evBus;
+    private final ServerBackend backend;
 
-    public ResourceStoreProcessor(Store store, EventBus evBus) {
-        this.store = store;
-        this.evBus = evBus;
+    public ResourceStoreProcessor(ServerBackend backend) {
+        this.backend = backend;
     }
 
     public Response head(Request in) {
-        return store.head(in.getTarget());
+        return backend.store().head(in.getTarget());
     }
 
     public Response get(Request in) {
-        return store.get(in.getTarget());
+        return backend.store().get(in.getTarget());
     }
 
     public Response put(Request in) {
-        boolean replaced = store.save(in);
-        evBus.sendStoreEvent(in);
+        boolean replaced = backend.store().save(in);
+        backend.eventBus().sendStoreEvent(in);
 
         Response out = new Response();
         out.setStatus(replaced ? 204 : 201);
@@ -33,8 +30,8 @@ public class ResourceStoreProcessor {
     }
 
     public void delete(Request in) {
-        store.delete(in);
-        evBus.sendStoreEvent(in);
+        backend.store().delete(in);
+        backend.eventBus().sendStoreEvent(in);
     }
 
 }
