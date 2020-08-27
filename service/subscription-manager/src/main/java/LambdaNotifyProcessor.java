@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.subscription.notify.Notifier;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +25,7 @@ public class LambdaNotifyProcessor implements RequestStreamHandler {
     private final Notifier svc;
 
     public LambdaNotifyProcessor() {
+        AmazonS3Config.register();
         svc = new Notifier(new SolidServer(new AwsServerBackend()));
     }
 

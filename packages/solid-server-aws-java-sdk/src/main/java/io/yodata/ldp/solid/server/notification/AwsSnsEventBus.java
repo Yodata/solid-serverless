@@ -4,7 +4,7 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.Configs;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.event.SkeletonEventBus;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
@@ -15,11 +15,11 @@ public class AwsSnsEventBus extends SkeletonEventBus {
 
     private static final Logger log = LoggerFactory.getLogger(AwsSnsEventBus.class);
 
-    private AmazonSNS sns;
-    private String storeTopic;
+    private final String storeTopic;
+    private final AmazonSNS sns;
 
     public AwsSnsEventBus() {
-        this.storeTopic = Configs.get().get("aws.sns.event.store.topic");
+        storeTopic = Configs.get().get("aws.sns.event.store.topic");
         if (StringUtils.isBlank(storeTopic)) {
             throw new IllegalStateException("Event store SNS topic ARN is not valid");
         }
@@ -32,9 +32,9 @@ public class AwsSnsEventBus extends SkeletonEventBus {
 
     @Override
     protected void doSend(StorageAction msg) {
-        log.info("Publishing store event to SNS topic {}", storeTopic);
+        log.debug("Publishing store event to SNS topic {}", storeTopic);
         sns.publish(storeTopic, GsonUtil.toJson(msg));
-        log.info("Published store event");
+        log.debug("Published store event");
     }
 
 }

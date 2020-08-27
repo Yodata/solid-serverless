@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.aws.event.GenericProcessor;
 import io.yodata.ldp.solid.server.model.SolidServer;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +25,7 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
     private final GenericProcessor svc;
 
     public LambdaStoreEventProcessor() {
+        AmazonS3Config.register();
         svc = new GenericProcessor(new SolidServer(new AwsServerBackend()));
     }
 

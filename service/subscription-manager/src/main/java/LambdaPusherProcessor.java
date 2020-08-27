@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.subscription.pusher.PusherService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ public class LambdaPusherProcessor implements RequestStreamHandler {
     private final PusherService svc;
 
     public LambdaPusherProcessor() {
+        AmazonS3Config.register();
         svc = new PusherService();
     }
 

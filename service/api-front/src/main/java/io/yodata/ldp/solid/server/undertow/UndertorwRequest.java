@@ -1,10 +1,9 @@
-package io.yodata.ldp.solid.server.aws;
+package io.yodata.ldp.solid.server.undertow;
 
 import io.undertow.server.HttpServerExchange;
 import io.yodata.ldp.solid.server.model.Acl;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.SecurityContext;
-import io.yodata.ldp.solid.server.undertow.UndertowTarget;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 

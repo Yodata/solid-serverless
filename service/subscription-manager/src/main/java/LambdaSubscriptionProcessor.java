@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.subscription.subscriber.SubscriptionService;
@@ -27,6 +28,7 @@ public class LambdaSubscriptionProcessor implements RequestStreamHandler {
     private final SubscriptionService svc;
 
     public LambdaSubscriptionProcessor() {
+        AmazonS3Config.register();
         svc = new SubscriptionService(new SolidServer(new AwsServerBackend()));
     }
 

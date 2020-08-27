@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.LazyLoadProvider;
 import io.yodata.ldp.solid.server.model.Pusher;
 import org.apache.commons.lang3.StringUtils;

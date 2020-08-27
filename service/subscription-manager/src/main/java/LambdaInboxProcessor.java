@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.subscription.inbox.InboxService;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +25,7 @@ public class LambdaInboxProcessor implements RequestStreamHandler {
     private final InboxService svc;
 
     public LambdaInboxProcessor() {
+        AmazonS3Config.register();
         svc = new InboxService(new SolidServer(new AwsServerBackend()));
     }
 

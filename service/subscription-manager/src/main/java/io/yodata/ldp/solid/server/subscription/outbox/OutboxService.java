@@ -3,7 +3,6 @@ package io.yodata.ldp.solid.server.subscription.outbox;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.Configs;
 import io.yodata.ldp.solid.server.aws.SqsPusher;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
@@ -123,11 +122,8 @@ public class OutboxService {
         Target recipientProfile = Target.forProfileCard(recipientUri);
         String recipientHost = recipientProfile.getHost();
 
-        String baseDomain = StringUtils.defaultIfBlank(Configs.get().get("reflex.domain.base"), "");
-        boolean isLocal = StringUtils.equalsIgnoreCase(recipientHost, baseDomain) || StringUtils.endsWithIgnoreCase(recipientHost, "." + baseDomain);
-
         // We are sending something internally, using the store directly
-        if (StringUtils.isNotBlank(baseDomain) && isLocal) {
+        if (srv.isServingDomain(recipientHost)) {
             log.info("Domain {} is local, bypassing API", recipientHost);
 
             // We build the security context to identify the sending pod

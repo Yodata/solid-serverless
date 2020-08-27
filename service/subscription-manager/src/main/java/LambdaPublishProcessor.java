@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.subscription.publisher.Publisher;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +25,7 @@ public class LambdaPublishProcessor implements RequestStreamHandler {
     private final Publisher svc;
 
     public LambdaPublishProcessor() {
+        AmazonS3Config.register();
         svc = new Publisher(new SolidServer(new AwsServerBackend()));
     }
 

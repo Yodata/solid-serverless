@@ -13,8 +13,8 @@ import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.util.StatusCodes;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
-import io.yodata.ldp.solid.server.aws.Configs;
-import io.yodata.ldp.solid.server.aws.UndertorwRequest;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.config.EnvConfig;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.saml.ReflexSamlResponse;
@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static io.yodata.ldp.solid.server.aws.Configs.DOM_BASE;
-
 public class UndertowSolidServer {
 
     private static final Logger log = LoggerFactory.getLogger(UndertowSolidServer.class);
@@ -44,18 +42,15 @@ public class UndertowSolidServer {
     public static void main(String[] args) {
         log.info("-------/ Frontd is starting \\-------");
 
+        AmazonS3Config.register();
+
         int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(EnvConfig.get().findOrBlank("FRONTD_LOAD_MULTIPLIER"), "1"));
         String samlIdpUrl = Configs.get().findOrBlank("reflex.auth.saml.idp.url");
-        String baseDomain = Configs.get().findOrBlank(DOM_BASE);
         String samlAppRedirectUrl = Configs.get().findOrBlank("reflex.auth.saml.acs.url");
         int workerThreads = multiplier * 2 * 8;
 
         int port = 9000;
         String host = "0.0.0.0";
-
-        if (StringUtils.isBlank(baseDomain)) {
-            throw new RuntimeException(DOM_BASE + " cannot be empty/bank");
-        }
 
         if (StringUtils.isBlank(samlIdpUrl)) {
             throw new RuntimeException("reflex.auth.saml.idp.url cannot be empty/bank");
@@ -71,7 +66,7 @@ public class UndertowSolidServer {
         SolidServer srv = new SolidServer(new AwsServerBackend());
         SecurityProcessor auth = new SecurityProcessor(srv.store());
 
-        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
 
             @Override
             public void handleRequest(HttpServerExchange ex) {
@@ -105,16 +100,16 @@ public class UndertowSolidServer {
                     exchange.endExchange();
                 })
 
-                .add("OPTIONS", "/**", new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .add("OPTIONS", "/**", new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                 })))
 
-                .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                     log.info("Got a GET for /reflex/auth/saml/login");
                     log.info("Redirecting to the SAML IDP URL");
                     redirectHandler.handleRequest(exchange);
                 })))
 
-                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                     log.info("Got a GET for /reflex/auth/logout");
 
                     Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
@@ -136,7 +131,7 @@ public class UndertowSolidServer {
                     exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
                 }))))
 
-                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                     log.info("Got a POST for /reflex/auth/saml/acs");
                     String body = UndertorwRequest.getBodyString(exchange);
                     log.debug("Body: {}", body);
@@ -167,7 +162,7 @@ public class UndertowSolidServer {
 
                     JsonObject sessionData = new JsonObject();
                     sessionData.add("raw", samlAttributes);
-                    sessionData.addProperty("profile_id", "https://" + contactId + "." + baseDomain + "/profile/card#me");
+                    sessionData.addProperty("profile_id", "https://" + contactId + "." + srv.getBaseDomain() + "/profile/card#me");
                     sessionData.addProperty("valid_not_after", expiresAt.toEpochMilli());
                     srv.store().save("global/security/api/token/saml/" + sessionToken, sessionData);
 
@@ -183,7 +178,7 @@ public class UndertowSolidServer {
                 .get("/reflex/auth/whoami", samlWhoamiHandler)
                 .post("/reflex/auth/whoami", samlWhoamiHandler)
 
-                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
@@ -196,7 +191,7 @@ public class UndertowSolidServer {
                     }
                 }))))
 
-                .get("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .get("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
@@ -209,7 +204,7 @@ public class UndertowSolidServer {
                     }
                 }))))
 
-                .post("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .post("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Append);
@@ -222,7 +217,7 @@ public class UndertowSolidServer {
                     }
                 }))))
 
-                .put("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .put("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
@@ -235,7 +230,7 @@ public class UndertowSolidServer {
                     }
                 }))))
 
-                .delete("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .delete("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
