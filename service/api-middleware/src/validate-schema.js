@@ -44,15 +44,13 @@ module.exports = async (event) => {
 	// @ts-ignore
 	if (isOkay(event)) {
 		logger.debug('api-middleware:validate-schema:received', {event});
-		let { body: result } = await validateSchema(preparePayload(event));
-		if (!result.isValid) {
+		let { body: result, error } = await validateSchema(preparePayload(event));
+		if (error || !result.isValid) {
+			event.object = error || result.error
 			event.response = {
+				status: '400',
 				statusCode: 400,
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({'error':'rejected by schema validation'}),
-				isBase64Encoded: true
+				end: true
 			}
 		}
 	}
