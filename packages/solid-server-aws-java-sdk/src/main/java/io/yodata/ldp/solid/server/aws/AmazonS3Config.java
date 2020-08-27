@@ -22,7 +22,7 @@ public class AmazonS3Config implements Config {
     private String configBucket;
     private final String configKeyName = "solid-serverless.json";
 
-    private Config parent;
+    private final Config parent;
 
     private boolean loaded = false;
     private JsonObject cfg = new JsonObject();
@@ -33,6 +33,10 @@ public class AmazonS3Config implements Config {
 
     public static Function<Config, Config> build() {
         return s -> {
+            if (s instanceof AmazonS3Config) {
+                return s;
+            }
+
             AmazonS3Config loader = new AmazonS3Config(s);
             loader.init();
             if (loader.loaded) {
@@ -41,9 +45,6 @@ public class AmazonS3Config implements Config {
                 return s;
             }
         };
-    }
-
-    public AmazonS3Config() {
     }
 
     public AmazonS3Config(Config cfg) {
