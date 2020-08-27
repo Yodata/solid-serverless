@@ -183,7 +183,7 @@ public class S3Store extends EntityBasedStore {
 
             log.info("Storing {} bytes in bucket {} in path {}", bytes.length, bucket, path);
             PutObjectResult res = s3.putObject(bucket, path, new ByteArrayInputStream(bytes), metadata);
-            log.info("Stored under ETag {}", res.getETag());
+            log.debug("Stored under ETag {}", res.getETag());
         });
     }
 

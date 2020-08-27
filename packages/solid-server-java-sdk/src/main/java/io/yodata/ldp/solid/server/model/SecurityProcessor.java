@@ -43,7 +43,7 @@ public class SecurityProcessor {
             throw new UnauthorizedException("No API key provided");
         }
 
-        log.info("API Key: {}", key);
+        log.debug("API Key: {}", key);
         SecurityContext apiKeyContext = store.findForApiKey(key).orElseGet(SecurityContext::new);
         if (apiKeyContext.isAnonymous()) {
             log.debug("API key is unknown");

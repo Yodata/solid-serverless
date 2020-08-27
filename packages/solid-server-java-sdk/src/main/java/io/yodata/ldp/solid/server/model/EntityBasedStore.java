@@ -47,13 +47,13 @@ public abstract class EntityBasedStore implements Store {
     private Optional<Acl> fetchAcl(String entity, String path, boolean recursive) {
         entity = entity.toLowerCase(); // Host is case-insensitive
 
-        log.info("Fetching ACL in {} for {}", entity, path);
+        log.debug("Fetching ACL in {} for {}", entity, path);
 
         List<String> paths = new ArrayList<>();
         paths.add(path);
         Path p = Paths.get(path);
         if (recursive) {
-            log.info("Check ACL recursively");
+            log.debug("Check ACL recursively");
             while (true) {
                 p = p.getParent();
                 if (Objects.isNull(p)) {
@@ -73,14 +73,14 @@ public abstract class EntityBasedStore implements Store {
             log.debug("Checking in {}", aclPath);
             Optional<String> aclRaw = getData(aclPath);
             if (aclRaw.isPresent()) {
-                log.info("ACL found at {}", aclPath);
+                log.debug("ACL found at {}", aclPath);
                 return Optional.of(GsonUtil.get().fromJson(aclRaw.get(), Acl.class));
             } else {
                 log.debug("ACL not found at {}", aclPath);
             }
         }
 
-        log.info("No ACL found in {} for {}", entity, path);
+        log.debug("No ACL found in {} for {}", entity, path);
         return Optional.empty();
     }
 
@@ -266,13 +266,13 @@ public abstract class EntityBasedStore implements Store {
     }
 
     public Optional<SecurityContext> findForApiKey(String apiKey) {
-        log.info("Fetching data for API key {}", apiKey);
+        log.debug("Fetching data for API key {}", apiKey);
         Optional<String> data = getData("global/security/api/key/" + apiKey);
         if (data.isPresent()) {
-            log.info("API key found");
+            log.debug("API key found");
             return Optional.of(GsonUtil.get().fromJson(data.get(), SecurityContext.class));
         } else {
-            log.info("API key not found");
+            log.debug("API key not found");
             return Optional.empty();
         }
     }
