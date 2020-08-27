@@ -11,11 +11,11 @@ public class OutboxSettings {
         private List<String> whitelist;
 
         public boolean hasBlacklist() {
-            return Objects.isNull(blacklist);
+            return !Objects.isNull(blacklist);
         }
 
         public boolean hasWhitelist() {
-            return Objects.isNull(whitelist);
+            return !Objects.isNull(whitelist);
         }
 
         public List<String> getBlacklist() {
@@ -28,7 +28,7 @@ public class OutboxSettings {
 
     }
 
-    private final Domains authorizedDomains = new Domains();
+    private Domains authorizedDomains = new Domains();
 
     public Domains getAuthorizedDomains() {
         return authorizedDomains;
