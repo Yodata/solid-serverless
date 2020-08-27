@@ -3,6 +3,7 @@ package io.yodata.ldp.solid.server;
 import io.yodata.ldp.solid.server.aws.handler.LambdaInValidationProcessor;
 import io.yodata.ldp.solid.server.aws.handler.LambdaOutValidationProcessor;
 import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.model.ServerBackend;
 import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.event.EventBus;
 import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;

@@ -2,10 +2,10 @@ package io.yodata.ldp.solid.server.model.container;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.model.Page;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.ServerBackend;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

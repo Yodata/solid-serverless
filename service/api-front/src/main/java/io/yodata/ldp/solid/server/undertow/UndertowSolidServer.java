@@ -43,6 +43,8 @@ public class UndertowSolidServer {
         log.info("-------/ Frontd is starting \\-------");
 
         AmazonS3Config.register();
+        SolidServer srv = new SolidServer(new AwsServerBackend());
+        SecurityProcessor auth = new SecurityProcessor(srv.store());
 
         int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(EnvConfig.get().findOrBlank("FRONTD_LOAD_MULTIPLIER"), "1"));
         String samlIdpUrl = Configs.get().findOrBlank("reflex.auth.saml.idp.url");
@@ -62,9 +64,6 @@ public class UndertowSolidServer {
 
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
-
-        SolidServer srv = new SolidServer(new AwsServerBackend());
-        SecurityProcessor auth = new SecurityProcessor(srv.store());
 
         HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
 

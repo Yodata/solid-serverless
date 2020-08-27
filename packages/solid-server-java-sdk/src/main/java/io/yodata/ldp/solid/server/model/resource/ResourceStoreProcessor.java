@@ -1,8 +1,8 @@
 package io.yodata.ldp.solid.server.model.resource;
 
-import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.ServerBackend;
 
 public class ResourceStoreProcessor {
 

@@ -2,7 +2,6 @@ package io.yodata.ldp.solid.server.model.resource;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;

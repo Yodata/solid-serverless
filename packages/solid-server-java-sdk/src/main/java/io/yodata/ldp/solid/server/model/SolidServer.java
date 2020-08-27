@@ -1,7 +1,6 @@
 package io.yodata.ldp.solid.server.model;
 
 import io.yodata.ldp.solid.server.MimeTypes;
-import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.container.ContainerHandler;

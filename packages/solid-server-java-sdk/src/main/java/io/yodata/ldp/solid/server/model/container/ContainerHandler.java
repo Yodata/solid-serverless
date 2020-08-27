@@ -3,7 +3,6 @@ package io.yodata.ldp.solid.server.model.container;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.ServerBackend;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;
 import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;

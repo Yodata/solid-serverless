@@ -9,7 +9,11 @@ public interface Config {
     }
 
     default String findOrBlank(String name) {
-        return find(name).orElse("");
+        return findOrDefault(name, "");
+    }
+
+    default String findOrDefault(String name, String defaultValue) {
+        return find(name).orElse(defaultValue);
     }
 
     Optional<String> find(String name);
