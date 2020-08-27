@@ -15,7 +15,7 @@ import java.util.stream.StreamSupport;
 
 public abstract class BasicHttpHandler implements HttpHandler {
 
-    private Logger log = LoggerFactory.getLogger(BasicHttpHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(BasicHttpHandler.class);
 
     protected Map<String, List<String>> getHeaders(HttpServerExchange exchange) {
         Map<String, List<String>> headers = new HashMap<>();
@@ -45,7 +45,7 @@ public abstract class BasicHttpHandler implements HttpHandler {
             try {
                 ex.setResponseContentLength(outBytes.length);
                 IOUtils.write(outBytes, ex.getOutputStream());
-                log.info("HTTP Request {}: Response written", ex.hashCode());
+                log.debug("HTTP Request {}: Response written", ex.hashCode());
             } catch (IOException e) {
                 if (ex.getConnection().isOpen()) {
                     log.warn("We failed to write response back to client: {}", e.getMessage());
