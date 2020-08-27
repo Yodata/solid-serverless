@@ -9,10 +9,40 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import static io.yodata.ldp.solid.server.config.Configs.DOM_BASE;
 
 public class SolidServer {
+
+    public static final BiFunction<String, String, Boolean> DomainMatching = (full, base) -> {
+        if (StringUtils.isAnyBlank(full, base)) {
+            return false;
+        }
+
+        if (StringUtils.equalsIgnoreCase(full, base)) {
+            return true;
+        }
+
+        return StringUtils.endsWithIgnoreCase(full, "." + base);
+    };
+
+    public static final BiFunction<String, String, Boolean> DomainPatternMatching = (full, pattern) -> {
+        if (StringUtils.isAnyBlank(full, pattern)) {
+            return false;
+        }
+
+        if (StringUtils.equalsIgnoreCase(full, pattern)) {
+            return true;
+        }
+
+        if (!StringUtils.startsWithIgnoreCase(pattern, "*.")) {
+            return false;
+        }
+
+        pattern = StringUtils.substringAfter(pattern, "*.");
+        return StringUtils.endsWithIgnoreCase(full, "." + pattern);
+    };
 
     private final Store store;
     private final ContainerHandler folder;
@@ -50,19 +80,7 @@ public class SolidServer {
     }
 
     public boolean isServingDomain(String domain) {
-        if (StringUtils.isBlank(domain)) {
-            return false;
-        }
-
-        if (StringUtils.equalsIgnoreCase(getBaseDomain(), domain)) {
-            return true;
-        }
-
-        if (StringUtils.endsWithIgnoreCase(domain, "." + getBaseDomain())) {
-            return true;
-        }
-
-        return false;
+        return DomainMatching.apply(domain, getBaseDomain());
     }
 
     private void validateContentType(Request in) {

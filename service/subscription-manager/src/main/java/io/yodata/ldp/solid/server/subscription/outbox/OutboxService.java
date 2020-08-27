@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Optional;
 
 public class OutboxService {
@@ -42,13 +43,13 @@ public class OutboxService {
 
             if (StringUtils.equalsAny(target.getScheme(), "http", "https")) {
                 target = new URIBuilder(target).setPath("/inbox/").setFragment(null).build();
-                log.info("Discovering inbox");
+                log.debug("Discovering inbox");
                 URI subUri = URI.create(target.toString());
                 HttpGet profileReq = new HttpGet(subUri);
                 try (CloseableHttpResponse profileRes = client.execute(profileReq)) {
                     int sc = profileRes.getStatusLine().getStatusCode();
                     if (sc != 200) {
-                        log.info("No profile info. Status code: {}", sc);
+                        log.debug("No profile info. Status code: {}", sc);
                     } else {
                         try {
                             JsonObject body = GsonUtil.parseObj(profileRes.getEntity().getContent());
@@ -56,21 +57,21 @@ public class OutboxService {
                             if (profileInboxUri.isPresent()) {
                                 try {
                                     target = new URI(profileInboxUri.get());
-                                    log.info("Found advertised inbox URI: {}", target.toString());
+                                    log.debug("Found advertised inbox URI: {}", target.toString());
                                 } catch (URISyntaxException e) {
-                                    log.warn("Invalid advertised Inbox URI: {}", profileInboxUri.get());
+                                    log.debug("Invalid advertised Inbox URI: {}", profileInboxUri.get());
                                 }
                             } else {
-                                log.info("No advertised Inbox URI found, using default");
+                                log.debug("No advertised Inbox URI found, using default");
                             }
                         } catch (JsonSyntaxException e) {
-                            log.info("Received data was not JSON, ignoring");
+                            log.debug("Received data was not JSON, ignoring");
                         }
                     }
                 } catch (IOException e) {
-                    log.warn("Unable to discover inbox location due to I/O Error: {}", e.getMessage());
+                    log.debug("Unable to discover inbox location due to I/O Error: {}", e.getMessage());
                     log.debug("Exception stacktrace", e);
-                    log.warn("Using default inbox location: {}", target.toString());
+                    log.debug("Using default inbox location: {}", target.toString());
                 }
             }
         } catch (URISyntaxException e) {
@@ -81,15 +82,74 @@ public class OutboxService {
         return Optional.of(target);
     }
 
+    public OutboxSettings buildSettings(String raw) {
+        Optional<JsonObject> cfgJsonOpt = GsonUtil.tryParseObj(raw);
+        if (!cfgJsonOpt.isPresent()) {
+            return new OutboxSettings();
+        }
+
+        // FIXME check for type and schema version before building
+        JsonObject cfgJson = cfgJsonOpt.get();
+        return GsonUtil.get().fromJson(cfgJson, OutboxSettings.class);
+    }
+
+    public OutboxSettings getGlobalConfig() {
+        // FIXME global path should be prefixed by the store, not the caller
+        return buildSettings(srv.store().getData("global/settings/outbox").orElse("{}"));
+    }
+
+    public OutboxSettings getPodConfig(URI pod) {
+        return buildSettings(srv.store().findEntityData(pod, "/settings/outbox").orElse("{}"));
+    }
+
+    public boolean match(String toMatch, List<String> matches) {
+        return matches.stream().anyMatch(match -> SolidServer.DomainPatternMatching.apply(toMatch, match));
+    }
+
+    public boolean isAllowedToSend(URI podId, String recipientHost) {
+        OutboxSettings global = getGlobalConfig();
+        OutboxSettings pod = getPodConfig(podId);
+
+        if (global.getAuthorizedDomains().hasBlacklist()) {
+            if (match(recipientHost, global.getAuthorizedDomains().getBlacklist())) {
+                return false;
+            }
+        }
+
+        if (pod.getAuthorizedDomains().hasBlacklist()) {
+            if (match(recipientHost, pod.getAuthorizedDomains().getBlacklist())) {
+                return false;
+            }
+        }
+
+        if (pod.getAuthorizedDomains().hasWhitelist()) {
+            return match(recipientHost, pod.getAuthorizedDomains().getWhiteList());
+        }
+
+        if (global.getAuthorizedDomains().hasWhitelist()) {
+            return match(recipientHost, global.getAuthorizedDomains().getWhiteList());
+        }
+
+        return true;
+    }
+
     public void process(JsonObject event) {
         log.debug("Processing event data: {}", GsonUtil.toJson(event));
 
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        if (!StorageAction.isAddOrUpdate(action.getType())) {
-            log.warn("Event is not about new/updated data, nothing to do, skipping");
+        URI eventId;
+        try {
+            eventId = URI.create(action.getId());
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid event: {}", event);
             return;
         }
-        log.info("Processing {}", action.getId());
+
+        if (!StorageAction.isAddOrUpdate(action.getType())) {
+            log.debug("Event is not about new/updated data, nothing to do, skipping");
+            return;
+        }
+        log.info("Processing {}", eventId);
 
         if (!action.getObject().isPresent()) {
             log.warn("Event has no data, assuming non-RDF for now and skipping");
@@ -115,12 +175,16 @@ public class OutboxService {
             return;
         }
         URI recipientUri = recipientOpt.get();
-
-        String dataRaw = GsonUtil.toJson(data);
-
-        log.debug("Push content: {}", dataRaw);
         Target recipientProfile = Target.forProfileCard(recipientUri);
         String recipientHost = recipientProfile.getHost();
+
+        if (!isAllowedToSend(eventId, recipientHost)) {
+            log.info("{} is not allowed to send to {}, skipping", eventId.getHost(), recipientHost);
+            return;
+        }
+
+        String dataRaw = GsonUtil.toJson(data);
+        log.debug("Push content: {}", dataRaw);
 
         // We are sending something internally, using the store directly
         if (srv.isServingDomain(recipientHost)) {
@@ -139,8 +203,8 @@ public class OutboxService {
 
             // We send
             Response res = srv.post(r);
-            String eventId = GsonUtil.parseObj(res.getBody().orElseGet("{}"::getBytes)).get("id").getAsString();
-            log.info("Message was saved at {}", eventId);
+            String messageId = GsonUtil.parseObj(res.getBody().orElseGet("{}"::getBytes)).get("id").getAsString();
+            log.info("Message was saved at {}", messageId);
         } else {
             log.info("Domain {} is external, sending using pusher", recipientHost);
             pusher.send(data, recipientUri.toString(), new JsonObject());
