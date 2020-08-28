@@ -15,9 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class Publisher {
 
@@ -57,7 +58,7 @@ public class Publisher {
         }
         JsonElement rRaw = rOpt.get();
 
-        List<String> recipients = new ArrayList<>();
+        Set<String> recipients = new HashSet<>();
         if (rRaw.isJsonArray()) {
             recipients.addAll(GsonUtil.asList(rRaw.getAsJsonArray(), String.class));
         }
@@ -87,7 +88,7 @@ public class Publisher {
         publish(from, recipients, message);
     }
 
-    public void publish(URI from, List<String> recipients, JsonObject message) {
+    public void publish(URI from, Collection<String> recipients, JsonObject message) {
         log.info("From: {}", from.toString());
         message.addProperty("instrument", from.resolve("/profile/card#me").toString());
 
