@@ -1,4 +1,5 @@
-// @ts-check
+// @ts-nocheck
+
 
 const logger = require('./lib/logger')
 const request = require('request');
@@ -49,8 +50,12 @@ module.exports = async (event) => {
 			event.object = error || result.error
 			event.response = {
 				status: '400',
+				headers: {
+					"Content-Type": "application/json"
+				},
 				statusCode: 400,
-				end: true
+				end: true,
+				body: Buffer.from(JSON.stringify(event.object)).toString('base64')
 			}
 		}
 	}
