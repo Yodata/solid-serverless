@@ -1,9 +1,8 @@
 package io.yodata.ldp.solid.server.security;
 
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.SecurityContext;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Optional;
@@ -11,10 +10,10 @@ import java.util.Optional;
 // FIXME this should really be in the SDK
 public class ApiKeyManager {
 
-    private Store store;
+    private final SolidServer srv;
 
-    public ApiKeyManager(Store store) {
-        this.store = store;
+    public ApiKeyManager(SolidServer srv) {
+        this.srv = srv;
     }
 
     private String getPath(String key) {
@@ -27,11 +26,11 @@ public class ApiKeyManager {
     }
 
     public Optional<SecurityContext> find(String key) {
-        return store.findForApiKey(key);
+        return srv.store().findForApiKey(key);
     }
 
     public String addKey(String key, SecurityContext sc) {
-        store.ensureNotExisting(getPath(key)).then(v -> saveKey(key, sc));
+        srv.store().ensureNotExisting(getPath(key)).then(v -> saveKey(key, sc));
         return key;
     }
 
@@ -40,7 +39,7 @@ public class ApiKeyManager {
             throw new RuntimeException("At least instrument must be set");
         }
 
-        store.save(getPath(key), GsonUtil.get().toJsonTree(sc));
+        srv.store().save(getPath(key), GsonUtil.get().toJsonTree(sc));
     }
 
 }

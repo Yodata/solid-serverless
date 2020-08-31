@@ -2,8 +2,6 @@ package io.yodata.ldp.solid.server.subscription.notify;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.slf4j.Logger;
@@ -19,12 +17,10 @@ public class Notifier {
 
     private static final Logger log = LoggerFactory.getLogger(Notifier.class);
 
-    private ContainerHandler dirHandler;
-    private ResourceHandler fileHandler;
+    private final SolidServer srv;
 
-    public Notifier(Store store) {
-        this.dirHandler = new ContainerHandler(store);
-        this.fileHandler = new ResourceHandler(store);
+    public Notifier(SolidServer srv) {
+        this.srv = srv;
     }
 
     public void handle(JsonObject event) {
@@ -82,7 +78,7 @@ public class Notifier {
                 r.setBody(notification);
 
                 // We send to store
-                Response res = dirHandler.post(r);
+                Response res = srv.post(r);
                 String eventId = GsonUtil.parseObj(res.getBody()
                         .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Data was saved at {}", eventId);
@@ -90,7 +86,7 @@ public class Notifier {
                 Request d = new Request();
                 d.setMethod("DELETE");
                 d.setTarget(new Target(from));
-                Response dRes = fileHandler.delete(d);
+                Response dRes = srv.delete(d);
                 log.info("{} delete status: {}", from, dRes.getStatus());
             } catch (RuntimeException e) {
                 log.warn("Unable to produce notification from {} for {}", from, recipient, e);

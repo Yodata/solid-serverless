@@ -26,6 +26,8 @@ public interface Store {
 
     }
 
+    Optional<String> getData(String path);
+
     Optional<String> findEntityData(URI entity, String path);
 
     boolean saveEntityData(URI entity, String path, JsonElement el);

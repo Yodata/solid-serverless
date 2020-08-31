@@ -11,7 +11,7 @@ import com.google.gson.JsonPrimitive;
 import io.yodata.Base64Util;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.Configs;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 import io.yodata.ldp.solid.server.model.EntityBasedStore;
@@ -183,7 +183,7 @@ public class S3Store extends EntityBasedStore {
 
             log.info("Storing {} bytes in bucket {} in path {}", bytes.length, bucket, path);
             PutObjectResult res = s3.putObject(bucket, path, new ByteArrayInputStream(bytes), metadata);
-            log.info("Stored under ETag {}", res.getETag());
+            log.debug("Stored under ETag {}", res.getETag());
         });
     }
 

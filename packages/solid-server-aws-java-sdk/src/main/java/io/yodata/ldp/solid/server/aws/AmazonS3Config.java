@@ -7,11 +7,13 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.config.Config;
+import io.yodata.ldp.solid.server.config.Configs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 public class AmazonS3Config implements Config {
 
@@ -20,13 +22,29 @@ public class AmazonS3Config implements Config {
     private String configBucket;
     private final String configKeyName = "solid-serverless.json";
 
-    private Config parent;
-    private AmazonS3 s3;
+    private final Config parent;
 
     private boolean loaded = false;
     private JsonObject cfg = new JsonObject();
 
-    public AmazonS3Config() {
+    public static void register() {
+        Configs.set(build());
+    }
+
+    public static Function<Config, Config> build() {
+        return s -> {
+            if (s instanceof AmazonS3Config) {
+                return s;
+            }
+
+            AmazonS3Config loader = new AmazonS3Config(s);
+            loader.init();
+            if (loader.loaded) {
+                return loader;
+            } else {
+                return s;
+            }
+        };
     }
 
     public AmazonS3Config(Config cfg) {
@@ -36,13 +54,6 @@ public class AmazonS3Config implements Config {
     private void init() {
         if (loaded) {
             return;
-        }
-
-        if (Objects.isNull(s3)) {
-            DefaultAWSCredentialsProviderChain credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
-            s3 = AmazonS3ClientBuilder.standard()
-                    .withCredentials(credentialsProvider)
-                    .build();
         }
 
         if (Objects.isNull(parent)) {
@@ -58,6 +69,11 @@ public class AmazonS3Config implements Config {
         }
 
         b.ifPresent(s -> {
+            DefaultAWSCredentialsProviderChain credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
+            AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+                    .withCredentials(credentialsProvider)
+                    .build();
+
             if (!s3.doesBucketExistV2(s)) {
                 throw new IllegalStateException("S3 bucket does not exist: " + s);
             }

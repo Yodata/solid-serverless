@@ -12,12 +12,9 @@ import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.util.StatusCodes;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.Configs;
-import io.yodata.ldp.solid.server.aws.SecurityProcessor;
-import io.yodata.ldp.solid.server.aws.UndertorwRequest;
-import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.handler.resource.ResourceHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.config.EnvConfig;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.saml.ReflexSamlResponse;
@@ -35,8 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static io.yodata.ldp.solid.server.aws.Configs.DOM_BASE;
-
 public class UndertowSolidServer {
 
     private static final Logger log = LoggerFactory.getLogger(UndertowSolidServer.class);
@@ -47,18 +42,17 @@ public class UndertowSolidServer {
     public static void main(String[] args) {
         log.info("-------/ Frontd is starting \\-------");
 
+        AmazonS3Config.register();
+        SolidServer srv = new SolidServer(new AwsServerBackend());
+        SecurityProcessor auth = new SecurityProcessor(srv.store());
+
         int multiplier = Integer.parseInt(StringUtils.defaultIfBlank(EnvConfig.get().findOrBlank("FRONTD_LOAD_MULTIPLIER"), "1"));
         String samlIdpUrl = Configs.get().findOrBlank("reflex.auth.saml.idp.url");
-        String baseDomain = Configs.get().findOrBlank(DOM_BASE);
         String samlAppRedirectUrl = Configs.get().findOrBlank("reflex.auth.saml.acs.url");
         int workerThreads = multiplier * 2 * 8;
 
         int port = 9000;
         String host = "0.0.0.0";
-
-        if (StringUtils.isBlank(baseDomain)) {
-            throw new RuntimeException(DOM_BASE + " cannot be empty/bank");
-        }
 
         if (StringUtils.isBlank(samlIdpUrl)) {
             throw new RuntimeException("reflex.auth.saml.idp.url cannot be empty/bank");
@@ -71,12 +65,7 @@ public class UndertowSolidServer {
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
 
-        EntityBasedStore store = S3Store.getDefault();
-        ContainerHandler folder = new ContainerHandler(store);
-        ResourceHandler file = new ResourceHandler(store);
-        SecurityProcessor auth = new SecurityProcessor(store);
-
-        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
 
             @Override
             public void handleRequest(HttpServerExchange ex) {
@@ -87,7 +76,7 @@ public class UndertowSolidServer {
                 String sessionToken = sessionTokenCookie.getValue();
 
                 String path = "global/security/api/token/" + sessionType + "/" + sessionToken;
-                Optional<String> sessionDataOpt = store.getData(path);
+                Optional<String> sessionDataOpt = srv.store().getData(path);
                 JsonObject sessionData = sessionDataOpt.flatMap(GsonUtil::tryParseObj).orElseGet(JsonObject::new);
 
                 if (StringUtils.isAnyBlank(sessionType, sessionToken) || sessionData.size() == 0) {
@@ -110,16 +99,16 @@ public class UndertowSolidServer {
                     exchange.endExchange();
                 })
 
-                .add("OPTIONS", "/**", new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .add("OPTIONS", "/**", new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                 })))
 
-                .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                     log.info("Got a GET for /reflex/auth/saml/login");
                     log.info("Redirecting to the SAML IDP URL");
                     redirectHandler.handleRequest(exchange);
                 })))
 
-                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                     log.info("Got a GET for /reflex/auth/logout");
 
                     Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
@@ -131,7 +120,7 @@ public class UndertowSolidServer {
                     if (StringUtils.isNotBlank(sessionType)) {
                         log.info("Clearing all active sessions");
 
-                        store.delete("global/security/api/token/" + sessionType + "/" + sessionToken);
+                        srv.store().delete("global/security/api/token/" + sessionType + "/" + sessionToken);
                     }
 
                     sessionTypeCookie = sessionTypeCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
@@ -141,7 +130,7 @@ public class UndertowSolidServer {
                     exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
                 }))))
 
-                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), exchange -> {
+                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, exchange -> {
                     log.info("Got a POST for /reflex/auth/saml/acs");
                     String body = UndertorwRequest.getBodyString(exchange);
                     log.debug("Body: {}", body);
@@ -172,9 +161,9 @@ public class UndertowSolidServer {
 
                     JsonObject sessionData = new JsonObject();
                     sessionData.add("raw", samlAttributes);
-                    sessionData.addProperty("profile_id", "https://" + contactId + "." + baseDomain + "/profile/card#me");
+                    sessionData.addProperty("profile_id", "https://" + contactId + "." + srv.getBaseDomain() + "/profile/card#me");
                     sessionData.addProperty("valid_not_after", expiresAt.toEpochMilli());
-                    store.save("global/security/api/token/saml/" + sessionToken, sessionData);
+                    srv.store().save("global/security/api/token/saml/" + sessionToken, sessionData);
 
                     exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
                     exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
@@ -188,7 +177,7 @@ public class UndertowSolidServer {
                 .get("/reflex/auth/whoami", samlWhoamiHandler)
                 .post("/reflex/auth/whoami", samlWhoamiHandler)
 
-                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
@@ -196,19 +185,12 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.head(request);
-                        } else {
-                            r = file.head(request);
-                        }
-
+                        Response r = srv.head(request);
                         writeBody(exchange, r);
                     }
                 }))))
 
-                .get("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .get("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
@@ -216,19 +198,12 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.get(request);
-                        } else {
-                            r = file.get(request);
-                        }
-
+                        Response r = srv.get(request);
                         writeBody(exchange, r);
                     }
                 }))))
 
-                .post("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .post("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Append);
@@ -236,19 +211,12 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.post(request);
-                        } else {
-                            r = file.post(request);
-                        }
-
+                        Response r = srv.post(request);
                         writeBody(exchange, r);
                     }
                 }))))
 
-                .put("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .put("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
@@ -256,19 +224,12 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.put(request);
-                        } else {
-                            r = file.put(request);
-                        }
-
+                        Response r = srv.put(request);
                         writeBody(exchange, r);
                     }
                 }))))
 
-                .delete("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(Configs.get(), new BasicHttpHandler() {
+                .delete("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
                     @Override
                     public void handleRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
@@ -276,14 +237,7 @@ public class UndertowSolidServer {
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-
-                        Response r;
-                        if (exchange.getRequestPath().endsWith("/")) {
-                            r = folder.delete(request);
-                        } else {
-                            r = file.delete(request);
-                        }
-
+                        Response r = srv.delete(request);
                         writeBody(exchange, r);
                     }
                 }))))).build().start();

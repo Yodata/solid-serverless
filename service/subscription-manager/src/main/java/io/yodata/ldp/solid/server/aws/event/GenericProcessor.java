@@ -3,13 +3,12 @@ package io.yodata.ldp.solid.server.aws.event;
 import com.amazonaws.HttpMethod;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.handler.container.ContainerHandler;
+import io.yodata.ldp.solid.server.aws.SqsPusher;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
-import io.yodata.ldp.solid.server.subscription.pusher.SqsPusher;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +24,12 @@ public class GenericProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(GenericProcessor.class);
 
-    private final Store store;
-    private final ContainerHandler storeHandler;
+    private final SolidServer srv;
     private final TransformService transform;
     private final SqsPusher pusher;
 
-    public GenericProcessor(Store store) {
-        this.store = store;
-        this.storeHandler = new ContainerHandler(store);
+    public GenericProcessor(SolidServer srv) {
+        this.srv = srv;
         this.transform = new AWSTransformService();
         this.pusher = new SqsPusher();
     }
@@ -43,7 +40,7 @@ public class GenericProcessor {
         URI target = URI.create(action.getTarget());
         log.info("Processing storage event {} about {}", action.getType(), action.getId());
 
-        List<Subscription> subs = store.getAllSubscriptions(id);
+        List<Subscription> subs = srv.store().getAllSubscriptions(id);
         if (subs.isEmpty()) {
             log.info("No subscription found");
             return;
@@ -97,7 +94,7 @@ public class GenericProcessor {
 
         if (!action.getObject().isPresent()) {
             log.info("Object is not present in the event: Fetching data from store to process");
-            Optional<String> obj = store.findEntityData(id, id.getPath());
+            Optional<String> obj = srv.store().findEntityData(id, id.getPath());
             if (!obj.isPresent()) {
                 log.info("We got a notification about {} which doesn't exist anymore, setting empty object", id);
                 action.setObject(new JsonObject());
@@ -111,7 +108,7 @@ public class GenericProcessor {
             TransformMessage msg = new TransformMessage();
             msg.setSecurity(action.getRequest().getSecurity());
             msg.setScope(sub.getScope());
-            msg.setPolicy(store.getPolicies(id));
+            msg.setPolicy(srv.store().getPolicies(id));
             msg.setObject(action.getObject().get());
             JsonObject rawData = transform.transform(msg);
             if (rawData.keySet().isEmpty()) {
@@ -143,7 +140,7 @@ public class GenericProcessor {
                 r.setBody(msg);
 
                 // We send to store
-                Response res = storeHandler.post(r);
+                Response res = srv.post(r);
                 String eventId = GsonUtil.parseObj(res.getBody()
                         .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Data was saved at {}", eventId);
@@ -172,7 +169,7 @@ public class GenericProcessor {
                 r.setBody(publication);
 
                 // We send to store
-                Response res = storeHandler.post(r);
+                Response res = srv.post(r);
                 String eventId = GsonUtil.parseObj(res.getBody()
                         .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Data was saved at {}", eventId);

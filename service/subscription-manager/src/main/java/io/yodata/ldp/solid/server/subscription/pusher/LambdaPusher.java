@@ -6,7 +6,7 @@ import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.Configs;
+import io.yodata.ldp.solid.server.config.Configs;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

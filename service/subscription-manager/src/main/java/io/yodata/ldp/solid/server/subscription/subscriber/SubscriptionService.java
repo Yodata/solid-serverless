@@ -3,7 +3,7 @@ package io.yodata.ldp.solid.server.subscription.subscriber;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.model.SubscriptionEvent;
 import io.yodata.ldp.solid.server.model.SubscriptionsEditor;
 import org.apache.commons.lang3.StringUtils;
@@ -17,10 +17,10 @@ public class SubscriptionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
 
-    private final Store store;
+    private final SolidServer srv;
 
-    public SubscriptionService(Store store) {
-        this.store = store;
+    public SubscriptionService(SolidServer srv) {
+        this.srv = srv;
     }
 
     public JsonObject process(JsonObject evJson) {
@@ -60,11 +60,11 @@ public class SubscriptionService {
         URI pod = URI.create(action.getAgent());
         //log.info("Setting new permissions for {} on {}", action.getObject().getAgent(), pod.getHost());
         log.info("New permissions: {}", GsonUtil.toJson(action));
-        SubscriptionsEditor subs = new SubscriptionsEditor(store.getRawSubscriptions(pod));
+        SubscriptionsEditor subs = new SubscriptionsEditor(srv.store().getRawSubscriptions(pod));
         log.info("Current subs: {}", GsonUtil.toJson(subs.getRaw()));
         subs.updateOrAdd(action.getObject());
         log.info("New subs: {}", GsonUtil.toJson(subs.getRaw()));
-        store.setEntitySubscriptions(pod, subs.getRaw());
+        srv.store().setEntitySubscriptions(pod, subs.getRaw());
 
         return new JsonObject();
     }
@@ -72,11 +72,11 @@ public class SubscriptionService {
     public JsonObject revoke(SubscriptionEvent.SubscriptionAction action) {
         URI pod = URI.create(action.getAgent());
         log.info("Will revoke {}", GsonUtil.toJson(action.getObject()));
-        SubscriptionsEditor subs = new SubscriptionsEditor(store.getRawSubscriptions(pod));
+        SubscriptionsEditor subs = new SubscriptionsEditor(srv.store().getRawSubscriptions(pod));
         log.info("Current subs: {}", GsonUtil.toJson(subs.getRaw()));
         subs.remove(action.getObject());
         log.info("New subs: {}", GsonUtil.toJson(subs.getRaw()));
-        store.setEntitySubscriptions(pod, subs.getRaw());
+        srv.store().setEntitySubscriptions(pod, subs.getRaw());
 
         return new JsonObject();
     }

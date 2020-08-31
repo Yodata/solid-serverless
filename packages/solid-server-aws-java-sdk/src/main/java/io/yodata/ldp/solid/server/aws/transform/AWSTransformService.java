@@ -6,7 +6,7 @@ import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.Configs;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +18,10 @@ public class AWSTransformService implements TransformService {
 
     public AWSTransformService() {
         lName = Configs.get().get("aws.lambda.transform.name");
+        if (StringUtils.isBlank(lName)) {
+            throw new IllegalStateException("AWS Lambda transform name is not set");
+        }
+
         lambda = AWSLambdaClientBuilder.defaultClient();
     }
 

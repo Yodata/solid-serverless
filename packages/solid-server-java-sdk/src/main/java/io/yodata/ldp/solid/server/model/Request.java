@@ -130,6 +130,10 @@ public class Request {
         this.acl = acl;
     }
 
+    public boolean hasBody() {
+        return StringUtils.isNotBlank(body);
+    }
+
     public byte[] getBody() {
         return Base64Util.decode(body);
     }

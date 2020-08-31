@@ -2,20 +2,25 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.security.ApiKeyAction;
 import io.yodata.ldp.solid.server.security.ApiKeyManager;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class LambdaApiKeyService implements RequestStreamHandler {
 
-    private ApiKeyManager mgr;
+    private final ApiKeyManager mgr;
 
     public LambdaApiKeyService() {
-        this.mgr = new ApiKeyManager(S3Store.getDefault());
+        AmazonS3Config.register();
+        mgr = new ApiKeyManager(new SolidServer(new AwsServerBackend()));
     }
 
     @Override

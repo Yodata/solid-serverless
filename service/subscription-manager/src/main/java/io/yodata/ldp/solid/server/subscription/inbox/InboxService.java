@@ -2,7 +2,7 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,12 +26,12 @@ public class InboxService {
 
     private final Map<String, Consumer<Wrapper>> typeProcessors;
 
-    public InboxService(Store store) {
+    public InboxService(SolidServer srv) {
         typeProcessors = new HashMap<>();
-        typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor());
-        typeProcessors.put(PublishProcessor.Type, new PublishProcessor());
+        typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor(srv));
+        typeProcessors.put(PublishProcessor.Type, new PublishProcessor(srv));
 
-        AppAuthProcessor p = new AppAuthProcessor(store);
+        AppAuthProcessor p = new AppAuthProcessor(srv);
         for (String type : AppAuthProcessor.Types) {
             typeProcessors.put(type, p);
         }

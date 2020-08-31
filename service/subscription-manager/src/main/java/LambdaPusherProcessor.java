@@ -4,7 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.subscription.pusher.Pusher;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
+import io.yodata.ldp.solid.server.subscription.pusher.PusherService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,12 @@ public class LambdaPusherProcessor implements RequestStreamHandler {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaInboxProcessor.class);
 
-    private final Pusher pusher = new Pusher();
+    private final PusherService svc;
+
+    public LambdaPusherProcessor() {
+        AmazonS3Config.register();
+        svc = new PusherService();
+    }
 
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
@@ -56,7 +62,7 @@ public class LambdaPusherProcessor implements RequestStreamHandler {
     }
 
     private void process(JsonObject command) {
-        pusher.send(command);
+        svc.send(command);
     }
 
 }

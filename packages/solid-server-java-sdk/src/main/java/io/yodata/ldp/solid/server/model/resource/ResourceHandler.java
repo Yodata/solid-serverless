@@ -1,14 +1,11 @@
-package io.yodata.ldp.solid.server.aws.handler.resource;
+package io.yodata.ldp.solid.server.model.resource;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.handler.GenericHandler;
-import io.yodata.ldp.solid.server.aws.handler.RequestCheckProcessor;
-import io.yodata.ldp.solid.server.aws.handler.ResponseCheckProcessor;
-import io.yodata.ldp.solid.server.aws.handler.resource.input.ResourceRequestCheckProcessor;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
-import io.yodata.ldp.solid.server.notification.EventBus;
+import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;
+import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -18,19 +15,15 @@ import java.util.Objects;
 
 public class ResourceHandler extends GenericHandler {
 
-    private RequestCheckProcessor inCheck;
-    private ResponseCheckProcessor outCheck;
-    private ResourceStoreProcessor storeProc;
+    private final InputValidationProcessor inCheck;
+    private final OutputValidationProcessor outCheck;
+    private final ResourceStoreProcessor storeProc;
 
-    public ResourceHandler() {
-        this(S3Store.getDefault());
-    }
-
-    public ResourceHandler(Store store) {
-        super(store);
-        this.inCheck = new ResourceRequestCheckProcessor();
-        this.outCheck = new ResponseCheckProcessor();
-        this.storeProc = new ResourceStoreProcessor(store, new EventBus());
+    public ResourceHandler(ServerBackend backend) {
+        super(backend.store());
+        this.storeProc = new ResourceStoreProcessor(backend);
+        inCheck = backend.inValProc();
+        outCheck = backend.outValProc();
     }
 
     @Override
@@ -49,6 +42,11 @@ public class ResourceHandler extends GenericHandler {
     @Override
     public Response get(Request in) {
         Exchange ex = build(in);
+
+        // We don't allow direct editing of ACL for now
+        if (ex.getRequest().getTarget().getPath().endsWith(".acl") && !ex.getRequest().getSecurity().can(AclMode.Control)) {
+            throw new ForbiddenException("Direct ACL modification is not allowed");
+        }
 
         inCheck.get(ex);
         if (Objects.nonNull(ex.getResponse())) {
@@ -115,6 +113,11 @@ public class ResourceHandler extends GenericHandler {
     @Override
     public Response delete(Request in) {
         Exchange ex = build(in);
+
+        // We don't allow direct editing of ACL for now
+        if (ex.getRequest().getTarget().getPath().endsWith(".acl") && !ex.getRequest().getSecurity().can(AclMode.Control)) {
+            throw new ForbiddenException("Direct ACL modification is not allowed");
+        }
 
         inCheck.delete(ex);
         if (Objects.nonNull(ex.getResponse())) {

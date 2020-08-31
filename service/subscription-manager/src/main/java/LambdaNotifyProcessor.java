@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
+import io.yodata.ldp.solid.server.model.SolidServer;
 import io.yodata.ldp.solid.server.subscription.notify.Notifier;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -16,12 +18,15 @@ import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class LambdaNotifyProcessor extends Notifier implements RequestStreamHandler {
+public class LambdaNotifyProcessor implements RequestStreamHandler {
 
     private static final Logger log = LoggerFactory.getLogger(LambdaNotifyProcessor.class);
 
+    private final Notifier svc;
+
     public LambdaNotifyProcessor() {
-        super(S3Store.getDefault());
+        AmazonS3Config.register();
+        svc = new Notifier(new SolidServer(new AwsServerBackend()));
     }
 
     @Override
@@ -37,7 +42,7 @@ public class LambdaNotifyProcessor extends Notifier implements RequestStreamHand
     private void handleRequest(JsonObject obj) {
         if (!obj.has("Records")) { // This is not from SNS/SQS
             log.debug("This is a regular message");
-            handle(obj);
+            svc.handle(obj);
         } else {
             log.debug("Processing as wrapped messages");
             JsonArray records = obj.getAsJsonArray("Records");
@@ -46,11 +51,11 @@ public class LambdaNotifyProcessor extends Notifier implements RequestStreamHand
                 if (record.has("Sns")) {
                     String dataRaw = record.get("Sns").getAsJsonObject().get("Message").getAsString();
                     log.debug("SNS data: {}", dataRaw);
-                    handle(GsonUtil.parseObj(dataRaw));
+                    svc.handle(GsonUtil.parseObj(dataRaw));
                 } else if (record.has("body")) {
                     String body = record.getAsJsonPrimitive("body").getAsString();
                     log.debug("SQS data: {}", body);
-                    handle(GsonUtil.parseObj(body));
+                    svc.handle(GsonUtil.parseObj(body));
                 } else {
                     throw new IllegalArgumentException("This is not a SNS or SQS message, cannot process");
                 }

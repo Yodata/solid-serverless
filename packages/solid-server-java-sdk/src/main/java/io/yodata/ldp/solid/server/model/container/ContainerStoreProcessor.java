@@ -1,13 +1,11 @@
-package io.yodata.ldp.solid.server.aws.handler.container;
+package io.yodata.ldp.solid.server.model.container;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.model.Page;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
-import io.yodata.ldp.solid.server.model.Store;
-import io.yodata.ldp.solid.server.notification.EventBus;
+import io.yodata.ldp.solid.server.model.ServerBackend;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -15,12 +13,10 @@ import java.util.List;
 
 public class ContainerStoreProcessor {
 
-    protected Store store;
-    private EventBus evBus;
+    private final ServerBackend backend;
 
-    public ContainerStoreProcessor(Store store, EventBus evBus) {
-        this.store = store;
-        this.evBus = evBus;
+    public ContainerStoreProcessor(ServerBackend backend) {
+        this.backend = backend;
     }
 
     public Response get(Request request) {
@@ -32,7 +28,7 @@ public class ContainerStoreProcessor {
                 // FIXME turn into configuration value
                 .orElse(isTemporal);
 
-        Page p = store.getPage(
+        Page p = backend.store().getPage(
                 request.getTarget(),
                 request.getSingleParameter("by").orElse("token"),
                 request.getSingleParameter("from").orElse(""),
@@ -53,8 +49,8 @@ public class ContainerStoreProcessor {
     }
 
     public void post(Request in) {
-        store.post(in);
-        evBus.sendStoreEvent(in);
+        backend.store().post(in);
+        backend.eventBus().sendStoreEvent(in);
     }
 
 }
