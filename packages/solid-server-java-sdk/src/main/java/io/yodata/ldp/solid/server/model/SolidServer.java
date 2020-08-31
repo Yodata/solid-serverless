@@ -73,6 +73,7 @@ public class SolidServer {
         contentTypesAllowed.add(MimeTypes.APPLICATION_JSON);
         contentTypesAllowed.add(MimeTypes.APPLICATION_JSON_LD);
         contentTypesAllowed.add(MimeTypes.APPLICATION_YAML);
+        contentTypesAllowed.add(MimeTypes.APPLICATION_ZIP);
 
         try {
             contentTypesAllowed.addAll(Arrays.asList(StringUtils.split(IOUtils.resourceToString("/contentType/image.txt", StandardCharsets.UTF_8))));
