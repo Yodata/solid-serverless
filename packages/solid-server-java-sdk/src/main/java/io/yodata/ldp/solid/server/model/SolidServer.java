@@ -5,8 +5,14 @@ import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.container.ContainerHandler;
 import io.yodata.ldp.solid.server.model.resource.ResourceHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -14,6 +20,8 @@ import java.util.function.BiFunction;
 import static io.yodata.ldp.solid.server.config.Configs.DOM_BASE;
 
 public class SolidServer {
+
+    private static final Logger log = LoggerFactory.getLogger(SolidServer.class);
 
     public static final BiFunction<String, String, Boolean> DomainMatching = (full, base) -> {
         if (StringUtils.isAnyBlank(full, base)) {
@@ -65,6 +73,12 @@ public class SolidServer {
         contentTypesAllowed.add(MimeTypes.APPLICATION_JSON);
         contentTypesAllowed.add(MimeTypes.APPLICATION_JSON_LD);
         contentTypesAllowed.add(MimeTypes.APPLICATION_YAML);
+
+        try {
+            contentTypesAllowed.addAll(Arrays.asList(StringUtils.split(IOUtils.resourceToString("/contentType/image.txt", StandardCharsets.UTF_8))));
+        } catch (IOException e) {
+            log.error("Unable to load images content types", e);
+        }
     }
 
     public SecurityProcessor security() {
@@ -84,6 +98,12 @@ public class SolidServer {
     }
 
     private void validateContentType(Request in) {
+        // Only check if we are possibly receiving something
+        if (!StringUtils.equalsAny(in.getMethod(), "POST", "PUT", "PATCH")) {
+            return;
+        }
+
+        // Only check if there is an actual body
         if (!in.hasBody()) {
             return;
         }
