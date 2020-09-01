@@ -5,12 +5,14 @@ const normalize = require('./normalize-event')
 const checkScope = require('./check-scope')
 const applyPolicy = require('./apply-policy')
 const processContext = require('./process-context')
+const validateSchema = require('./validate-schema')
 
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
 	applyPolicy,
-	processContext
+	processContext,
+	validateSchema
 ]
 
 const handler = (event, fn) => {
