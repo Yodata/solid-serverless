@@ -28,7 +28,7 @@ const validateSchema = (data) => {
     })
 }
 const matchPath = (str = '', subStr) => str.includes(subStr);
-const isOkay = ({ request, hasData, object }) => ( request && (request.method.toLowerCase() == POST) && 
+const isOkay = ({ request, hasData, object }) => ( request && ((request.method || '').toLowerCase() == POST) && 
 				matchPath(request.url, path) && hasData && object && object.topic == topic);
 /**
  * checks event using event.scope, adds event.isAllowed {boolean}
