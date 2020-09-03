@@ -20,8 +20,6 @@
     "test": "AWS_PROFILE=solid npx jest --env node"
   },
   "devDependencies": {
-    "@types/aws-sdk": "^2.7.0",
-    "aws-sdk": "^2.608.0",
     "request": "2.88.2"
   }
 }
