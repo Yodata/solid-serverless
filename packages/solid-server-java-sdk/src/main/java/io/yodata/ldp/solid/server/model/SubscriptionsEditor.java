@@ -14,6 +14,13 @@ public class SubscriptionsEditor {
 
     public SubscriptionsEditor(JsonObject o) {
         raw = o;
+
+        // We check if we have version for the format. If not, we set it to the current default version
+        if (!raw.has("version")) {
+            raw.addProperty("version", "1");
+        }
+
+        // We ensure that the items key exists and is of valid format
         JsonElement el = raw.remove("items");
         if (Objects.isNull(el) || !el.isJsonArray()) {
             el = new JsonArray();
