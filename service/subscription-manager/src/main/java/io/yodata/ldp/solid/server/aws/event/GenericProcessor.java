@@ -62,7 +62,14 @@ public class GenericProcessor {
             return;
         }
 
-        URI subObj = URI.create(sub.getObject());
+        URI subObj;
+        try {
+            subObj = URI.create(sub.getObject());
+        } catch (IllegalArgumentException e) {
+            log.warn("Object \"{}\" is not a valid URI, skipping", sub.getObject());
+            return;
+        }
+
         String host = subObj.getHost();
         if (!StringUtils.isBlank(host)) {
             if (host.startsWith("*.")) {
