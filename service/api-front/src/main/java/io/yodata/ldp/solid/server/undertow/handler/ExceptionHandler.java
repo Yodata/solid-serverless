@@ -40,6 +40,9 @@ public class ExceptionHandler extends BasicHttpHandler {
             putHeader(exchange, CorsMethodsName, CorsMethodsValue);
             putHeader(exchange, CorsHeadersName, StringUtils.defaultIfBlank(exchange.getRequestHeaders().getFirst(CorsReqHeadName), "*"));
 
+            putHeader(exchange, "Cache-control", "no-store");
+            putHeader(exchange, "Pragma", "no-cache");
+
             h.handleRequest(exchange);
         } catch (IllegalArgumentException e) {
             writeBody(exchange, 400, GsonUtil.makeObj("error", e.getMessage()));
