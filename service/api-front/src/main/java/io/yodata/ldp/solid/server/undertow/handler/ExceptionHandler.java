@@ -21,8 +21,10 @@ public class ExceptionHandler extends BasicHttpHandler {
     private static final String CorsMethodsValue = "GET, POST, PUT, DELETE, OPTIONS";
     private static final String CorsHeadersName = "Access-Control-Allow-Headers";
     private static final String CorsHeadersValue = "*";
+    private static final String CorsCredName = "Access-Control-Allow-Credentials";
+    private static final String CorsReqHeadName = "Access-Control-Request-Headers";
 
-    private HttpHandler h;
+    private final HttpHandler h;
 
     public ExceptionHandler(HttpHandler h) {
         this.h = h;
@@ -34,9 +36,9 @@ public class ExceptionHandler extends BasicHttpHandler {
             log.info("HTTP Request {}: Start", exchange.hashCode());
 
             putHeader(exchange, CorsOriginName, StringUtils.defaultIfBlank(exchange.getRequestHeaders().getFirst("Origin"), "*"));
-            putHeader(exchange, "Access-Control-Allow-Credentials", "true");
+            putHeader(exchange, CorsCredName, "true");
             putHeader(exchange, CorsMethodsName, CorsMethodsValue);
-            putHeader(exchange, CorsHeadersName, StringUtils.defaultIfBlank(exchange.getRequestHeaders().getFirst("Access-Control-Request-Headers"), "*"));
+            putHeader(exchange, CorsHeadersName, StringUtils.defaultIfBlank(exchange.getRequestHeaders().getFirst(CorsReqHeadName), "*"));
 
             h.handleRequest(exchange);
         } catch (IllegalArgumentException e) {
