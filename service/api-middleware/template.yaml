@@ -18,7 +18,7 @@ Globals:
         APPLY_POLICY_FUNCTION_NAME: apply-policy
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
         SCHEMA_VALIDATOR_URL: 'https://9j5w6be6lk.execute-api.us-west-2.amazonaws.com/staging'
-
+        CREATE_BMS_CONTACT: 'https://r7uiqft7pf.execute-api.us-west-2.amazonaws.com/staging'
 Resources:
   ApiMiddlewareFn:
     Type: AWS::Serverless::Function

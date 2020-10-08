@@ -6,13 +6,14 @@ const checkScope = require('./check-scope')
 const applyPolicy = require('./apply-policy')
 const processContext = require('./process-context')
 const validateSchema = require('./validate-schema')
-
+const createBmsContact = require('./create-bms-contact')
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
 	applyPolicy,
 	processContext,
-	validateSchema
+	validateSchema,
+	createBmsContact
 ]
 
 const handler = (event, fn) => {
