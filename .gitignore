@@ -332,3 +332,8 @@ template-package.yaml
 
 # Config files
 solid-serverless.json
+
+# Architect (https://arc.codes) files can contain keys and other private information, don't put them in source control
+.arc-env
+/service/**/sam.json
+/service/**/sam.yaml
