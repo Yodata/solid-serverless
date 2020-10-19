@@ -6,15 +6,15 @@
   "author": "yodaveduran <dave@yodata.io>",
   "license": "MIT",
   "dependencies": {
-    "@yodata/solid-serverless-logger": "^0.0.3",
+    "@yodata/logger": "^2.0.9",
     "ajv": "^6.6.2",
-    "ajv-keywords": "^3.2.0"
+    "ajv-keywords": "^3.2.0",
+    "json-schema-ref-parser": "^9.0.6"
   },
   "scripts": {
-    "test": "jest"
+    "test": "npx jest --env node"
   },
   "devDependencies": {
-    "aws-sdk": "^2.382.0",
-    "jest": "^23.6.0"
+    "@types/jest": "^26.0.14"
   }
 }
