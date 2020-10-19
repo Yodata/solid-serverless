@@ -1,6 +1,7 @@
 # Solid Serverless
 
 ## Resources
+
 - [Developer guide](dev.md) **<-- START HERE**
 - [AWS Deployment guide](deploy/aws/README.md)
 
