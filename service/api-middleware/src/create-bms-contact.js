@@ -15,7 +15,7 @@ const createContact = async (event) => {
 }
 const matchPath = (url = '', subStr) => new URL(url).pathname == subStr
 const POST = 'post'
-const path = '/api/contact/create'
+const path = '/api/contact/create/'
 const isContactCreateRequest = ({ request }) => (
 	request
 	&& ((request.method || '').toLowerCase() == POST)
