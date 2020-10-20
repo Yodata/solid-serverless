@@ -18,13 +18,13 @@ const POST = 'post'
 const path = '/api/contact/create/'
 const isContactCreateRequest = ({ request }) => (
 	request
-	&& ((request.method || '').toLowerCase() == POST)
+	&& ((request.method || '').toLowerCase() === POST)
 	&& matchPath(request.url, path)
 )
 
 
 /**
- * checks event using event.scope, adds event.isAllowed {boolean}
+ * calls create-sfdc-cotact service if request is a post to /
  * @param {object} 	event
  * @param {object} 	event.object
  * @param {object} 	event.scope
@@ -36,17 +36,21 @@ const isContactCreateRequest = ({ request }) => (
 async function createBmsContact(event) {
 	if (isContactCreateRequest(event)) {
 		event.stage = 'response'
+		event.end = true
 		event.response = await createContact(event)
 			.then(response => {
+				let object = JSON.parse(response.body)
+				object.actionStatus = 'CompletedActionStatus'
+				event.object = object
+				Object
 				response.status = response.statusCode
 				return response
 			})
 			.catch(error => {
 				logger.error(error)
-				return {
-					status: 500,
-					statusCode: 500,
-					body: error.message
+				event.object = {
+					actionStatus: 'FailedActionStatus',
+					error: error.message
 				}
 			})
 	}
