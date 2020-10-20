@@ -34,26 +34,35 @@ const isContactCreateRequest = ({ request }) => (
  * @returns {Promise<object>}
  */
 async function createBmsContact(event) {
+	logger.debug('createbmscontact:received', event)
 	if (isContactCreateRequest(event)) {
 		event.stage = 'response'
-		event.end = true
-		event.response = await createContact(event)
-			.then(response => {
-				let object = JSON.parse(response.body)
-				object.actionStatus = 'CompletedActionStatus'
-				event.object = object
-				Object
+
+		await createContact(event)
+			.then((response = {}) => {
+				event.object = JSON.parse(response.body)
+				event.object.actionStatus = 'CompletedActionStatus'
 				response.status = response.statusCode
-				return response
+				event.response = response
 			})
 			.catch(error => {
-				logger.error(error)
-				event.object = {
+				event.object = Object.assign(event.object, {
 					actionStatus: 'FailedActionStatus',
-					error: error.message
+					error: {
+						message: error.message,
+						stack: error.stack
+					}
+				})
+				event.response = {
+					status: '500',
+					statusCode: 500,
+					headers: {
+						'content-type': 'application/json'
+					}
 				}
 			})
 	}
+	logger.debug('createbmscontact:result', event)
 	return event
 }
 
