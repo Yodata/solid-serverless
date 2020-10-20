@@ -1,6 +1,6 @@
 {
     "object": {
-        "type": "Test"
+        "type": "test"
     },
     "schema": {
         "properties": {
@@ -10,6 +10,5 @@
             }
         }
     },
-    "isValid": true,
-    "errors": null
+    "isValid": true
 }

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+aws s3 mb s3://solid-sandbox-create-sfdc-contact --profile solid-dev
+

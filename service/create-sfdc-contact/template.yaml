@@ -1,21 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  validate-schema
-  JSON schema validation microservice
+  create-sfdc-contact
+  stub
 
 Globals:
   Function:
-    Timeout: 5
-    Runtime: nodejs12.x
+    Timeout: 3
+    Runtime: nodejs8.10
     Environment:
       Variables:
         NODE_ENV: production
 
 Resources:
-  'ValidateSchemaFunction':
+  'ServiceFunction':
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: index.handler
-      FunctionName: 'validate-schema'
+      FunctionName: 'create-sfdc-contact'
