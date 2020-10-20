@@ -16,8 +16,8 @@ Globals:
         CHECK_SCOPE_FUNCTION_NAME: check-scope
         CREATE_VIEW_FUNCTION_NAME: create-view
         APPLY_POLICY_FUNCTION_NAME: apply-policy
-        CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
-        VALIDATE_SCHEMA_FUNCTION_NAME: staging-validate-schema
+        CREATE_SFDC_CONTACT_FUNCTION_NAME: create-sfdc-contact
+        VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
         SCHEMA_VALIDATOR_URL: 'https://9j5w6be6lk.execute-api.us-west-2.amazonaws.com/staging'
         CREATE_BMS_CONTACT: 'https://r7uiqft7pf.execute-api.us-west-2.amazonaws.com/staging'
