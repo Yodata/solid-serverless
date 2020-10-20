@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# . invoke [FunctionName] [EventPath]
+
+FunctionName=${1:-create-sfdc-contact}
+EventPath=${2:-src/example/event.json}
+
+sam local invoke $FunctionName -e $EventPath
