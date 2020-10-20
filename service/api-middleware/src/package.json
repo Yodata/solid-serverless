@@ -17,9 +17,7 @@
     "winston": "^3.2.1"
   },
   "scripts": {
-    "test": "AWS_PROFILE=solid npx jest --env node"
+    "test": "AWS_PROFILE=solid-dev npx jest --env node"
   },
-  "devDependencies": {
-    "request": "2.88.2"
-  }
+  "devDependencies": {}
 }

@@ -15,7 +15,6 @@ const getEnvValue = require('./lib/get-env-value')
 module.exports = async (event) => {
 	if (hasPolicy(event) && hasData(event)) {
 		const functionName = getEnvValue(event,'APPLY_POLICY_FUNCTION_NAME', 'apply-policy')
-
 		event.object = await invoke(functionName,event).then(response => response.object)
 		logger.debug('apply-policy:result', {event})
 	} else {
