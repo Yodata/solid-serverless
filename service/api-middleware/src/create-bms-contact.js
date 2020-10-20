@@ -40,7 +40,7 @@ async function createBmsContact(event) {
 
 		await createContact(event)
 			.then((response = {}) => {
-				event.object = JSON.parse(response.body)
+				event.object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
 				event.object.actionStatus = 'CompletedActionStatus'
 				response.status = response.statusCode
 				event.response = response
