@@ -23,6 +23,8 @@ const parseBody = (req) => {
  * @param {object}  [event.object]
  * @param {object}  [event.request]
  * @param {object}  [event.response]
+ *
+ * @returns {*} event.object
  */
 module.exports = (event) => {
 	logger.debug('get-event-data:received', { event })
