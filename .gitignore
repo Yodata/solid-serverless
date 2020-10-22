@@ -337,3 +337,4 @@ solid-serverless.json
 .arc-env
 /service/**/sam.json
 /service/**/sam.yaml
+.autoenv.zsh

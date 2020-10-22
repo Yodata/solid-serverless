@@ -4,7 +4,7 @@
   "description": "middleware for yodata/solid-serverless api",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest --env node"
+    "test": "npx jest --env node --runInBand --detectOpenHandles"
   },
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
   "license": "MIT",

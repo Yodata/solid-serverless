@@ -28,11 +28,11 @@ const callBmsTransaction = async event => {
 /**
  * checks event using event.scope, adds event.isAllowed {boolean}
  * @param {object} 	event
- * @param {object} 	event.object
- * @param {object} 	event.scope
- * @param {boolean}	event.isAllowed
+ * @param {string} 	event.stage
+ * @param {object}	event.request
  * @param {boolean}	event.hasData
- * @param {object}	[event.request]
+ * @param {object} 	event.object
+ * @param {object}	[event.isValid]
  * @param {object}	[event.response]
  * @returns {Promise<object>}
  */

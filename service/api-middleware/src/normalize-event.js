@@ -8,10 +8,12 @@ const hasData = require('./lib/request-has-data')
 
 /**
  * @typedef NormalizeEventResponse
- * @property {string}  stage
- * @property {boolean} hasData
- * @property {string}	 [contentType]
- * @property {object}	 [object]
+ * @property {object}  request - http.request
+ * @property {object}	 [response] - http.response
+ * @property {string}  stage - request | response
+ * @property {boolean} hasData - true if event has parsed data.object
+ * @property {string}	 contentType - mapi.contenttype
+ * @property {object}	 [object] - parsed event body
  */
 
 /**
@@ -23,6 +25,7 @@ const hasData = require('./lib/request-has-data')
  * @param {boolean} [event.hasData]
  * @param {string} 	[event.contentType]
  * @param {object} 	[event.object]
+ *
  * @returns {Promise<NormalizeEventResponse>}
  */
 module.exports = async (event) => {
@@ -38,8 +41,6 @@ module.exports = async (event) => {
 		event.contentType = getHeader(message, 'content-type')
 		event.object = getData(event)
 	}
-
-
 	logger.debug('normalize-event:result', { event })
 	return event
 }

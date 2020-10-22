@@ -50,8 +50,6 @@ describe('api-middleware.apply-policy', () => {
 		return expect(result.object).toHaveProperty('password', '[PASSWORD]')
 	})
 
-
-
 	test('empty policy returns event', async () => {
 		let event = require('../example/event')
 		let result
