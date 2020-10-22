@@ -7,13 +7,15 @@ const applyPolicy = require('./apply-policy')
 const processContext = require('./process-context')
 const validateSchema = require('./validate-schema')
 const createBmsContact = require('./create-bms-contact')
+const handlFranchiseTransactionReport = require('./handle-franchise-transactionreport')
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
 	applyPolicy,
 	processContext,
 	validateSchema,
-	createBmsContact
+	createBmsContact,
+	handlFranchiseTransactionReport
 ]
 
 const handler = (event, fn) => {
