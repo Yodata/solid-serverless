@@ -17,7 +17,7 @@ Globals:
         CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
         CREATE_VIEW_FUNCTION_NAME: create-view
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
-        LOG_LEVEL: debug
+        LOG_LEVEL: error
         VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
 
 Resources:
