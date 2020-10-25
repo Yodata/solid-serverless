@@ -1,0 +1,6 @@
+{
+    "effect": "Transform",
+    "processor": "Yodata",
+    "type": "DataPolicy",
+    "value": "{\"deleteme\":{\"@remove\":true}}"
+}

@@ -1,16 +1,16 @@
 const getPolicies = require('../get-policies')
 
 describe('get-policies unit tests', () => {
-	let event; let object; let policy; let PolicyRef; let InlinePolicy
+	let event; let object; let policy; let PolicyRef
 
 	beforeEach(() => {
-		InlinePolicy = {
-			processor: 'Yodata',
-			effect: 'Transform',
-			value: JSON.stringify({password: '$redact'})
-		}
+		// InlinePolicy = {
+		// 	processor: 'Yodata',
+		// 	effect: 'Transform',
+		// 	value: JSON.stringify({password: '$redact'})
+		// }
 		PolicyRef = {
-			RemotePolicy: 'https://dev.yodata.io/public/test/RemotePolicy.json'
+			RemotePolicy: 'https://dave.bhhs.dev.yodata.io/public/test/RemotePolicy.json'
 		}
 		policy = {}
 		object = {
@@ -44,4 +44,3 @@ describe('get-policies unit tests', () => {
 		})
 	})
 })
-

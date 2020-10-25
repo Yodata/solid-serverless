@@ -16,7 +16,7 @@ describe('data-policy-apply-policy', () => {
 				}
 			}
 		}
-		const result = await applyPolicy(event)
+		const result = await applyPolicy(event, {})
 		expect(result).toHaveProperty('object')
 		expect(result).toHaveProperty('policy')
 		expect(result.object).toHaveProperty('password','[PASSWORD]')
@@ -51,5 +51,5 @@ describe('data-policy-apply-policy', () => {
 		return expect(result.object[id]).toHaveProperty('password','[PASSWORD]')
 	})
 
-	
+
 })
