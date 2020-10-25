@@ -12,10 +12,10 @@ Globals:
     Environment:
       Variables:
         APPLY_POLICY_FUNCTION_NAME: apply-policy
-        BMS_TRANSACTION_FUNCTION_NAME: staging-bms-transaction
         CHECK_SCOPE_FUNCTION_NAME: check-scope
-        CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
         CREATE_VIEW_FUNCTION_NAME: create-view
+        BMS_TRANSACTION_FUNCTION_NAME: staging-bms-transaction
+        CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
         LOG_LEVEL: error
         VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
