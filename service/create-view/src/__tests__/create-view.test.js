@@ -46,7 +46,7 @@ describe('create-view', () => {
 				}
 			},
 			'scope': {
-				'realestate/contact#add': 'https://subscriber.dev.yodata.io/public/context/stage/testcontext.cdef.yaml'
+				'realestate/contact#add': 'https://dave.bhhs.dev.yodata.io/public/context/stage/testcontext.cdef.yaml'
 			}
 		}
 		const result = await createView(event)
@@ -56,7 +56,7 @@ describe('create-view', () => {
 
 	test('remote event.context', async () => {
 		const event = {
-			context: 'https://subscriber.dev.yodata.io/public/context/stage/testcontext.cdef.yaml',
+			context: 'https://dave.bhhs.dev.yodata.io/public/context/stage/testcontext.cdef.yaml',
 			object: { type: 'test' }
 		}
 		const result = await createView(event)

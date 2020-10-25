@@ -1,0 +1,5 @@
+$schema: 'https://realestate.yodata.me/context/v1/schema.yaml'
+id: 'https://dave.bhhs.dev.yodata.io/public/context/stage/testcontext.cdef.yaml'
+'@view':
+  type: data.object.type
+  name: '"TEST_CONTEXT_WAS_HERE"'

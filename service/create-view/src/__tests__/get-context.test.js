@@ -1,7 +1,7 @@
 const { getContext, Context, plugin } = require('@yodata/transform')
 
 test('get-context', async () => {
-	const url = 'https://subscriber.dev.yodata.io/public/context/stage/testcontext.cdef.yaml'
+	const url = 'https://dave.bhhs.dev.yodata.io/public/context/stage/testcontext.cdef.yaml'
 	const ctx = await getContext(url)
 	ctx.use(plugin.defaultValues)
 	expect(ctx).toBeInstanceOf(Context)

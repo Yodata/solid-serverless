@@ -6,17 +6,15 @@
   "author": "yodaveduran <dave@yodata.io>",
   "license": "MIT",
   "dependencies": {
-    "@yodata/logger": "^1.5.0",
-    "@yodata/transform": "^1.6.1",
-    "@yodata/transform-plugin-view": "^1.6.5",
-    "got": "^9.6.0",
+    "@yodata/logger": "^2.0.9",
+    "@yodata/transform": "^1.6.6",
+    "@yodata/transform-plugin-view": "^1.6.12",
+    "got": "^11.8.0",
     "js-yaml": "^3.14.0",
-    "lodash": "^4.17.19"
+    "lodash": "^4.17.20"
   },
   "scripts": {
-    "test": "jest"
+    "test": "npx jest --env node"
   },
-  "devDependencies": {
-    "jest": "^24.1.0"
-  }
+  "devDependencies": {}
 }
