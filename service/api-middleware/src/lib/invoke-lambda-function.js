@@ -19,6 +19,7 @@ const invokeLambdaFunction = async (FunctionName, event, lambdaConfig) => {
 	const lambda = new Lambda(config)
 	const Payload = stringify(event)
 	const lambdaResponse = await lambda.invoke({ FunctionName, Payload }).promise()
+	logger.debug(`INVOKE${FunctionName}:RESPONSE`, { lambdaResponse })
 	if (functionError(lambdaResponse)) {
 		let message = lambdaResponse.Payload.toString()
 		let name = `INVOKE_ERROR:${FunctionName}`

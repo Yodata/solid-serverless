@@ -5,23 +5,21 @@ Description: solid-serverless api
 Globals:
   Function:
     Timeout: 30
-    Runtime: nodejs10.x
+    Runtime: nodejs12.x
     Tags:
       app: solid-serverless
       component: api-middleware
     Environment:
       Variables:
-        DEBUG_LEVEL: debug
-        NODE_ENV: production
-        CHECK_SCOPE_FUNCTION_NAME: check-scope
-        CREATE_VIEW_FUNCTION_NAME: create-view
         APPLY_POLICY_FUNCTION_NAME: apply-policy
-        CREATE_SFDC_CONTACT_FUNCTION_NAME: create-sfdc-contact
         BMS_TRANSACTION_FUNCTION_NAME: staging-bms-transaction
-        VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
+        CHECK_SCOPE_FUNCTION_NAME: check-scope
+        CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
+        CREATE_VIEW_FUNCTION_NAME: create-view
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
-        SCHEMA_VALIDATOR_URL: 'https://9j5w6be6lk.execute-api.us-west-2.amazonaws.com/staging'
-        CREATE_BMS_CONTACT: 'https://r7uiqft7pf.execute-api.us-west-2.amazonaws.com/staging'
+        LOG_LEVEL: debug
+        VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
+
 Resources:
   ApiMiddlewareFn:
     Type: AWS::Serverless::Function
