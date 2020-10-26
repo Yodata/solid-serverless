@@ -1,2 +1,2 @@
-const logger = require('@yodata/logger').defaultLogger
+const logger = require('@yodata/logger')
 module.exports = logger

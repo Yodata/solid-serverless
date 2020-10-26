@@ -1,4 +1,4 @@
-const LambdaTester = require('lambda-tester')
+
 const createView = require('../create-view')
 
 describe('check-scope', () => {

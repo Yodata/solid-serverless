@@ -1,4 +1,3 @@
-const LambdaTester = require('lambda-tester')
 const checkScope = require('../check-scope')
 
 describe('check-scope', () => {
