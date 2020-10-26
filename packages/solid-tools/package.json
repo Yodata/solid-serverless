@@ -1,6 +1,6 @@
 {
   "name": "@yodata/solid-tools",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "SDKs and utilities for working with solid server pods (alpha) ",
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
   "homepage": "https://github.com/Yodata/solid-serverless/tree/master/packages/solid-tools#readme",
@@ -26,7 +26,6 @@
   "bugs": {
     "url": "https://github.com/Yodata/solid-serverless/issues"
   },
-  "devDependencies": {},
   "dependencies": {
     "got": "^11.8.0",
     "mingo": "^3.1.0"
