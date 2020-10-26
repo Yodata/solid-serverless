@@ -1,14 +1,5 @@
-// @ts-check
 
-const winston = require('winston')
-
-const format = winston.format.combine(
-	winston.format.simple()
-)
-
-const transports = [
-	new winston.transports.Console()
-]
+const logger = require('@yodata/logger')
 
 const defaultLogLevel = () => {
 	let level
@@ -24,12 +15,16 @@ const defaultLogLevel = () => {
 	}
 	return level
 }
+const level = process.env.LOG_LEVEL || defaultLogLevel()
 
-const level = process.env.DEBUG_LEVEL || defaultLogLevel()
+logger.defaultLogger = logger
+logger.createLogger = () => logger.createLogger(console.log, level)
+logger.format = {
+	default: props => props
+}
+logger.transports = {
+	default: props => props
+}
 
-const defaultOptions = {format, transports, level}
 
-exports.defaultLogger = winston.createLogger(defaultOptions)
-exports.createLogger = options => winston.createLogger(Object.assign({},defaultOptions,options))
-exports.format = winston.format
-exports.transports = winston.transports
+module.exports = logger
