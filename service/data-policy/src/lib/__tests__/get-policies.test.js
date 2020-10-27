@@ -27,7 +27,7 @@ describe('get-policies unit tests', () => {
 		event.policy = {local, global}
 		const arrayOfPolicies = [{type: 'LocalPolicy'}, {type: 'GlobalPolicy'}]
 		const response = await getPolicies(event)
-		expect(response).toEqual(arrayOfPolicies)
+		return expect(response).toEqual(arrayOfPolicies)
 	})
 
 	test('fetches remote policies', async () => {

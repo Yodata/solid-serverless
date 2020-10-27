@@ -7,12 +7,13 @@
   "license": "MIT",
   "dependencies": {
     "@yodata/logger": "^2.0.9",
-    "@yodata/solid-tools": "0.0.9",
+    "@yodata/solid-tools": "0.0.10",
     "@yodata/transform": "^1.6.6",
     "p-iteration": "^1.1.7"
   },
   "scripts": {
-    "test": "npx jest --env node"
+    "install": "npm ci --production",
+    "test": "npx jest --env node ."
   },
   "devDependencies": {}
 }
