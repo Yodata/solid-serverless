@@ -1,5 +1,22 @@
 {
     "Payload": {
-        "type": "create-sfdc-contactResponse"
+        "type": "CreateAction",
+        "object": {
+            "type": "RealEstateAgent",
+            "id": "https://103977125.rl.hsfaffiliates.com/profile/card#me",
+            "additionalProperty": {
+                "OfficeID": "CA301-001",
+                "EmployeeTitle": "Sales Associate",
+                "EmployeeType": "Part Time Sales Professional",
+                "Status": "Active"
+            },
+            "identifier": {
+                "ContactID": "103977125"
+            },
+            "sameAs": {
+                "bmsID": "4323"
+            }
+        },
+        "actionStatus": "CompletedActionStatus"
     }
 }
