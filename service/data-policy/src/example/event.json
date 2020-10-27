@@ -13,7 +13,7 @@
             }
         },
         "global": {
-            "DeleteMe": "https://dev.yodata.io/public/test/RemotePolicy.json"
+            "DeleteMe": "https://dev.bhhs.yodata.io/public/test/RemotePolicy.json"
         }
     }
 }
