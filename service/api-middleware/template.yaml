@@ -30,3 +30,9 @@ Resources:
       AutoPublishAlias: next
     Policies:
       - AWSLambdaExecute
+      - Statement:
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource:
+            Ref: "*"
