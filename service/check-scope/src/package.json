@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@yodata/logger": "^2.0.9",
-    "@yodata/solid-tools": "0.0.9",
+    "@yodata/solid-tools": "0.0.10",
     "p-iteration": "^1.1.7"
   },
   "devDependencies": {}
