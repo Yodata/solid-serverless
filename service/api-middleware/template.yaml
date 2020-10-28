@@ -27,7 +27,7 @@ Resources:
       CodeUri: src/
       Handler: index.handler
       FunctionName: api-middleware
-      AutoPublishAlias: next
+      AutoPublishAlias: PreviousVersion
     Policies:
       - AWSLambdaExecute
       - Statement:

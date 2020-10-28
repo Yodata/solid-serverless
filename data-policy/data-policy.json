@@ -3,7 +3,7 @@
 		"effect": "Transform",
 		"processor": "Yodata",
 		"type": "DataPolicy",
-		"value": "{\"goLiveDate\":{\"@remove\":true}}"
+		"value": "{\"goLiveDate\":{\"@redact\":true}}"
 	},
 	"removeoriginalaffiliationdate": {
 		"effect": "Transform",

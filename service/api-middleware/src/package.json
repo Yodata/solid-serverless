@@ -21,6 +21,6 @@
     "type-is": "^1.6.18"
   },
   "scripts": {
-    "test": "npx jest --env node"
+    "test": "npx jest --env node ."
   }
 }
