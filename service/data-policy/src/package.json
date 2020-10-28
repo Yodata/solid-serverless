@@ -12,7 +12,6 @@
     "p-iteration": "^1.1.7"
   },
   "scripts": {
-    "install": "npm ci --production",
     "test": "npx jest --env node ."
   },
   "devDependencies": {}
