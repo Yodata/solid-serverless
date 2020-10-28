@@ -36,7 +36,7 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
 
     protected Response process(Exchange ex) {
         if (!StringUtils.startsWith(ex.getResponse().getContentType(), MimeTypes.APPLICATION_JSON)) {
-            log.debug("Response is not of Content-Type {}, skipping middleware", MimeTypes.APPLICATION_JSON);
+            log.info("Response of Content-Type {} and not {}, skipping middleware", ex.getResponse().getContentType(), MimeTypes.APPLICATION_JSON);
             return ex.getResponse();
         }
 

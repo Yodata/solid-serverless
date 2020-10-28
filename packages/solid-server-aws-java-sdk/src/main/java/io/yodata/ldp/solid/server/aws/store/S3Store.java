@@ -390,7 +390,7 @@ public class S3Store extends EntityBasedStore {
             obj.getObjectContent().close();
 
             Response r = new Response();
-            r.getHeaders().put(Headers.CONTENT_TYPE, obj.getObjectMetadata().getContentType());
+            r.setContentType(obj.getObjectMetadata().getContentType());
             r.getHeaders().put(Headers.CONTENT_LENGTH, Long.toString(obj.getObjectMetadata().getContentLength()));
             r.setBody(data);
 
