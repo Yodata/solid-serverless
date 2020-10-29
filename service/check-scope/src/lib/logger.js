@@ -1,2 +1,2 @@
-const logger = require('@yodata/solid-serverless-logger').defaultLogger
+const logger = require('@yodata/logger')
 module.exports = logger

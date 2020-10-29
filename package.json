@@ -26,11 +26,11 @@
   "devDependencies": {
     "@types/jest": "^26.0.15",
     "@types/typescript": "^2.0.0",
-    "aws-sdk": "^2.776.0",
-    "eslint": "^7.11.0",
+    "aws-sdk": "^2.779.0",
+    "eslint": "^7.12.0",
     "eslint-plugin-jest": "^24.1.0",
     "inquirer": "^7.3.3",
-    "jest": "^26.6.0",
+    "jest": "^26.6.1",
     "lerna": "^3.8.0",
     "typescript": "^3.9.7"
   },

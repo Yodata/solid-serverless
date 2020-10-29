@@ -8,10 +8,7 @@ const invokeLambdaFunction = require('./lib/invoke-lambda-function')
 const createContact = async (event) => {
 	const stage = getEnvValue(event, 'NODE_ENV', 'staging')
 	const functionName = getEnvValue(event, 'CREATE_SFDC_CONTACT_FUNCTION_NAME', `${stage}-create-sfdc-contact`)
-	return invokeLambdaFunction(functionName, {
-		headers: { 'Content-Type': 'application/json' },
-		body: event.object
-	})
+	return invokeLambdaFunction(functionName, event.object)
 }
 const matchPath = (url = '', subStr) => new URL(url).pathname == subStr
 const POST = 'post'
@@ -24,7 +21,7 @@ const isContactCreateRequest = ({ request }) => (
 
 
 /**
- * calls create-sfdc-cotact service if request is a post to /
+ * calls create-sfdc-cotact service if request is a post to /api/contact/create/
  * @param {object} 	event
  * @param {object} 	event.object
  * @param {object} 	event.scope
@@ -34,16 +31,21 @@ const isContactCreateRequest = ({ request }) => (
  * @returns {Promise<object>}
  */
 async function createBmsContact(event) {
-	logger.debug('createbmscontact:received', event)
 	if (isContactCreateRequest(event)) {
-		event.stage = 'response'
-
+		logger.debug('createbmscontact:received', event)
 		await createContact(event)
 			.then((response = {}) => {
-				event.object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
-				event.object.actionStatus = 'CompletedActionStatus'
-				response.status = response.statusCode
-				event.response = response
+				event.object = response
+				let { actionStatus, error } = response
+				let status = (error || actionStatus === 'FailedActionStatus') ? 400 : 201
+				event.response = {
+					status,
+					statusCode: String(status),
+					headers: {
+						'content-type': 'application/json'
+					},
+					end: true
+				}
 			})
 			.catch(error => {
 				event.object = Object.assign(event.object, {
@@ -56,13 +58,11 @@ async function createBmsContact(event) {
 				event.response = {
 					status: '500',
 					statusCode: 500,
-					headers: {
-						'content-type': 'application/json'
-					}
+					end: true
 				}
 			})
+		logger.debug('createbmscontact:result', event)
 	}
-	logger.debug('createbmscontact:result', event)
 	return event
 }
 

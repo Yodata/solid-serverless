@@ -1,0 +1,9 @@
+{
+	"effect": "Allow",
+	"processor": "Mingo",
+	"condition": {
+		"object": {
+			"type": "cat"
+		}
+	}
+}

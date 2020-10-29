@@ -1,4 +1,4 @@
-const {transform} = require('lodash')
+const transform = require('lodash.transform')
 
 /**
  * Transform httpMessage.rawHeaders -> headers

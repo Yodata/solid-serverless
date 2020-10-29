@@ -2,7 +2,7 @@
 
 const logger = require('./lib/logger')
 const client = require('./lib/solid-client')
-const entries = require('lodash/entries')
+const entries = Object.entries
 const {map} = require('p-iteration')
 
 /**

@@ -12,7 +12,7 @@ const {reduce} = require('p-iteration')
  * @param {object} event.policy - from pod:settings/yodata/data-policies.json
  * @returns {Promise<object>} - the event with object transformed
  */
-module.exports = async function ApplyDataPolicies(event, context) {
+module.exports = async function ApplyDataPolicies(event) {
 	if (hasPolicy(event)) {
 		const policySet = await getPolicies(event)
 		event.object = await reduce(policySet, applyPolicy, event.object)

@@ -7,17 +7,12 @@
   "license": "MIT",
   "dependencies": {
     "@yodata/logger": "^2.0.9",
-    "@yodata/solid-tools": "^0.0.6",
-    "@yodata/transform": "^0.2.20",
-    "kind-of": "^6.0.3",
-    "lodash": "^4.17.20",
+    "@yodata/solid-tools": "0.0.10",
+    "@yodata/transform": "^1.6.6",
     "p-iteration": "^1.1.7"
   },
   "scripts": {
-    "test": "jest"
+    "test": "npx jest --env node ."
   },
-  "devDependencies": {
-    "@types/jest": "^23.3.11",
-    "jest": "^23.6.0"
-  }
+  "devDependencies": {}
 }

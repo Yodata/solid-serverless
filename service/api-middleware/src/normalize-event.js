@@ -13,17 +13,19 @@ const hasData = require('./lib/request-has-data')
  * @property {string}  stage - request | response
  * @property {boolean} hasData - true if event has parsed data.object
  * @property {string}	 contentType - mapi.contenttype
+ * @property {object}  event.headers
  * @property {object}	 [object] - parsed event body
  */
 
 /**
  * normalize event.request and response
  * @param {object} 	event
+ * @param {object}  event.headers
  * @param {object} 	event.request - http request object
  * @param {object}	[event.response] http response object
- * @param {string} 	[event.stage] - request | response
- * @param {boolean} [event.hasData]
- * @param {string} 	[event.contentType]
+ * @param {string} 	event.stage - request | response
+ * @param {boolean} event.hasData
+ * @param {string} 	event.contentType
  * @param {object} 	[event.object]
  *
  * @returns {Promise<NormalizeEventResponse>}

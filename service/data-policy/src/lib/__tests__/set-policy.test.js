@@ -4,7 +4,7 @@ describe('set-policy', () => {
 	let oldEnv
 	beforeAll(() => {
 		oldEnv = process.env
-		process.env.DOMAIN = 'dev.yodata.io'
+		process.env.DOMAIN = 'bhhs.dev.yodata.io'
 	})
 	afterAll(() => {
 		process.env = oldEnv

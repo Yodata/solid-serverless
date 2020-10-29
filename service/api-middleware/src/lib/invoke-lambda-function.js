@@ -1,5 +1,6 @@
 // @ts-check
-const {Lambda} = require('aws-sdk')
+const logger = require('./logger')
+const { Lambda } = require('aws-sdk')
 const stringify = require('fast-safe-stringify').default
 
 const defaultLambdaConfig = {
@@ -17,15 +18,20 @@ const invokeLambdaFunction = async (FunctionName, event, lambdaConfig) => {
 	const config = Object.assign(defaultLambdaConfig, lambdaConfig)
 	const lambda = new Lambda(config)
 	const Payload = stringify(event)
-	const lambdaResponse = await lambda.invoke({FunctionName, Payload}).promise()
+	const lambdaResponse = await lambda.invoke({ FunctionName, Payload }).promise()
+	logger.debug(`INVOKE${FunctionName}:RESPONSE`, { lambdaResponse })
 	if (functionError(lambdaResponse)) {
 		let message = lambdaResponse.Payload.toString()
-		let error = new Error(message)
-		error.name = `INVOKE_ERROR:${FunctionName}`
-		throw error
+		let name = `INVOKE_ERROR:${FunctionName}`
+		logger.error({ name, message })
+		throw new Error(name)
 	} else {
 		let payload = lambdaResponse.Payload.toString()
-		return JSON.parse(payload)
+		try {
+			return JSON.parse(payload)
+		} catch (e) {
+			return payload
+		}
 	}
 }
 

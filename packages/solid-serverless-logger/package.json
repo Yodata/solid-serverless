@@ -1,7 +1,7 @@
 {
   "name": "@yodata/solid-serverless-logger",
-  "version": "0.0.8",
-  "description": "winston logger for solid-serverless components",
+  "version": "0.0.10",
+  "description": "basic-logger",
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
   "homepage": "https://github.com/Yodata/solid-serverless/tree/master/packages/solid-serverless-logger#readme",
   "license": "MIT",
@@ -26,10 +26,6 @@
     "url": "https://github.com/Yodata/solid-serverless/issues"
   },
   "dependencies": {
-    "winston": "^3.1.0"
-  },
-  "devDependencies": {
-    "eslint": "^5.11.1",
-    "eslint-plugin-jest": "^22.1.2"
+    "@yodata/logger": "^2.0.9"
   }
 }
