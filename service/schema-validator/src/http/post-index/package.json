@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@architect/functions": "^3.12.3",
-    "ajv": "^6.12.4",
+    "@architect/functions": "^3.13.4",
+    "ajv": "^6.12.6",
     "json-schema-ref-parser": "^9.0.6"
   }
 }

@@ -1,0 +1,10 @@
+{
+  "type": "test",
+  "description": "this object had two fields that should have policies applied, additionalProperty.originalAffiliationDate and additionalProperty.",
+  "additionalProperties": {
+    "originalAffiliationDate": "2020-10-21T19:49:01Z"
+  },
+  "goLiveDate": "fuck",
+  "@id": "https://dave.bhhs.dev.yodata.io/public/test-data-policy.json",
+  "id": "https://dave.bhhs.dev.yodata.io/public/test-data-policy.json"
+}

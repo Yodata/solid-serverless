@@ -36,11 +36,6 @@ describe('get-policies unit tests', () => {
 		const response = await getPolicies(event)
 		expect(response).toBeInstanceOf(Array)
 		expect(response.length).toEqual(1)
-		return expect(response[0]).toEqual({
-			effect: 'Transform',
-			processor: 'Yodata',
-			type: 'DataPolicy',
-			value: '{"deleteme":{"@remove":true}}'
-		})
+		return expect(response[0]).toHaveProperty('type', 'DataPolicy')
 	})
 })

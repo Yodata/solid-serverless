@@ -10,13 +10,8 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@architect/functions": "^3.12.3",
-    "@architect/architect": "6.5.5",
-    "ajv": "^6.12.4",
-    "aws-sdk": "^2.738.0",
-    "json-schema-ref-parser": "^9.0.6",
-    "mocha": "^8.1.1",
+  "dependencies": {},
+  "devDependencies": {
     "request": "^2.88.2"
   }
 }
