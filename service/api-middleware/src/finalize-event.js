@@ -2,7 +2,7 @@
 
 const logger = require('./lib/logger')
 const getHeader = require('./lib/get-header-value')
-const mimetype = require('type-is')
+// const mimetype = require('type-is')
 
 const encode = (data) => Buffer.from(JSON.stringify(data)).toString('base64')
 
@@ -10,18 +10,14 @@ module.exports = (event) => {
 	if (event.hasData && event.object) {
 		let stage = event.response ? 'response' : 'request'
 		const req = event[ stage ]
-		const contentType = getHeader(req, 'content-type')
-		switch (mimetype.is(contentType, [ 'json', '+json' ])) {
-		case 'json':
-		case 'application/ld+json':
+		const contentType = getHeader(req, 'content-type', event.contentType)
+		if (String(contentType).includes('json')) {
 			req.body = encode(event.object)
 			req.isBase64Encoded = true
-			break
-		default:
-			logger.error(`UNRECOGNIZED_CONTENT-TYPE:${contentType}`)
-
+		} else {
+			const message = 'MISSING_HEADER_CONTENT_TYPE'
+			logger.error(message, event)
 		}
 	}
-	logger.debug('finalize-event.object', { event })
 	return event
 }

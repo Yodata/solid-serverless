@@ -2,7 +2,6 @@ const arc = require('@architect/functions')
 const Ajv = require('ajv')
 const schemaParser = require('json-schema-ref-parser')
 const buildResponse = (statusCode, body) => {
-	console.log(JSON.stringify(body))
 	return { statusCode, body }
 }
 const parseBody = (request, res, next) => {
@@ -15,7 +14,6 @@ const route = async (req, res) => {
 		const dRef = await schemaParser.dereference(schemaURL)
 		// @ts-ignore
 		const { payload: jsonSchema = dRef } = dRef
-		console.log(JSON.stringify(jsonSchema))
 		const ajv = new Ajv({ schemaId: 'auto' })
 		const result = ajv.validate(jsonSchema, event)
 		const response = Object.assign(event, {

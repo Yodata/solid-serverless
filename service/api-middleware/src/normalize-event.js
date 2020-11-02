@@ -4,7 +4,7 @@ const logger = require('./lib/logger')
 const getHeaders = require('./lib/get-headers')
 const getHeader = require('./lib/get-header-value')
 const getData = require('./lib/get-event-data')
-const hasData = require('./lib/request-has-data')
+const requestHasData = require('./lib/request-has-data')
 
 /**
  * @typedef NormalizeEventResponse
@@ -33,16 +33,18 @@ const hasData = require('./lib/request-has-data')
 module.exports = async (event) => {
 	// set event.stage = request|response
 	event.stage = event.response ? 'response' : 'request'
-	const message = event[event.stage]
+	const message = event[ event.stage ]
 	// normalize headers
 	if (message && !message.headers && message.rawHeaders) {
 		message.headers = getHeaders(message)
 	}
-	event.hasData = hasData(message)
+	event.hasData = requestHasData(message)
+	message.hasData = requestHasData(message)
 	if (event.hasData) {
 		event.contentType = getHeader(message, 'content-type')
+		message.contentType = event.contentType
 		event.object = getData(event)
+		message.object = event.object
 	}
-	logger.debug('normalize-event:result', { event })
 	return event
 }

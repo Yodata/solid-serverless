@@ -7,9 +7,10 @@ const events = {
 	'realestate/franchise#transactionreport': transactionreport
 }
 
-const topics = {
-	'realestate/franchise#transactionreport': 'realestate/franchise#transactionreport'
-}
+// const topics = {
+// 	'realestate/franchise#transactionreport': 'realestate/franchise#transactionreport'
+// }
+
 const schemas = {
 	'realestate/franchise#transactionreport': 'https://raw.githubusercontent.com/Yodata/real-estate/master/www/schemas/franchise/franchise.transactionreport.yaml'
 }
@@ -32,9 +33,5 @@ test('transaction.report ', async () => {
 	let topic = 'realestate/franchise#transactionreport'
 	let schema = schemas[ topic ]
 	const result = await handler({ object: transactionreport, schema })
-	if (!result.isValid) {
-		console.error(result.errors)
-	}
 	return expect(result).toHaveProperty('isValid', true)
-
 })

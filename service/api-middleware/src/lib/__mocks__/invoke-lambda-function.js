@@ -6,13 +6,14 @@
  * @param {object} [lambdaConfig] - Aws.Lambda.InvokeParams
  * @returns {Promise<object>} returns the InvokeResponse.Payload
  */
-const invokeLambdaFunction = async (FunctionName, event, lambdaConfig = {}) => {
+async function invokeLambdaFunction(FunctionName, event, lambdaConfig = {}) {
+
 	const { error, response } = lambdaConfig
 	if (error) {
-		throw new Error(error)
+		return Promise.reject({error})
 	}
-	return response ? response : event
+	return Promise.resolve(response || event)
 }
 
 
-module.exports = invokeLambdaFunction
+module.exports = jest.fn(invokeLambdaFunction)

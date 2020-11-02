@@ -34,3 +34,9 @@ test('no body = false', () => {
 	delete request.body
 	expect(hasData(request)).toBe(false)
 })
+
+test('empty body = false', () => {
+	const request = createRequest('application/x-yaml')
+	request.body = ''
+	expect(hasData(request)).toBe(false)
+})

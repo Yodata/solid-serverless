@@ -6,6 +6,12 @@ module.exports = {
 				'application/json'
 			]
 		},
+		target: {
+			id: 'https://dave.bhhs.dev.yodata.io/public/yodata/data-policy.json',
+			host: 'dave.bhhs.dev.yodata.io',
+			path: '/public/yodata/data-policy.json',
+			accessType: 'Read'
+		},
 		'body': ''
 	},
 	'response': {

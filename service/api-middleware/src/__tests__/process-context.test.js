@@ -1,5 +1,7 @@
 /* eslint-disable no-undef */
 
+jest.mock('../lib/invoke-lambda-function.js')
+const invokeLambdaFunction = require('../lib/invoke-lambda-function.js')
 const processContext = require('../process-context')
 
 describe('api-middleware.process-context', () => {
@@ -20,16 +22,12 @@ describe('api-middleware.process-context', () => {
 	test('if context, apply it', async () => {
 		const event = require('../example/process-context-event')
 		const eventData = require('../example/process-context-data')
-
 		expect(event).toHaveProperty('hasData', true)
 		expect(event).toHaveProperty('object', eventData)
 		expect(event).toHaveProperty('stage', 'request')
-		const result = await processContext(event)
-		expect(result).toHaveProperty('request')
-		expect(result).toHaveProperty('hasData', true)
-		expect(result).toHaveProperty('stage', 'request')
-		expect(result).toHaveProperty('object')
-		expect(result).toHaveProperty('object.recipient')
+		return processContext(event).then(() => {
+			return expect(invokeLambdaFunction).toHaveBeenCalledTimes(1)
+		})
 	})
 
 	test('content-type with no object does not crash', async () => {
@@ -47,6 +45,7 @@ describe('api-middleware.process-context', () => {
 			scope: [],
 			policy: []
 		}
+		// @ts-ignore
 		return expect(processContext(event)).resolves.toEqual(event)
 	})
 

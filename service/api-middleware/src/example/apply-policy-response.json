@@ -1,4 +1,6 @@
 {
+
+
     "policy": {
         "local": {
             "RedactPassword": {

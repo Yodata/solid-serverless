@@ -1,57 +1,33 @@
+// @ts-nocheck
+
 /* eslint-disable no-undef */
-const handler = require('..').handler
-const getData = require('../lib/get-event-data')
+jest.mock('../process-request.js')
+const { handler } = require('../index')
 
-test('returns a Promise', async () => {
-	expect(handler).toBeInstanceOf(Function)
-	const event = require('../example/response')
-	const response = handler(event, {})
-	return expect(response).toBeInstanceOf(Promise)
-})
+describe('index.handler', () => {
+	let pr
 
-test('example event/response', async () => {
-	expect.assertions(1)
-	const event = require('../example/event')
-	const response = require('../example/response')
-	return expect(handler(event, {})).resolves.toEqual(response)
-})
+	beforeEach(() => {
+		pr = require('../process-request')
+	})
 
-test('parses uri object keys', async () => {
-	expect.assertions(1)
-	const event = require('../example/test-event')
-	const data = getData(event)
-	const response = await handler(event, {})
-	return expect(response.object).toEqual(data)
-})
 
-test('get request with content-type header', async () => {
-	const event = module.exports = {
-		'request': {
-			'method': 'GET',
-			'headers': {
-				'Content-Type': [
-					'application/json'
-				]
-			},
-			'body': ''
-		},
-		'scope': [],
-		'policy': []
-	}
-	const result = await handler(event, {})
-	return expect(result).toHaveProperty('hasData', false)
-})
+	test('returns a Promise', async () => {
+		expect(handler).toBeInstanceOf(Function)
+		const event = require('../example/response')
+		const response = handler(event, {})
+		return expect(response).toBeInstanceOf(Promise)
+	})
 
-test('content-type with no object does not crash', async () => {
-	const event = {
-		'request': {
-			'method': 'GET',
-			'url': 'https://dave.dev.yodata.io/public/',
-			'body': '',
-			'isBase64Encoded': true
-		},
-		'scope': [],
-		'policy': {}
-	}
-	return expect(handler(event, {})).resolves.toEqual(event)
+	test('calls process request', async () => {
+		const event = require('../example/event')
+		const id = Date.now()
+		event.id = id
+		expect.assertions(2)
+		return handler(event).then(res => {
+			expect(res).toHaveProperty('id', id)
+			expect(pr).toHaveBeenCalledWith(event)
+		})
+	})
+
 })
