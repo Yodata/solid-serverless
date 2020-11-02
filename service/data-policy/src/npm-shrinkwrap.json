@@ -694,6 +694,14 @@
         "pump": "^3.0.0"
       }
     },
+    "get-value": {
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/get-value/-/get-value-3.0.1.tgz",
+      "integrity": "sha512-mKZj9JLQrwMBtj5wxi6MH8Z5eSKaERpAwjg43dPtlGI1ZVEgH/qC7T8/6R2OBSUA+zzHBZgICsVJaEIV2tKTDA==",
+      "requires": {
+        "isobject": "^3.0.1"
+      }
+    },
     "glob-parent": {
       "version": "5.1.1",
       "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.1.tgz",
@@ -798,6 +806,11 @@
       "requires": {
         "is-docker": "^2.0.0"
       }
+    },
+    "isobject": {
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/isobject/-/isobject-3.0.1.tgz",
+      "integrity": "sha1-TkMekrEalzFjaqH5yNHMvP2reN8="
     },
     "js-yaml": {
       "version": "3.14.0",

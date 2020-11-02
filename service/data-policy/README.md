@@ -1,6 +1,6 @@
-# lambda-service
+# data-policy service
 
-what does it do?
+manage and applies data policies to events
 
 ```bash
 .
@@ -64,6 +64,65 @@ Next, the following command will create a Cloudformation Stack and deploy your S
 
 ## Testing
 
+1. put a file on your pod for testing policies
+
 ```bash
-jest
+# /data-policy/test-data-policy.json
+
+HTTP PUT /public/test-data-policy.json
+content-type: application/json
+x-api-key:  xxxx
+
+{
+  "type": "test",
+  "description": "this object had two fields that should have policies applied, additionalProperty.originalAffiliationDate and additionalProperty.",
+  "testdate": "2020-10-21T19:49:01Z"
+}
+```
+
+2. get the file and note the value of "testdate"
+
+```bash
+HTTP GET /public/test-data-policy.json
+
+{
+  "type": "test",
+  "description": "this object had two fields that should have policies applied, additionalProperty.originalAffiliationDate and additionalProperty.",
+  "testdate": "2020-10-21T19:49:01Z"
+}
+
+```
+
+3.  put a @redact data policy on that field in your pod data-policiy file `/public/yodata/data-policy.json`
+
+
+```bash
+# /data-policy/data-policy.json
+
+HTTP PUT /public/yodata/data-policy.json
+content-type: application/json
+x-api-key: xxx
+{
+	"redacttestdate": {
+		"effect": "Transform",
+		"processor": "Yodata",
+		"type": "DataPolicy",
+		"value": "{\"testdate\":{\"@redacted\":true}}"
+	}
+}
+
+```
+
+
+4. get the file again and confirm the value of "testdate" has been redacted
+
+```bash
+HTTP GET /public/test-data-policy.json
+
+{
+  "type": "test",
+  "description": "this object had two fields that should have policies applied, additionalProperty.originalAffiliationDate and additionalProperty.",
+  "testdate": "@redacted"
+}
+
 ```

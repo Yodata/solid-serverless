@@ -7,13 +7,13 @@
   "license": "MIT",
   "private": "true",
   "dependencies": {
-    "@yodata/logger": "^2"
+    "@yodata/logger": "^2.1.1"
   },
   "scripts": {
     "test": "npx jest --env node"
   },
   "devDependencies": {
-    "aws-sdk": "@latest",
-    "@types/jest": "@latest"
+    "aws-sdk": "^2.783.0",
+    "@types/jest": "^26.0.15"
   }
 }

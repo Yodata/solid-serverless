@@ -7,6 +7,12 @@ Description: >
 Parameters:
   clientid:
     Type: String
+  solidkey:
+    Type: String
+  solidhost:
+    Type: String
+  datapolicysvchost:
+    Type: String
 
 Globals:
   Function:
@@ -14,18 +20,21 @@ Globals:
     Runtime: nodejs12.x
     Tags:
       app: solid-serverless
-      domain: dev.yodata.io
+      domain: rl.hsfaffiliates.com
     Environment:
       Variables:
-        NODE_ENV: development
-        DOMAIN: dev.yodata.io
+        NODE_ENV: production
+        DOMAIN:
+          Ref: solidhost
         CLIENT_ID:
           Ref: clientid
-        SOLID_HOST: bhhs.dev.yodata.io
+        SOLID_HOST:
+          Ref: solidhost
         SOLID_KEY:
           Ref: solidkey
         DATA_POLICY_PATH: /public/yodata/data-policy.json
-        DATA_POLICY_SVC_HOST: dps.bhhs.dev.yodata.io
+        DATA_POLICY_SVC_HOST:
+          Ref: datapolicysvchost
 
 
 Resources:
@@ -35,7 +44,7 @@ Resources:
       CodeUri: src/
       Handler: index.applyPolicy
       FunctionName: 'apply-policy'
-      AutoPublishAlias: next
+      AutoPublishAlias: last
 
   GetPoliciesFunction:
     Type: AWS::Serverless::Function
@@ -43,6 +52,7 @@ Resources:
       CodeUri: src/
       Handler: index.getPolicies
       FunctionName: 'get-policies'
+      AutoPublishAlias: last
 
   SetPolicyFunction:
     Type: AWS::Serverless::Function
@@ -50,3 +60,4 @@ Resources:
       CodeUri: src/
       Handler: index.setPolicy
       FunctionName: 'set-policy'
+      AutoPublishAlias: last

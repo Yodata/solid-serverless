@@ -1,8 +1,5 @@
 {
   "type": "test",
   "description": "this object had two fields that should have policies applied, additionalProperty.originalAffiliationDate and additionalProperty.",
-  "additionalProperty": {
-    "originalAffiliationDate": "2020-10-21T19:49:01Z"
-  },
-  "goLiveDate": "2020-10-21T19:49:01Z"
+  "testdate": "2020-10-21T19:49:01Z"
 }

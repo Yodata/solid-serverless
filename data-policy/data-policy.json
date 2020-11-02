@@ -1,14 +1,8 @@
 {
-	"removegolivedate": {
+	"redacttestdate": {
 		"effect": "Transform",
 		"processor": "Yodata",
 		"type": "DataPolicy",
-		"value": "{\"goLiveDate\":{\"@redact\":true}}"
-	},
-	"removeoriginalaffiliationdate": {
-		"effect": "Transform",
-		"processor": "Yodata",
-		"type": "DataPolicy",
-		"value": "{\"originalAffiliationDate\":{\"@remove\":true}}"
+		"value": "{\"testdate\":{\"@redact\":true}}"
 	}
 }
