@@ -38,4 +38,16 @@ describe('get-policies unit tests', () => {
 		expect(response.length).toEqual(1)
 		return expect(response[0]).toHaveProperty('type', 'DataPolicy')
 	})
+
+	test('does not fetch id uris', async () => {
+		event.policy = {
+			local: {
+				id: 'https://dave.dev.yodata.io/public/yodata/data-policy.json',
+				'@id': 'https://dave.dev.yodata.io/public/yodata/data-policy.json'
+			}
+		}
+		const response = await getPolicies(event)
+		expect(response).toBeInstanceOf(Array)
+		expect(response.length).toEqual(0)
+	})
 })

@@ -357,9 +357,9 @@
       }
     },
     "@yodata/logger": {
-      "version": "2.0.9",
-      "resolved": "https://registry.npmjs.org/@yodata/logger/-/logger-2.0.9.tgz",
-      "integrity": "sha512-vrDvt0B3IsJTsPUE9yFJp6CfkMV6H15dxuaap7aIpD9J956aHL73vdXnuaIr03iNBdEERxEq/zccFArLf8/RTQ==",
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/@yodata/logger/-/logger-2.1.1.tgz",
+      "integrity": "sha512-PLlmxfOoMVVgQZFTc/FJmZvDmnFAC9BfCB7hq0qGPGphB6rYo1mwHpJlwYEgEiIwOShNpnMMqx5RsCap5/ppcA==",
       "requires": {
         "kind-of": "^6.0.3"
       }

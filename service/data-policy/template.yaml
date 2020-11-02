@@ -21,6 +21,12 @@ Globals:
         DOMAIN: dev.yodata.io
         CLIENT_ID:
           Ref: clientid
+        SOLID_HOST: bhhs.dev.yodata.io
+        SOLID_KEY:
+          Ref: solidkey
+        DATA_POLICY_PATH: /public/yodata/data-policy.json
+        DATA_POLICY_SVC_HOST: dps.bhhs.dev.yodata.io
+
 
 Resources:
   ApplyPolicyFunction:
