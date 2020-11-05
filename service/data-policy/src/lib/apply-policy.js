@@ -41,10 +41,11 @@ const hasPolicy = (event) => {
 }
 
 const nopolicy = event => {
-	const WHITELIST = [
+	const WHITELIST = String(process.env.DATA_POLICY_WL).split(',').concat([
 		process.env.DATA_POLICY_SVC_HOST,
-		process.env.SOLID_HOST
-	]
+		process.env.SOLID_HOST,
+	])
+
 	try {
 		const agent = new URL(event.agent).host
 		return WHITELIST.includes(agent)
