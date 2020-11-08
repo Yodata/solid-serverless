@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.io.IOUtils;
@@ -30,6 +31,7 @@ public class App implements RequestStreamHandler {
     private final boolean toSpecificPod;
 
     public App() {
+        AmazonS3Config.register();
         srv = new SolidServer(new AwsServerBackend());
 
         String mainPodUriRaw = System.getenv("BASE_POD_URI");
