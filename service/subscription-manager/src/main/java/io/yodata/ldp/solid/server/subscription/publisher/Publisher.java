@@ -96,8 +96,7 @@ public class Publisher {
             try {
                 publication.addProperty("@to", recipient);
                 // We build the store request
-                Request r = new Request();
-                r.setMethod("POST");
+                Request r = Request.post().internal();
                 r.setTarget(Target.forPath(new Target(from), "/outbox/"));
                 r.setBody(publication);
 
@@ -111,7 +110,7 @@ public class Publisher {
             }
         }
 
-        Request d = new Request();
+        Request d = new Request().internal();
         d.setMethod("DELETE");
         d.setTarget(new Target(from));
         Response dRes = srv.delete(d);

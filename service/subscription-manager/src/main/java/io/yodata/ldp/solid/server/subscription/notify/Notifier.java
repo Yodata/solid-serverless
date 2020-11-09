@@ -72,8 +72,7 @@ public class Notifier {
             try {
                 notification.addProperty("@to", recipient);
                 // We build the store request
-                Request r = new Request();
-                r.setMethod("POST");
+                Request r = Request.post().internal();
                 r.setTarget(Target.forPath(new Target(from), "/outbox/"));
                 r.setBody(notification);
 
@@ -83,7 +82,7 @@ public class Notifier {
                         .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
                 log.info("Data was saved at {}", eventId);
 
-                Request d = new Request();
+                Request d = new Request().internal();
                 d.setMethod("DELETE");
                 d.setTarget(new Target(from));
                 Response dRes = srv.delete(d);

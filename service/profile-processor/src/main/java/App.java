@@ -28,6 +28,7 @@ public class App implements RequestStreamHandler {
 
     private final SolidServer srv;
     private URI mainPod;
+    private final String processorAgentId;
     private final boolean toSpecificPod;
 
     public App() {
@@ -38,6 +39,8 @@ public class App implements RequestStreamHandler {
         if (StringUtils.isNotEmpty(mainPodUriRaw)) {
             mainPod = URI.create(mainPodUriRaw);
         }
+
+        processorAgentId = System.getenv("PROCESSOR_AGENT_URI");
 
         String toSpecificPodRaw = System.getenv("TO_SPECIFIC_POD");
         if (StringUtils.isEmpty(toSpecificPodRaw)) {
@@ -101,6 +104,7 @@ public class App implements RequestStreamHandler {
         notification.addProperty("topic", "realestate/profile#" + event.getType().replace("Action","").toLowerCase());
         notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
         notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
+        notification.addProperty(ActionPropertyKey.Agent.getId(), processorAgentId);
         notification.addProperty(ActionPropertyKey.Instrument.getId(), podId);
         notification.add("data", actionNew);
 
@@ -120,8 +124,7 @@ public class App implements RequestStreamHandler {
 
     private void send(URI base, SecurityContext sc, JsonObject notification) {
         Target target = Target.forPath(new Target(base), "/event/topic/realestate/profile/");
-        Request r = new Request();
-        r.setMethod("POST");
+        Request r = Request.post().internal();
         r.setTarget(target);
         r.setSecurity(sc);
         r.setBody(notification);
