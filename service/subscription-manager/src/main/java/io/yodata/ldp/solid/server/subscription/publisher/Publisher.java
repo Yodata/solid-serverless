@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -102,8 +101,7 @@ public class Publisher {
 
                 // We send to store
                 Response res = srv.post(r);
-                String eventId = GsonUtil.parseObj(res.getBody()
-                        .orElse("{\"id\":\"<NOT RETURNED>\"}".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                String eventId = res.getFileId();
                 log.info("Publish to {} - Data was saved at {}", recipient, eventId);
             } catch (RuntimeException e) {
                 log.error("Unable to produce notification about {} for {}", from, recipient, e);

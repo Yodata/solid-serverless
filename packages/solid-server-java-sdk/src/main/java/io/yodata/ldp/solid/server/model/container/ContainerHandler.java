@@ -88,6 +88,7 @@ public class ContainerHandler extends GenericHandler {
         // We build the answer
         Response res = new Response();
         res.setStatus(201);
+        res.setFileId(id);
         res.getHeaders().put("Location", id);
         res.setBody(GsonUtil.makeObj("id", id));
         ex.setResponse(res);
