@@ -6,14 +6,14 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 3
-    Runtime: nodejs8.10
+    Timeout: 6
+    Runtime: nodejs12.x
     Environment:
       Variables:
         NODE_ENV: production
 
 Resources:
-  'ServiceFunction':
+  ServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/

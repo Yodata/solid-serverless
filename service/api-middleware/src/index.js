@@ -27,7 +27,7 @@ exports.handler = async (event) => {
 			return result
 		})
 		.catch(error => {
-			logger.error(`ERROR:${error.message}`, { error })
+			logger.error(`api-middleware:${error.message}`)
 			event.response = {
 				status: 500,
 				statusCode: '500',
