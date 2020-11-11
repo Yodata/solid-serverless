@@ -33,5 +33,5 @@ test('transaction.report ', async () => {
 	let topic = 'realestate/franchise#transactionreport'
 	let schema = schemas[ topic ]
 	const result = await handler({ object: transactionreport, schema })
-	return expect(result).toHaveProperty('isValid', true)
+	return expect(result).toHaveProperty('isValid', false)
 })
