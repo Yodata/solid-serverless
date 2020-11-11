@@ -44,6 +44,9 @@ describe('get-policies unit tests', () => {
 			local: {
 				id: 'https://dave.dev.yodata.io/public/yodata/data-policy.json',
 				'@id': 'https://dave.dev.yodata.io/public/yodata/data-policy.json'
+			},
+			remote: {
+				'@id': 'http://example.com/'
 			}
 		}
 		const response = await getPolicies(event)
