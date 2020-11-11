@@ -1,3 +1,15 @@
 {
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "jest.disabledWorkspaceFolders": [
+
+    "/packages/**",
+    "/service/api-front/**",
+    "interactive",
+    "/service/subscription-manager/",
+    "/service/profile-processor/**",
+    "/service/api-key-service/",
+    "/template/**",
+    "/template"
+  ]
+
 }
