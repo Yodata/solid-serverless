@@ -23,6 +23,8 @@ Globals:
         SOLID_HOST: bhhs.hsfaffiliates.com
         VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
 
+
+
 Resources:
   ApiMiddlewareFn:
     Type: AWS::Serverless::Function
@@ -34,8 +36,7 @@ Resources:
     Policies:
       - AWSLambdaExecute
       - Statement:
-        - Effect: Allow
-          Action:
-            - lambda:InvokeFunction
-          Resource:
-            Ref: "*"
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: '*'

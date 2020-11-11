@@ -1,8 +1,9 @@
 /* eslint-disable no-undef */
+
 jest.mock('../lib/invoke-lambda-function')
 
 describe('api-middleware.apply-policy', () => {
-	const { applyDataPolicy, hasData, hasPolicy, isDataPolicyRequest, isJSON } = require('../apply-policy')
+	const { applyDataPolicy, hasData, hasPolicy, isDataPolicyRequest, isJSON, isWhiteListed, isProfileReadEvent } = require('../apply-policy')
 	let event, invokeLambdaFunction
 
 	beforeEach(() => {
@@ -11,15 +12,28 @@ describe('api-middleware.apply-policy', () => {
 	})
 
 	test('example event', () => {
-		expect.assertions(4)
+		expect.assertions(5)
 		expect(isJSON(event)).toBeTruthy()
-		expect(isDataPolicyRequest(event)).toBeFalsy()
 		expect(hasData(event)).toBeTruthy()
 		expect(hasPolicy(event)).toBeTruthy()
+		expect(isDataPolicyRequest(event)).toBeFalsy()
+		return expect(isWhiteListed(event)).toBeFalsy()
+	})
+	test('whitelisting', () => {
+		process.env.DATA_POLICY_WL = 'profile-'
+		event.agent = 'https://profile-processor.example.com/profile/card#me'
+		return expect(isWhiteListed(event)).toBeTruthy()
 	})
 
 	test('calls invoke-lambda-function', async () => {
-		expect.assertions(1)
+		expect.assertions(7)
+		event.agent = null
+		expect(isProfileReadEvent(event)).toBeTruthy()
+		expect(isJSON(event)).toBeTruthy()
+		expect(hasData(event)).toBeTruthy()
+		expect(hasPolicy(event)).toBeTruthy()
+		expect(isDataPolicyRequest(event)).toBeFalsy()
+		expect(isWhiteListed(event)).toBeFalsy()
 		return applyDataPolicy(event).then(() => {
 			return expect(invokeLambdaFunction).toHaveBeenCalledTimes(1)
 		})
@@ -93,7 +107,7 @@ describe('api-middleware.apply-policy', () => {
 		expect(isJSON(event)).toBeTruthy()
 
 		// not a data policy
-		event.request.target.path = '/publish/'
+		event.request.target.path = '/profile/card'
 		process.env.DATA_POLICY_SVC_HOST = DATA_POLICY_SVC_HOST
 		expect(event.request.target.path).not.toBe(DATA_POLICY_PATH)
 		expect(isDataPolicyRequest(event)).toBeFalsy()
