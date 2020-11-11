@@ -9,11 +9,11 @@ Globals:
     Runtime: nodejs12.x
     Environment:
       Variables:
-        NODE_ENV: production
+        NODE_ENV: staging
 Resources:
   ServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: index.handler
-      FunctionName: production-create-sfdc-contact
+      FunctionName: staging-create-sfdc-contact
