@@ -1,21 +1,19 @@
+
+
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  create-sfdc-contact
-  stub
-
+Description: create-sfdc-contact stub
 Globals:
   Function:
-    Timeout: 6
+    Timeout: 30
     Runtime: nodejs12.x
     Environment:
       Variables:
         NODE_ENV: production
-
 Resources:
   ServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: index.handler
-      FunctionName: 'create-sfdc-contact'
+      FunctionName: production-create-sfdc-contact
