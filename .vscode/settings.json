@@ -10,6 +10,7 @@
     "/service/api-key-service/",
     "/template/**",
     "/template"
-  ]
+  ],
+  "editor.tabSize": 2
 
 }

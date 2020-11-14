@@ -8,6 +8,8 @@ const processContext = require('./process-context')
 const validateSchema = require('./validate-schema')
 const createBmsContact = require('./create-bms-contact')
 const handlFranchiseTransactionReport = require('./handle-franchise-transactionreport')
+const has = require('./lib/object-has')
+
 const DEFAULT_MIDDLEWARES = [
 	normalize,
 	checkScope,
@@ -23,7 +25,7 @@ const handler = async (event, fn) => {
 }
 
 const responseTerminated = event => {
-	return (event && event.response && event.response.end === true)
+	return has(event,'response.end', true)
 }
 
 /**

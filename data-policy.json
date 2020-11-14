@@ -1,0 +1,14 @@
+{
+	"removegolivedate": {
+		"effect": "Transform",
+		"processor": "Yodata",
+		"type": "DataPolicy",
+		"value": "{\"goLiveDate\":{\"@remove\":true}}"
+	},
+	"removeoriginalaffiliationdate": {
+		"effect": "Transform",
+		"processor": "Yodata",
+		"type": "DataPolicy",
+		"value": "{\"originalAffiliationDate\":{\"@remove\":true}}"
+	}
+}

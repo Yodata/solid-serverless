@@ -341,3 +341,4 @@ solid-serverless.json
 
 # don't save aws template defaults
 .aws
+.vscode/launch.json

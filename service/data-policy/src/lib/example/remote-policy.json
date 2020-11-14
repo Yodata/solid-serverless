@@ -1,0 +1,9 @@
+{
+  "name": "deleteme",
+  "description": "deletes the key named 'deleteme'",
+  "effect": "Transform",
+  "processor": "Yodata",
+  "type": "DataPolicy",
+  "datacontenttype": "application/json",
+  "value": "{\"deleteme\":{\"@remove\":true}}"
+}

@@ -110,9 +110,9 @@ exports.applyDataPolicy = async (event) => {
 	if (isProfileReadEvent(event) && hasData(event) && hasPolicy(event) && isJSON(event) && !isWhiteListed(event) && !dataPolicyRequest(event)) {
 		const functionName = getEnvValue(event, 'APPLY_POLICY_FUNCTION_NAME', 'apply-policy')
 		event.object = await invoke(functionName, event).then(response => response.object)
-		logger.debug('apply-policy:result', event.object )
+		logger.debug('api-middleware:apply-policy:result', event )
 	} else {
-		logger.debug('api-middleware:data-policy:skipped')
-		return event
+		logger.debug('api-middleware:apply-policy:skipped')
 	}
+	return event
 }
