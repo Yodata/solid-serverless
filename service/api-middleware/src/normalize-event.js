@@ -7,6 +7,7 @@ const getData = require('./lib/get-event-data')
 const requestHasData = require('./lib/request-has-data')
 const has = require('./lib/object-has')
 const reject = require('./lib/reject-error')
+const get = require('get-value')
 
 /**
  * @typedef NormalizeEventResponse
@@ -34,17 +35,31 @@ const reject = require('./lib/reject-error')
  * @returns {Promise<NormalizeEventResponse>}
  */
 module.exports = async (event) => {
+	// no event throws
 	if (!event) {
 		return reject('normalize-event:error:event-undefined', event)
 	}
+	// no request throws
 	if (!has(event, 'request')) {
 		return reject('normalize-event:error:missing-request', event)
 	}
+	// no api keys should be in the logs
+	if (has(event, 'request.rawHeaders.x-api-key')) {
+		delete event.request.rawHeaders['x-api-key']
+	}
+
 	if (!has(event, 'agent')) {
 		if (has(event, 'request.solidService', true)) {
 			event.agent = `https://solid-service-agent.${process.env.SOLID_HOST}/profile/card#me`
 		}
 	}
+
+	if (
+		has(event, 'request.target.path', v => String(v).startsWith('/outbox/')) &&
+		has(event, 'request.method', v  => ['PUT','POST'].includes(v)) &&
+		has(event, '@to')
+	) { event.agent = event[ '@to' ]}
+
 	// set event.stage = request|response
 	event.stage = event.response ? 'response' : 'request'
 
@@ -61,5 +76,15 @@ module.exports = async (event) => {
 		event.object = getData(event)
 		message.object = event.object
 	}
+
+	logger.debug('api-middleware:normalize-event:result', {
+		agent: event.agent,
+		method: get(event, 'request.method'),
+		target: get(event, 'request.url'),
+		stage: event.stage,
+		contentType: event.contentType,
+		object: event.object
+	})
+
 	return event
 }
