@@ -5,7 +5,7 @@ Description: create-view-service
 Globals:
   Function:
     Timeout: 6
-    Runtime: nodejs8.10
+    Runtime: nodejs12.x
     Tags:
       app: solid-serverless
       component: create-view-service

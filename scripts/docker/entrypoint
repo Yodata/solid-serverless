@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+sudo chown -R builder "/var/tmp/cache"
+mkdir /var/tmp/cache/{generic,gradle} 2> /dev/null
+
+ln -sF "/var/tmp/cache/generic" "$HOME/.cache"
+ln -sF "/var/tmp/cache/gradle" "$HOME/.gradle"
+
+set -e
+
+echo "######################################################"
+echo "#"
+echo "# YoData - Solid Serverless - Dev Docker Environment"
+echo "#"
+echo "######################################################"
+echo "HOME: $HOME"
+echo "PWD: $(pwd)"
+echo "Initial PATH: $PATH"
+
+. "$HOME/src/scripts/setEnv"
+
+echo "Environment PATH: $PATH"
+echo "------------------------------------------------------"
+echo
+
+mkdir -p "$HOME/.aws"
+echo '[default]' > "$HOME/.aws/credentials"
+echo "aws_access_key_id=$AWS_ACCESS_KEY_ID" >> "$HOME/.aws/credentials"
+echo "aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" >> "$HOME/.aws/credentials"
+echo 'source_profile=default' >> "$HOME/.aws/credentials"
+
+echo '[default]' > "$HOME/.aws/config"
+if ! [ -z "$AWS_ROLE_ARN" ]; then
+	echo "role_arn=$AWS_ROLE_ARN" >> "$HOME/.aws/config"
+fi
+
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_ROLE_ARN
+
+bash || true

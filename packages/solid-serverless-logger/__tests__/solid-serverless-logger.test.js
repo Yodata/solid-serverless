@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 'use strict'
 
-const logger = require('..')
+const logger = require('../')
 
 describe('@yodata/solid-serverless-logger', () => {
 	test('exports', () => {

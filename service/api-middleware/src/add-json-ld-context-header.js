@@ -1,9 +1,9 @@
-/**	
+/**
  * Adds jsonld context link to response.headers.Link
  * @param   {object} event
  * @param   {object} event.response
  * @param   {object} event.response.headers
- * @returns {object}
+ * @returns {Promise<object>}
  */
 module.exports = async event => {
 	// If response is JSON, add the json-ld link header per the standard

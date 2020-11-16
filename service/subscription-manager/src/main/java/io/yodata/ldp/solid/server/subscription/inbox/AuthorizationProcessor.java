@@ -1,8 +1,6 @@
 package io.yodata.ldp.solid.server.subscription.inbox;
 
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.SecurityProcessor;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.exception.ForbiddenException;
 import io.yodata.ldp.solid.server.model.*;
 import org.apache.commons.lang3.StringUtils;
@@ -22,12 +20,10 @@ public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
 
     private static final Logger log = LoggerFactory.getLogger(AuthorizationProcessor.class);
 
-    private S3Store store;
-    private SecurityProcessor sec;
+    private final SolidServer srv;
 
-    public AuthorizationProcessor() {
-        store = S3Store.getDefault();
-        sec = SecurityProcessor.getDefault();
+    public AuthorizationProcessor(SolidServer srv) {
+        this.srv = srv;
     }
 
     @Override
@@ -55,11 +51,11 @@ public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
 
         try {
             // It is, we get the corresponding ACL allowing it
-            Acl acl = sec.authorize(w.ev.getRequest().getSecurity(), accessTo);
+            Acl acl = srv.security().authorize(w.ev.getRequest().getSecurity(), accessTo);
             log.info("Request is allowed");
 
             // We check to see if an ACL is already set at the location or else we use the one found
-            Acl aclNew = store.getEntityAcl(accessTo, false).orElse(acl);
+            Acl aclNew = srv.store().getEntityAcl(accessTo, false).orElse(acl);
             log.info("Pre-change ACL: {}", GsonUtil.toJson(aclNew));
 
             // We get the relevant entry info for the agent we want to grant permissions to
@@ -81,7 +77,7 @@ public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
             log.info("Post-change ACL: {}", GsonUtil.toJson(aclNew));
 
             // We save the ACL
-            store.setEntityAcl(accessTo, aclNew);
+            srv.store().setEntityAcl(accessTo, aclNew);
 
             if (entry.getModes().contains(AclMode.Subscribe)) {
                 log.info("Processing subscription");
@@ -91,9 +87,9 @@ public class AuthorizationProcessor implements Consumer<InboxService.Wrapper> {
                 sub.setObject(URI.create(msg.getAccessTo()).getPath()); // FIXME no good, we must also check the host
                 sub.setScope(msg.getScope());
 
-                List<Subscription> subs = store.getEntitySubscriptions(accessTo.getId());
+                List<Subscription> subs = srv.store().getEntitySubscriptions(accessTo.getId());
                 subs.add(sub);
-                store.setEntitySubscriptions(accessTo.getId(), subs);
+                srv.store().setEntitySubscriptions(accessTo.getId(), subs);
             }
         } catch (ForbiddenException e) {
             log.warn("Authorization request denied - The agent {} does not have Control permission on {}", w.ev.getRequest().getSecurity().getIdentity(), accessTo.getId());

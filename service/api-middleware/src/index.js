@@ -15,30 +15,32 @@ const finalize = require('./finalize-event')
 
 /**
  * @param {object} event
- * @param {object} event.request 
- * @param {object} [event.response]
- * @param {object} event.object
+ * @param {object} event.object  - the primary subject of this event
+ * @param {object} event.request - the http request
+ * @param {object} [event.response] - the http response
+ * @param {object} [event.scope] - the event scope (permissions)
+ * @param {object} [event.policy] - data policies for the request
  * @returns {Promise<ApiMiddlewareResponse>}
  */
-exports.handler = async (event,context) => {
-	logger.debug('event-received', event)
-	logger.debug('event-context', context)
-	try {
-		event = await processRequest(event)
-	} catch (error) {
-		logger.error(`ERROR:${error.message}`,{error})
-		event.response = {
-			status: 500,
-			statusCode: '500',
-			end: true
-		}
-		event.object = {
-			'error': {
-				'message': error.message
+exports.handler = async (event) => {
+	event = await processRequest(event)
+		.then(result => {
+			logger.debug('api-middleware:result', result)
+			return result
+		})
+		.catch(error => {
+			logger.error(`api-middleware:${error.message}`)
+			event.response = {
+				status: 500,
+				statusCode: '500',
+				end: true
 			}
-		}
-	} 
-	event = finalize(event)
-	logger.info('api-middleware:result', {event})
-	return event
+			event.object = {
+				'error': {
+					'message': error.message
+				}
+			}
+			return event
+		})
+	return finalize(event)
 }

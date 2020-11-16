@@ -1,7 +1,9 @@
 package io.yodata.ldp.solid.server.model;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
@@ -19,18 +21,19 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class EntityBasedStore implements Store {
 
     private static final Logger log = LoggerFactory.getLogger(EntityBasedStore.class);
-    private static final Type subListType = new TypeToken<List<Subscription>>() {}.getType();
+    private static final Type subListType = new TypeToken<List<Subscription>>() {
+    }.getType();
+    private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
+
+    public static final String SUBS_PATH = "/settings/subscriptions";
 
     protected String buildEntityPath(String entity, String path) {
-        return "entities/" + entity + "/data/by-id" + path;
+        return "entities/" + entity.toLowerCase() + "/data/by-id" + path;
     }
 
     protected String buildEntityPath(URI entity, String path) {
@@ -42,13 +45,15 @@ public abstract class EntityBasedStore implements Store {
     }
 
     private Optional<Acl> fetchAcl(String entity, String path, boolean recursive) {
-        log.info("Fetching ACL in {} for {}", entity, path);
+        entity = entity.toLowerCase(); // Host is case-insensitive
+
+        log.debug("Fetching ACL in {} for {}", entity, path);
 
         List<String> paths = new ArrayList<>();
         paths.add(path);
         Path p = Paths.get(path);
         if (recursive) {
-            log.info("Check ACL recursively");
+            log.debug("Check ACL recursively");
             while (true) {
                 p = p.getParent();
                 if (Objects.isNull(p)) {
@@ -65,17 +70,17 @@ public abstract class EntityBasedStore implements Store {
 
         for (String loc : paths) {
             String aclPath = entity + "/data/by-id" + loc + ".acl";
-            log.info("Checking in {}", aclPath);
+            log.debug("Checking in {}", aclPath);
             Optional<String> aclRaw = getData(aclPath);
             if (aclRaw.isPresent()) {
-                log.info("ACL found at {}", aclPath);
+                log.debug("ACL found at {}", aclPath);
                 return Optional.of(GsonUtil.get().fromJson(aclRaw.get(), Acl.class));
             } else {
-                log.info("ACL not found at {}", aclPath);
+                log.debug("ACL not found at {}", aclPath);
             }
         }
 
-        log.info("No ACL found in {} for {}", entity, path);
+        log.debug("No ACL found in {} for {}", entity, path);
         return Optional.empty();
     }
 
@@ -93,7 +98,7 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public boolean save(Request in) {
-        String path = "entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath();
+        String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
         boolean exists = exists(path);
         save(in.getContentType().orElse("application/octet-stream"), in.getBody(), path);
         return exists;
@@ -130,11 +135,10 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public List<Subscription> getEntitySubscriptions(URI entity) {
-        String host = entity.getHost();
+        String host = new Target(entity).getHost();
         log.info("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
-        String entPath = "/settings/subscriptions";
-        findEntityData(entity, entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj, false)));
+        findEntityData(entity, SUBS_PATH).ifPresent(obj -> subs.addAll(extractSubs(SUBS_PATH, obj, false)));
         return subs;
     }
 
@@ -144,16 +148,44 @@ public abstract class EntityBasedStore implements Store {
             throw new IllegalArgumentException("Some subscription(s) do not have an agent");
         }
 
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), "entities/" + entity.getHost() + "/settings/subscriptions");
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), buildEntityPath(entity.getHost(), SUBS_PATH));
     }
 
-    private List<Subscription> extractSubs(String path, String obj, boolean needContext) {
-        List<Subscription> subs = new ArrayList<>();
+    @Override
+    public void setEntitySubscriptions(URI entity, JsonObject subs) {
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(subs), buildEntityPath(entity.getHost(), SUBS_PATH));
+    }
+
+    public List<Subscription> extractSubs(String path, String obj, boolean needContext) {
         JsonElement el = GsonUtil.parse(obj);
-        if (el.isJsonObject()) {
-            el = el.getAsJsonObject().get("items");
+        if (el.isJsonArray()) {
+            el = GsonUtil.makeObj("items", el);
         }
-        List<Subscription> list = GsonUtil.get().fromJson(el, subListType);
+
+        if (!el.isJsonObject()) {
+            log.warn("{} is not a JSON array or object, skipping", path);
+            return new ArrayList<>();
+        }
+
+        String version = GsonUtil.findString(el.getAsJsonObject(), "version").orElse("0");
+
+        List<Subscription> list;
+        if (StringUtils.equals(version, "0")) {
+            list = GsonUtil.get().fromJson(GsonUtil.findArray(el.getAsJsonObject(), "items").orElseGet(JsonArray::new), subListType);
+        } else {
+            if (!StringUtils.equals(version, "1")) {
+                log.warn("Subscription file at {} is of unsupported version {}, will try to parse regardless", path, version);
+            }
+
+            try {
+                list = GsonUtil.get().fromJson(el, Subscriptions.class).toMatchList();
+            } catch (JsonSyntaxException e) {
+                log.warn("Invalid subscription file at {}, ignoring", path, e);
+                list = new ArrayList<>();
+            }
+        }
+
+        List<Subscription> subs = new ArrayList<>();
         int i = 1;
         for (Subscription sub : list) {
             if (StringUtils.isBlank(sub.getId())) {
@@ -184,12 +216,44 @@ public abstract class EntityBasedStore implements Store {
         return subs;
     }
 
-    public List<Subscription> getSubscriptions(URI entity) {
+    @Override
+    public List<Subscription> getAllSubscriptions(URI entity) {
         log.info("Getting all subscriptions for {}", entity);
         List<Subscription> subs = getInternalSubscriptions();
         subs.addAll(getGlobalSubscriptions());
         subs.addAll(getEntitySubscriptions(entity));
         return subs;
+    }
+
+    @Override
+    public Subscriptions getSubscriptions(URI entity) {
+        return GsonUtil.get().fromJson(getRawSubscriptions(entity), Subscriptions.class);
+    }
+
+    @Override
+    public JsonObject getRawSubscriptions(URI entity) {
+        Optional<String> rawOpt = findEntityData(entity, SUBS_PATH);
+
+        String raw;
+        if (rawOpt.isPresent()) {
+            raw = rawOpt.get();
+        } else {
+            log.info("No subscriptions file for {}, using empty", entity);
+            raw = "{}";
+        }
+
+        JsonElement rawEl = GsonUtil.parse(raw);
+        if (rawEl.isJsonArray()) {
+            log.info("Old format, we turn info an object");
+            rawEl = GsonUtil.makeObj("items", rawEl);
+        }
+
+        if (!rawEl.isJsonObject()) { //
+            log.info("Invalid format, we ignore");
+            rawEl = GsonUtil.makeObj("version", "1");
+        }
+
+        return rawEl.getAsJsonObject();
     }
 
     @Override
@@ -202,66 +266,82 @@ public abstract class EntityBasedStore implements Store {
     }
 
     public Optional<SecurityContext> findForApiKey(String apiKey) {
-        log.info("Fetching data for API key {}", apiKey);
+        log.debug("Fetching data for API key {}", apiKey);
         Optional<String> data = getData("global/security/api/key/" + apiKey);
         if (data.isPresent()) {
-            log.info("API key found");
+            log.debug("API key found");
             return Optional.of(GsonUtil.get().fromJson(data.get(), SecurityContext.class));
         } else {
-            log.info("API key not found");
+            log.debug("API key not found");
             return Optional.empty();
         }
     }
 
     @Override
     public void post(Request in) {
-        List<String> paths = new ArrayList<>();
+        Instant timestamp = in.getTimestamp();
 
         URI id = in.getDestination().getId();
-        log.info("Id: {}", id);
+        log.debug("Id: {}", id);
         Path idPath = Paths.get(id.getPath());
-        log.info("Path: {}", id.getPath());
-        String byIdPath = "entities/" + in.getDestination().getHost() + "/data/by-id" + in.getDestination().getPath();
+        log.debug("Path: {}", id.getPath());
+        String byIdPath = buildEntityPath(in.getDestination().getHost(), in.getDestination().getPath());
         ensureNotExisting(byIdPath);
-        paths.add(byIdPath);
 
-        Instant timestamp = in.getTimestamp();
+        Map<String, String> meta = new HashMap<>();
         if (Objects.nonNull(timestamp)) {
-            log.info("Timestamp: {}", timestamp.toEpochMilli());
-            LocalDateTime ldt = LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC);
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("/yyyy/MM/dd/HH/mm/ss/SSS/");
-            paths.add("entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString());
+            meta.put("X-Solid-Serverless-Timestamp", Long.toString(timestamp.toEpochMilli()));
         }
+        save(in.getContentType().orElse("application/octet-stream"), in.getBody(), byIdPath, meta);
 
-        paths.forEach(p -> save(in.getContentType().orElse("application/octet-stream"), in.getBody(), p));
+        if (Objects.nonNull(timestamp)) {
+            log.debug("Timestamp: {}", timestamp.toEpochMilli());
+            LocalDateTime ldt = LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC);
+            String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
+            link(byIdPath, tsPath);
+        }
     }
 
     @Override
     public void delete(Request in) {
-        delete("entities/" + in.getTarget().getHost() + "/data/by-id" + in.getTarget().getPath());
-    }
+        URI id = in.getDestination().getId();
+        Path idPath = Paths.get(id.getPath());
+        String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
 
-    protected String getIdPrefix(String namespace, String host, String path, String id) {
-        if (!path.endsWith("/")) {
-            path += "/";
-        }
+        findMeta(path).ifPresent(meta -> {
+            String tsRaw = meta.get("X-Solid-Serverless-Timestamp".toLowerCase());
+            if (StringUtils.isNotBlank(tsRaw)) {
+                try {
+                    Instant ts = Instant.ofEpochMilli(Long.parseLong(tsRaw));
+                    LocalDateTime ldt = LocalDateTime.ofInstant(ts, ZoneOffset.UTC);
+                    String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
+                    delete(tsPath);
+                    log.debug("Deleted by TS index: {}", tsPath);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid TS header value: {}", tsRaw);
+                }
+            }
+        });
 
-        JsonObject data = getData("entities/" + host + path + id)
-                .map(GsonUtil::parseObj)
-                .orElseGet(JsonObject::new);
-
-        return getTsPrefix(GsonUtil.findString(data, "timestamp").orElse(""), namespace);
+        delete(path);
+        log.info("Deleted ID: {}", path);
     }
 
     @Override
     public void save(String path, JsonElement content) {
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path);
+        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path, new HashMap<>());
     }
+
+    public void save(String contentType, byte[] bytes, String path) {
+        save(contentType, bytes, path, new HashMap<>());
+    }
+
+    public abstract void link(String linkTargetPath, String linkPath);
 
     protected abstract String getTsPrefix(String from, String namespace);
 
-    protected abstract void save(String contentType, byte[] bytes, String path);
+    protected abstract void save(String contentType, byte[] bytes, String path, Map<String, String> meta);
 
-    protected abstract Optional<String> getData(String path);
+    public abstract Optional<Map<String, String>> findMeta(String path);
 
 }

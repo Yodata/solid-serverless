@@ -1,8 +1,0 @@
-#!/bin/bash
-
-sam deploy \
---capabilities CAPABILITY_IAM \
---template-file template-package.yaml \
---stack-name yodata-$AWS_PROFILE-check-scope \
---profile $AWS_PROFILE \
---parameter-overrides clientid=$CLIENT_ID

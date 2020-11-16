@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+sam deploy \
+--capabilities CAPABILITY_IAM \
+--template-file template-package.yaml \
+--stack-name solid-sandbox-create-sfdc-contact \
+--profile solid-dev

@@ -1,34 +1,40 @@
 {
-    "request": {
-        "method": "GET"
+  "request": {
+    "method": "GET",
+    "headers": {
+      "Content-Type": [
+        "application/json"
+      ]
     },
-    "response": {
-        "headers": {
-            "Content-Type": [
-                "application/json"
-            ]
-        },
-        "body": "{\"password\": \"secret\"}",
-        "isBase64Encoded": false
+    "body": ""
+  },
+  "response": {
+    "headers": {
+      "Content-Type": [
+        "application/json"
+      ]
     },
-    "scope": {
-        "NoDogsAllowed": {
-            "effect": "Deny",
-            "condition": {
-                "object": {
-                    "type": "Dog"
-                }
-            }
+    "body": "{\"password\": \"secret\"}",
+    "isBase64Encoded": false
+  },
+  "scope": {
+    "NoDogsAllowed": {
+      "effect": "Deny",
+      "condition": {
+        "object": {
+          "type": "Dog"
         }
-    },
-    "policy": {
-        "local": {
-            "RedactPassword": {
-                "type": "DataPolicy",
-                "processor": "Yodata",
-                "effect": "Transform",
-                "value": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
-            }
-        }
+      }
     }
+  },
+  "policy": {
+    "local": {
+      "RedactPassword": {
+        "type": "DataPolicy",
+        "processor": "Yodata",
+        "effect": "Transform",
+        "value": "{ \"password\": {\"value\": \"[PASSWORD]\"} }"
+      }
+    }
+  }
 }

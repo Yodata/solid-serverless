@@ -2,8 +2,8 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.model.Event.StorageAction;
-import io.yodata.ldp.solid.server.model.Store;
+import io.yodata.ldp.solid.server.model.SolidServer;
+import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,27 +24,27 @@ public class InboxService {
         public StorageAction ev;
     }
 
-    private Map<String, Consumer<Wrapper>> typeProcessors;
-    private NormalizationProcessor normalizeProcessor;
+    private final Map<String, Consumer<Wrapper>> typeProcessors;
 
-    public InboxService(Store store) {
-        normalizeProcessor = new NormalizationProcessor();
-
+    public InboxService(SolidServer srv) {
         typeProcessors = new HashMap<>();
-        typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor());
+        typeProcessors.put(AuthorizationProcessor.Type, new AuthorizationProcessor(srv));
+        typeProcessors.put(PublishProcessor.Type, new PublishProcessor(srv));
 
-        AppAuthProcessor p = new AppAuthProcessor(store);
+        AppAuthProcessor p = new AppAuthProcessor(srv);
         for (String type : AppAuthProcessor.Types) {
             typeProcessors.put(type, p);
         }
     }
 
     public void process(JsonObject eventJson) {
-        log.info("Processing event data: {}", GsonUtil.toJson(eventJson));
+        log.debug("Processing event data: {}", GsonUtil.toJson(eventJson));
 
         StorageAction event = GsonUtil.get().fromJson(eventJson, StorageAction.class);
         Wrapper c = new Wrapper();
         c.ev = event;
+
+        log.info("Processing {}", c.ev.getId());
 
         if (!event.getObject().isPresent()) {
             log.warn("Event has no data, assuming non-RDF for now and skipping");
@@ -52,8 +52,8 @@ public class InboxService {
         }
         c.message = event.getObject().get();
 
-        if (!StringUtils.equals(StorageAction.Add, event.getType())) {
-            log.warn("Event is not about adding data, not supported for now, skipping");
+        if (!StringUtils.equalsAny(event.getType(), StorageAction.Add, StorageAction.Update, StorageAction.Delete)) {
+            log.warn("Event is not about regular storage action, not supported for now, skipping");
             return;
         }
 
@@ -62,17 +62,16 @@ public class InboxService {
         String type = GsonUtil.findString(c.message, "type").orElse("");
         Consumer<Wrapper> consumer = typeProcessors.get(type);
         if (Objects.isNull(consumer)) {
-            log.info("No processor for type {}, using normalization processor", type);
-            consumer = normalizeProcessor;
-        }
-
-        log.info("Using processor {} for type {}", consumer.getClass().getCanonicalName(), type);
-        try {
-            consumer.accept(c);
-            log.info("Processing of inbox event finished");
-        } catch (RuntimeException e) {
-            log.warn("Error when processing inbox event: {}", e.getMessage(), e);
-            throw e;
+            log.info("No processor for type {}, ignoring", type);
+        } else {
+            log.info("Using processor {} for type {}", consumer.getClass().getCanonicalName(), type);
+            try {
+                consumer.accept(c);
+                log.info("Processing of inbox event finished");
+            } catch (RuntimeException e) {
+                log.warn("Error when processing inbox event: {}", e.getMessage(), e);
+                throw e;
+            }
         }
     }
 

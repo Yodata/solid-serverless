@@ -320,3 +320,25 @@ local.properties
 hs_err_pid*
 
 # End of https://www.gitignore.io/api/java,eclipse
+
+# Personal config file
+/env
+
+# Gradle
+/.gradle
+
+# SAM output, this is not needed as re-building will produce the same hash
+template-package.yaml
+
+# Config files
+solid-serverless.json
+
+# Architect (https://arc.codes) files can contain keys and other private information, don't put them in source control
+.arc-env
+/service/**/sam.json
+/service/**/sam.yaml
+.autoenv.zsh
+
+# don't save aws template defaults
+.aws
+.vscode/launch.json

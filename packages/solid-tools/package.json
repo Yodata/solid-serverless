@@ -1,6 +1,6 @@
 {
   "name": "@yodata/solid-tools",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "SDKs and utilities for working with solid server pods (alpha) ",
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
   "homepage": "https://github.com/Yodata/solid-serverless/tree/master/packages/solid-tools#readme",
@@ -26,17 +26,8 @@
   "bugs": {
     "url": "https://github.com/Yodata/solid-serverless/issues"
   },
-  "devDependencies": {
-    "aws-sdk": "^2.382.0",
-    "eslint": "^5.11.1",
-    "eslint-plugin-jest": "^22.1.2",
-    "jest": "^23.6.0",
-    "lambda-tester": "^3.5.0",
-    "winston": "^3.1.0"
-  },
   "dependencies": {
-    "got": "^9.5.0",
-    "mingo": "^2.2.8",
-    "winston": "^3.1.0"
+    "got": "^9.5.1",
+    "mingo": "^3.1.0"
   }
 }

@@ -13,6 +13,9 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
 group = 'io.yodata.solid-server'
 mainClassName = 'io.yodata.ldp.solid.server.undertow.UndertowSolidServer'
 
@@ -24,6 +27,7 @@ dependencies {
     compile project(':aws-sdk')
     compile 'org.slf4j:slf4j-simple:1.7.25'
     compile 'io.undertow:undertow-core:2.0.15.Final'
+    compile 'com.onelogin:java-saml:2.5.0'
 
     testCompile 'junit:junit:4.12'
 }
@@ -70,11 +74,13 @@ def dockerImageLatest = dockerImageName + ':latest'
 
 
 task dockerBuild(type: Exec, dependsOn: shadowJar) {
-    commandLine 'docker', 'build', '-t', dockerImage, project.rootDir
+    commandLine 'sudo','docker', 'build', '-t', dockerImage, project.rootDir
 }
 
 task dockerTagLatest(type: Exec) {
-    commandLine 'docker', 'tag', dockerImage, dockerImageLatest
+    commandLine 'sudo', 'docker', 'tag', dockerImage, dockerImageLatest
 }
 
-task dockerBuildLatest(dependsOn: [ dockerBuild, dockerTagLatest ]) {}
+task dockerBuildLatest(dependsOn: [ dockerBuild, dockerTagLatest ]) {
+    // no-op, only a virtual task
+}

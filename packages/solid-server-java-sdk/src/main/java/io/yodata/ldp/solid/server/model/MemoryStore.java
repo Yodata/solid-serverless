@@ -1,9 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
 import io.yodata.ldp.solid.server.exception.NotFoundException;
-import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -36,7 +34,11 @@ public class MemoryStore extends EntityBasedStore {
 
     }
 
-    private Map<String, Entity> entities = new ConcurrentHashMap<>();
+    private final Map<String, Entity> entities = new ConcurrentHashMap<>();
+
+    public Map<String, Entity> getEntities() {
+        return entities;
+    }
 
     @Override
     protected String getTsPrefix(String from, String namespace) {
@@ -44,7 +46,12 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    protected void save(String contentType, byte[] bytes, String path) {
+    protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
+
+    }
+
+    @Override
+    public void save(String contentType, byte[] bytes, String path) {
         Entity e = new Entity();
         e.setContentType(contentType);
         e.setData(bytes);
@@ -52,8 +59,18 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    protected Optional<String> getData(String path) {
+    public void link(String linkTargetPath, String linkPath) {
+
+    }
+
+    @Override
+    public Optional<String> getData(String path) {
         return Optional.ofNullable(entities.get(path)).map(d -> new String(d.getData(), StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public Optional<Map<String, String>> findMeta(String path) {
+        return Optional.empty();
     }
 
     @Override
@@ -62,13 +79,27 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    public Page getPage(Target t, String from, String by, boolean isFullFormat) {
+    public Page getPage(Target t, String from, String by, boolean isFullFormat, boolean isTemporal) {
         return new Page();
     }
 
     @Override
     public boolean exists(String path) {
         return entities.containsKey(path);
+    }
+
+    @Override
+    public Response head(Target target) {
+        Entity entity = entities.get(buildEntityPath(target.getId()));
+        if (Objects.isNull(entity)) {
+            throw new NotFoundException();
+        }
+
+        Response r = new Response();
+        r.getHeaders().put("Content-Type", entity.getContentType());
+        r.getHeaders().put("Content-Length", Long.toString(entity.getData().length));
+
+        return r;
     }
 
     @Override

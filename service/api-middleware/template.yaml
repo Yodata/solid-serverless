@@ -1,22 +1,29 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: Yodata API middleware for dev.yodata.io
+Description: solid-serverless api
 
 Globals:
   Function:
-    Timeout: 5
-    Runtime: nodejs8.10
+    Timeout: 30
+    Runtime: nodejs12.x
     Tags:
       app: solid-serverless
       component: api-middleware
     Environment:
       Variables:
-        DEBUG_LEVEL: debug
-        NODE_ENV: development
-        CHECK_SCOPE_FUNCTION_NAME: check-scope
-        CREATE_VIEW_FUNCTION_NAME: data-processing-service-create-view
         APPLY_POLICY_FUNCTION_NAME: apply-policy
+        BMS_TRANSACTION_FUNCTION_NAME: staging-bms-transaction
+        CHECK_SCOPE_FUNCTION_NAME: check-scope
+        CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
+        CREATE_VIEW_FUNCTION_NAME: create-view
+        DATA_POLICY_SVC_HOST: dps.bhhs.hsfaffiliates.com
+        DATA_POLICY_WL: profile-,service-
         DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
+        LOG_LEVEL: debug
+        SOLID_HOST: bhhs.hsfaffiliates.com
+        VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
+
+
 
 Resources:
   ApiMiddlewareFn:
@@ -24,7 +31,12 @@ Resources:
     Properties:
       CodeUri: src/
       Handler: index.handler
-      FunctionName: api-middleware
-      AutoPublishAlias: next
+      FunctionName: production-api-middleware
+      AutoPublishAlias: PreviousVersion
     Policies:
       - AWSLambdaExecute
+      - Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: '*'

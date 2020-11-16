@@ -1,4 +1,5 @@
-const logger = require('@yodata/solid-serverless-logger').defaultLogger
+// @ts-nocheck
+const logger = require('@yodata/logger')
 
 /**
  * What does your function do?
@@ -16,8 +17,7 @@ const logger = require('@yodata/solid-serverless-logger').defaultLogger
  * @param {string}   context.awsRequestId - Lambda request ID.
  * @param {string}   context.invokedFunctionArn - Function ARN.
  *
- * @returns {Object} response
- * @returns {string} response.param - comment
+ * @returns {Promise<object>} response
  */
 exports.handler = async (event, context) => {
 	try {

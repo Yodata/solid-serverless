@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Base64Util {
 
     public static String encode(byte[] value) {
-        return Base64.encodeBase64String(value);
+        return Base64.encodeBase64URLSafeString(value);
     }
 
     public static byte[] decode(String value) {

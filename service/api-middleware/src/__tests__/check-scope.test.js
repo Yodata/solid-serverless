@@ -1,5 +1,6 @@
-/* eslint-disable no-undef */
 
+jest.mock('../lib/invoke-lambda-function.js')
+const invokeLambdaFunction = require('../lib/invoke-lambda-function.js')
 const checkScope = require('../check-scope')
 
 describe('api-middleware.check-scope', () => {
@@ -7,7 +8,8 @@ describe('api-middleware.check-scope', () => {
 	test('allowed example/response', async () => {
 		const event = {
 			stage: 'request',
-			object: {type: 'dog'},
+			object: { type: 'dog' },
+			isAllowed: false,
 			scope: {
 				noDogsAllowed: {
 					effect: 'Deny',
@@ -19,7 +21,9 @@ describe('api-middleware.check-scope', () => {
 				}
 			}
 		}
-		const result = await checkScope(event)
-		expect(result).toHaveProperty('isAllowed', false)
+
+		return checkScope(event).then(() => {
+			return expect(invokeLambdaFunction).toHaveBeenCalledTimes(1)
+		})
 	})
 })

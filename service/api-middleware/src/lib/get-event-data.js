@@ -1,46 +1,56 @@
 const logger = require('./logger')
 const getHeader = require('./get-header-value')
 const typeis = require('type-is')
-const parse = require('parse-json')
+const parseJson = require('parse-json')
+const yaml = require('js-yaml')
+
 
 const parseBody = (req) => {
-	let body = req.body
-	let data
+	let body = String(req.body)
 	if (body.length === 0) {
-		return {}
+		return '{}'
 	}
 	if (req.isBase64Encoded) {
-		body = new Buffer(req.body,'base64').toString()
+		body = Buffer.from(req.body, 'base64').toString()
 	}
-	data = parse(body)
-	return data
+	return body
 }
 
 /**
- * @param {object} event
- * @param {object} [event.request]
- * @param {object} [event.response]
+ * @param {object}  event
+ * @param {boolean} event.hasData
+ * @param {string}  event.stage
+ * @param {object}  [event.object]
+ * @param {object}  [event.request]
+ * @param {object}  [event.response]
+ *
+ * @returns {*} event.object
  */
 module.exports = (event) => {
-	logger.debug('get-event-data:received', {event})
-	let stage = event.response ? 'response' : 'request'
-	if (stage === event.stage && event.hasData && event.object) {
-		logger.debug('get-event-data:using-event.object', {object: event.object})
-		return event.object
-	}
-	const req = event[stage]
-	const contentType = getHeader(req,'content-type')
+	logger.debug('get-event-data:received', { event })
 	let data
-	switch(typeis.is(contentType,['json','+json'])) {
-	case 'json':
-		data = parseBody(req)
-		break
-	case 'application/ld+json':
-		data = parseBody(req)
-		break
-	default:
-		data = null
+
+	const stage = event.response ? 'response' : 'request'
+	if (stage === event.stage && event.hasData && event.object) {
+		// event already has data (event.object)
+		data = event.object
+	} else {
+		const req = event[stage]
+		const contentType = getHeader(req, 'content-type')
+		switch (typeis.is(contentType, ['json', '+json', 'application/x-yaml'])) {
+		case 'json':
+			data = parseJson(parseBody(req))
+			break
+		case 'application/ld+json':
+			data = parseJson(parseBody(req))
+			break
+		case 'application/x-yaml':
+			data = yaml.load(parseBody(req))
+			break
+		default:
+			data = null
+		}
 	}
-	logger.debug('get-event-data:result', {data})
+	logger.debug('get-event-data:result', { data })
 	return data
 }

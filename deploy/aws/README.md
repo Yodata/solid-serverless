@@ -19,7 +19,12 @@ This guide will only give instructions and/or values for relevant fields/options
 
 Requirements not directly related to the stack, like TLS certificates for the Load-balancer are considered out of scope as they directly depend on the target infrastructure itself rather than being specific to this stack.
 
-The following is expected to be set up and/or available before following this guide:
+The following is expected to be set up and/or available on your local machine before following this guide:
+
+- A working developer docker environment, from the [Developer guide](../../dev.md).  
+  **All command line commands listed in this guide must run in that environment**.
+
+The following is expected to be set up and/or available in AWS before following this guide:
 
 - A VPC for the various services. This can be the default or a dedicated one and is left at the discretion of the reader.
 - A valid TLS certificate in ACM with subject names:
@@ -51,20 +56,93 @@ For each section:
   - `InvokeFunction`
   - `InvokeAsync`
 
+JSON equivalent:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction",
+                "lambda:InvokeAsync"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+
+
 #### SQSSendMessageOnly
 - SQS
   - `SendMessage`
   - `SendMessageBatch`
 
+JSON equivalent:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:SendMessageBatch",
+                "sqs:SendMessage"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+
+
 #### SNSPublishOnly
 - SNS
   - `Publish`
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "sns:Publish",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+
 
 #### S3WriteOnly
 
 - S3
   - `DeleteObject`
   - `PutObject`
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+
 
 ### Roles
 
@@ -86,11 +164,10 @@ The following new roles are to be created:
 - Service: Lambda
 - Use case: Lambda
 - Policies to be applied:
-  - `AWSLambdaBasicExecutionRole`
+  - `AWSLambdaSQSQueueExecutionRole`
   - `AmazonS3ReadOnlyAccess`
-  - `AmazonSQSReadOnlyAccess`
   - `LambdaInvokeOnly`
-  - `S3WriteOnlyAccess`
+  - `S3WriteOnly`
   - `SNSPublishOnly`
   - `SQSSendMessageOnly`
 - Name: `solid-server-store-event-processor`
@@ -103,7 +180,7 @@ The following new roles are to be created:
   - `AmazonS3ReadOnlyAccess`
   - `AWSLambdaSQSQueueExecutionRole`
   - `LambdaInvokeOnly`
-  - `S3WriteOnlyAccess`
+  - `S3WriteOnly`
   - `SNSPublishOnly`
 - Name: `solid-server-inbox-processor`
 
@@ -112,12 +189,48 @@ The following new roles are to be created:
 - Service: Lambda
 - Use case: Lambda
 - Policies to be applied:
-  - `AmazonS3ReadOnlyAccess`
   - `AWSLambdaSQSQueueExecutionRole`
+  - `AmazonS3ReadOnlyAccess`
   - `LambdaInvokeOnly`
-  - `S3WriteOnlyAccess`
+  - `S3WriteOnly`
   - `SNSPublishOnly`
 - Name: `solid-server-outbox-processor`
+
+#### Profile Processor
+
+- Service: Lambda
+- Use case: Lambda
+- Policies to be applied:
+  - `AWSLambdaSQSQueueExecutionRole`
+  - `AmazonS3ReadOnlyAccess`
+  - `LambdaInvokeOnly`
+  - `S3WriteOnly`
+  - `SNSPublishOnly`
+- Name: `solid-server-profile-processor`
+
+#### Push Processor
+
+- Service: Lambda
+- Use case: Lambda
+- Policies to be applied:
+  - `AWSLambdaSQSQueueExecutionRole`
+  - `AmazonS3ReadOnlyAccess`
+  - `LambdaInvokeOnly`
+  - `S3WriteOnly`
+  - `SNSPublishOnly`
+- Name: `solid-server-push-processor`
+
+#### Publish Processor
+
+- Service: Lambda
+- Use case: Lambda
+- Policies to be applied:
+  - `AWSLambdaSQSQueueExecutionRole`
+  - `AmazonS3ReadOnlyAccess`
+  - `LambdaInvokeOnly`
+  - `S3WriteOnly`
+  - `SNSPublishOnly`
+- Name: `solid-server-publish-processor`
 
 ## SNS
 Create a new topic for the store events, consumed by the Subscription Manager:
@@ -129,23 +242,117 @@ Create the following queues:
 
 #### Inbox processing
 
-- Name: `solid-server-inbox-store-events`
+- Name: `solid-server-inbox-processor`
 - Type: Standard Queue
 - Configuration
   - Queue Attributes
     - Default Visibility Timeout: 60 seconds
     - Message Retention Period: 14 days
     - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
 
 #### Outbox processing
 
-- Name: `solid-server-outbox-store-events`
+- Name: `solid-server-outbox-processor`
 - Type: Standard Queue
 - Configuration
   - Queue Attributes
     - Default Visibility Timeout: 60 seconds
     - Message Retention Period: 14 days
     - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
+
+#### Profile processing
+
+- Name: `solid-server-profile-processor`
+- Type: Standard Queue
+- Configuration
+  - Queue Attributes
+    - Default Visibility Timeout: 60 seconds
+    - Message Retention Period: 14 days
+    - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
+
+#### Profile patcher processing
+
+- Name: `solid-server-profile-patcher-processor`
+- Type: Standard Queue
+- Configuration
+  - Queue Attributes
+    - Default Visibility Timeout: 60 seconds
+    - Message Retention Period: 14 days
+    - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
+
+#### Publish processing
+
+- Name: `solid-server-publish-processor`
+- Type: Standard Queue
+- Configuration
+  - Queue Attributes
+    - Default Visibility Timeout: 60 seconds
+    - Message Retention Period: 14 days
+    - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
+
+#### Push processing
+
+- Name: ` solid-server-push-processor`
+- Type: Standard Queue
+- Configuration
+  - Queue Attributes
+    - Default Visibility Timeout: 60 seconds
+    - Message Retention Period: 14 days
+    - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
+
+#### Store events processing
+
+- Name: `solid-server-store-events-processor`
+- Type: Standard Queue
+- Configuration
+  - Queue Attributes
+    - Default Visibility Timeout: 60 seconds
+    - Message Retention Period: 14 days
+    - Maximum Message Size: *Max value*
+
+Create the following access policy:
+
+- Type: `Allow`
+- Principal: the account itself
+- Action: `SendMessage`
+
+Subscribe the SQS queue to the SNS topic `solid-server-store-events`.
 
 ## S3
 
@@ -156,8 +363,17 @@ Create a single S3 bucket to hold configuration and data for the server:
 Afterwards, perform the following actions using `repo:/deploy/aws/s3/` as your working directory:
 
 - Edit `internal/subscriptions` and set the SQS queue URLs to those created above and replace the leading `https://` by `aws-sqs://`. The file contains sample values as example.
-- Copy the directory and file structure from the working directory to the S3 bucket.
+- Copy the directory and file structure from the working directory to the S3 bucket, per example using `aws s3 cp [options]`
 - Remove `global/security/api/key/.gitignore` from the S3 bucket.
+
+The last two steps can be done using the following commands:
+
+```bash
+aws s3 cp --recursive --content-type 'application/json' ./ s3://yodata-realliving-solid-server-storage/
+aws s3 rm s3://yodata-realliving-solid-server-storage/global/security/api/key/.gitignore
+```
+
+
 
 ## EC2
 ### Key Pairs
@@ -234,11 +450,32 @@ Skip this step.
 
 After the wizard, edit the **Deregistration delay** and set it to `60` seconds.
 
+Update your DNS entries so that the two entries in your TLS certificate, `example.org` and `*.example.org` point to the Load-Balancer hostname given in its details.
+
+You would typically have the following new entries:
+
+```bind9
+example.org. IN 3600 CNAME solid-server-api-front-1234567890.region.elb.amazonaws.com.
+*.example.org. IN 3600 CNAME solid-server-api-front-1234567890.region.elb.amazonaws.com.
+```
+
 ## Lambda
 
 ### Middleware
 
-Follow the instructions in `repo:/service/api-middleware/README.md`
+For each directory in the following list:
+
+- `repo:/service/api-middleware`
+- `repo:/service/check-scope`
+- `repo:/service/create-view`
+- `repo:/service/data-policy`
+- `repo:/service/validate-schema`
+
+For the directory as your current working directory, run the following command in your Docker Dev Env:
+
+```bash
+make push
+```
 
 ### Subscription Manager
 
@@ -267,8 +504,9 @@ In Lambda view:
 
   | Name                        | Value                                        |
   | --------------------------- | -------------------------------------------- |
-  | `IN_MIDDLEWARE_LAMBDA`      | `solid-server-api-middleware`                |
-  | `OUT_MIDDLEWARE_LAMBDA`     | `solid-server-api-middleware`                |
+  | `IN_MIDDLEWARE_LAMBDA`      | `api-middleware`                             |
+  | `OUT_MIDDLEWARE_LAMBDA`     | `api-middleware`                             |
+  | `PUSHER_LAMBDA_NAME`        | `solid-server-push-processor`                |
   | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
   | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
 
@@ -276,6 +514,8 @@ In Lambda view:
 
   - Memory: 192 MB
   - Timeout: `1` min `0`sec
+
+Create a SQS trigger for the matching SQS queue.
 
 #### Inbox processor
 
@@ -304,8 +544,8 @@ In Lambda view:
 
   | Name                        | Value                                        |
   | --------------------------- | -------------------------------------------- |
-  | `IN_MIDDLEWARE_LAMBDA`      | `solid-server-api-middleware`                |
-  | `OUT_MIDDLEWARE_LAMBDA`     | `solid-server-api-middleware`                |
+  | `IN_MIDDLEWARE_LAMBDA`      | `api-middleware`                             |
+  | `OUT_MIDDLEWARE_LAMBDA`     | `api-middleware`                             |
   | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
   | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
 
@@ -316,72 +556,158 @@ In Lambda view:
 
 #### Outbox processor
 
-- - In wizard:
+- In wizard:
 
-    - Name: `solid-server-outbox-processor`
-    - Runtime: `Java 8`
-    - Role: Existing
-    - Existing Role: `solid-server-outbox-processor`
+  - Name: `solid-server-outbox-processor`
+  - Runtime: `Java 8`
+  - Role: Existing
+  - Existing Role: `solid-server-outbox-processor`
 
-    In Lambda view:
+  In Lambda view:
 
-    - Add an enabled SQS trigger
+  - Add an enabled SQS trigger
 
-      - SQS queue: `solid-server-outbox-store-events`
-      - Batch size: `1`
-      - Enabled: Yes
+    - SQS queue: `solid-server-outbox-store-events`
+    - Batch size: `1`
+    - Enabled: Yes
 
-    - Function code
+  - Function code
 
-      - Code entry type: Upload .zip or .jar
-      - Function package: Select `repo:/service/subscription-manager/build/libs/subscription-manager.jar`
-      - Handler: `LambdaOutboxProcessor::handleRequest`
+    - Code entry type: Upload .zip or .jar
+    - Function package: Select `repo:/service/subscription-manager/build/libs/subscription-manager.jar`
+    - Handler: `LambdaOutboxProcessor::handleRequest`
 
-    - Environment variables
+  - Environment variables
 
-      | Name                        | Value                                        |
-      | --------------------------- | -------------------------------------------- |
-      | `IN_MIDDLEWARE_LAMBDA`      | `solid-server-api-middleware`                |
-      | `OUT_MIDDLEWARE_LAMBDA`     | `solid-server-api-middleware`                |
-      | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
-      | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
+    | Name                        | Value                                        |
+    | --------------------------- | -------------------------------------------- |
+    | `IN_MIDDLEWARE_LAMBDA`      | `api-middleware`                             |
+    | `OUT_MIDDLEWARE_LAMBDA`     | `api-middleware`                             |
+    | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
+    | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
 
-    - Basic Settings
+  - Basic Settings
 
-      - Memory: 192 MB
-      - Timeout: `1` min `0`sec
+    - Memory: 192 MB
+    - Timeout: `1` min `0`sec
+
+#### Profile processor
+
+- In wizard:
+
+  - Name: `solid-server-profile-processor`
+  - Runtime: `Java 8`
+  - Role: Existing
+  - Existing Role: `solid-server-profile-processor`
+
+  In Lambda view:
+
+  - Add an enabled SQS trigger
+
+    - SQS queue: `solid-server-profile-processor`
+    - Batch size: `1`
+    - Enabled: Yes
+
+  - Function code
+
+    - Code entry type: Upload .zip or .jar
+    - Function package: Select `repo:/service/profile-processor/build/libs/profile-processor.jar`
+    - Handler: `App::handleRequest`
+
+  - Environment variables
+
+    | Name                        | Value                                        |
+    | --------------------------- | -------------------------------------------- |
+    | `BASE_POD_URI`              | The URL of the root pod                      |
+    | `IN_MIDDLEWARE_LAMBDA`      | `api-middleware`                             |
+    | `OUT_MIDDLEWARE_LAMBDA`     | `api-middleware`                             |
+    | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
+    | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
+
+  - Basic Settings
+
+    - Memory: 192 MB
+    - Timeout: `1` min `0`sec
+
+#### Publish processor
+
+- In wizard:
+
+  - Name: `solid-server-publish-processor`
+  - Runtime: `Java 8`
+  - Role: Existing
+  - Existing Role: `solid-server-publish-processor`
+
+  In Lambda view:
+
+  - Add an enabled SQS trigger
+
+    - SQS queue: `solid-server-publish-processor`
+    - Batch size: `1`
+    - Enabled: Yes
+
+  - Function code
+
+    - Code entry type: Upload .zip or .jar
+    - Function package: Select `repo:/service/subscription-manager/build/libs/subscription-manager.jar`
+    - Handler: `LambdaPublishProcessor::handleRequest`
+
+  - Environment variables
+
+    | Name                        | Value                                        |
+    | --------------------------- | -------------------------------------------- |
+    | `IN_MIDDLEWARE_LAMBDA`      | `api-middleware`                             |
+    | `OUT_MIDDLEWARE_LAMBDA`     | `api-middleware`                             |
+    | `EVENT_STORE_SNS_TOPIC_ARN` | ARN of SNS topic `solid-server-store-events` |
+    | `S3_BUCKET_NAME`            | `solid-server-storage`                       |
+
+  - Basic Settings
+
+    - Memory: 192 MB
+    - Timeout: `1` min `0`sec
+
+#### Push processor
+
+In wizard:
+
+- Name: `solid-server-push-processor`
+- Runtime: `Java 8`
+- Role: Existing
+- Existing Role: `solid-server-push-processor`
+
+In Lambda view:
+
+- Function code
+  - Code entry type: Upload .zip or .jar
+  - Function package: Select `repo:/service/subscription-manager/build/libs/subscription-manager.jar`
+  - Handler: `LambdaPusherProcessor::handleRequest`
+- Environment variables
+  - *No environment variable needed*
+- Basic Settings
+  - Memory: 192 MB
+  - Timeout: `1` min `0`sec
 
 ## ECR
 
 ### Front API
 
-Create a new repository: `solid-server-api-front`
+- Create a new repository: `solid-server-api-front`
 
-### Authenticate with ECS
+- Build and deploy the image: with `repo:/service/api-front` as your working directory in the Docker Dev env, run:
 
-Run the following command:
-
-```
-$(aws ecr get-login --no-include-email --region us-west-2)
+```bash
+make package
 ```
 
-### Upload Docker image
-
-Build the Front API docker using:
-
-```
-./gradlew -Pdocker.image.name=solid-server-api-front -Pdocker.image.version=latest dockerBuildLatest
-```
-
-Then follow the ECR push commands for step 3 (Tag) and step 4 (Push).
-
-After, the newly pushed image will appear in the images. Make a note of the Image URI.
+- The newly pushed image will appear in the images of the ECR repository; Make a note of the Image URI.
 
 ## ECS
 
 ### Task Definitions
 
 Create new Task Definition:
+
+> **WARNING:** Do not confuse `Task Role` and `Task execution role`. Only the value of the former, `Task Role` needs to be configured.
 
 - Launch type: EC2
 
@@ -428,7 +754,7 @@ Create a new cluster:
 - Name: `reflex-prod-solid-front`
 - Instance configuration
   - Provision Model: On-Demand
-  - EC2 Instance type: t2.micro
+  - EC2 Instance type: `t3.nano`
   - Number of instances: `2`
   - Key Pair: Your chosen one
 - Networking

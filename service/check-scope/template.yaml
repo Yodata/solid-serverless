@@ -11,7 +11,7 @@ Parameters:
 Globals:
   Function:
     Timeout: 6
-    Runtime: nodejs8.10
+    Runtime: nodejs12.x
     Environment:
       Variables:
         NODE_ENV: production

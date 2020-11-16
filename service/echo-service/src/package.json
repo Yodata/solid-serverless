@@ -6,7 +6,7 @@
   "author": "yodaveduran <dave@yodata.io>",
   "license": "MIT",
   "dependencies": {
-    "@yodata/solid-serverless-logger": "^0.0.3"
+    "@yodata/logger": "^2.1.1"
   },
   "scripts": {
     "test": "jest"

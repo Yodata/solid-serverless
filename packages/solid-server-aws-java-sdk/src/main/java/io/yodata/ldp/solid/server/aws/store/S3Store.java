@@ -11,9 +11,15 @@ import com.google.gson.JsonPrimitive;
 import io.yodata.Base64Util;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.config.Configs;
+import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
-import io.yodata.ldp.solid.server.model.*;
+import io.yodata.ldp.solid.server.model.EntityBasedStore;
+import io.yodata.ldp.solid.server.model.Page;
+import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.Target;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +29,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class S3Store extends EntityBasedStore {
 
@@ -45,6 +52,7 @@ public class S3Store extends EntityBasedStore {
     private AmazonS3 s3;
     private List<String> buckets;
     private int pageMaxKeys;
+    private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd/HH/mm/ss/SSS");
 
     private S3Store() {
         pageMaxKeys = EnvUtils.find("S3_LIST_MAX_KEYS").map(Integer::parseInt).orElse(50);
@@ -55,7 +63,7 @@ public class S3Store extends EntityBasedStore {
                 .build();
 
         buckets = new ArrayList<>();
-        String raw = EnvUtils.find("S3_BUCKET_NAMES").orElseGet(() -> EnvUtils.get("S3_BUCKET_NAME"));
+        String raw = Configs.get().find("S3_BUCKET_NAMES").orElseGet(() -> Configs.get().get("aws.s3.bucket.name"));
         JsonElement el = new JsonParser().parse(raw);
         if (el.isJsonPrimitive()) {
             buckets.add(el.getAsString());
@@ -74,13 +82,26 @@ public class S3Store extends EntityBasedStore {
     }
 
     private Optional<S3Object> getEntityFile(String entity, String path) {
-        return getFile("entities/" + entity + "/data/by-id" + path);
+        return getFile("entities/" + entity.toLowerCase() + "/data/by-id" + path);
     }
 
     private Optional<S3Object> getFile(String path) {
-        log.info("Getting S3 object at {}", path);
+        log.debug("Getting S3 object at {}", path);
         try {
             return Optional.of(s3.getObject(getBucket(), path));
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() != 404) {
+                throw new RuntimeException(e);
+            }
+
+            return Optional.empty();
+        }
+    }
+
+    private Optional<ObjectMetadata> getFileMeta(String path) {
+        log.debug("Getting S3 meta at {}", path);
+        try {
+            return Optional.of(s3.getObjectMetadata(getBucket(), path));
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
                 throw new RuntimeException(e);
@@ -95,10 +116,15 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
-    protected Optional<String> getData(String path) {
-        log.info("Getting S3 object {}", path);
+    public Optional<String> getData(String path) {
+        log.debug("Getting S3 object {}", path);
 
         return getFile(path).map(this::getData);
+    }
+
+    @Override
+    public Optional<Map<String, String>> findMeta(String path) {
+        return getFileMeta(path).map(meta -> new HashMap<>(meta.getUserMetadata()));
     }
 
     private String getData(S3Object o) {
@@ -130,160 +156,155 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
-    protected void save(String contentType, byte[] bytes, String path) {
-        log.info("File {} will be stored in {} buckets", path, buckets.size());
+    public Response head(Target target) {
+        String s3Path = "entities/" + target.getHost() + "/data/by-id" + target.getPath();
+        log.info("Getting Resource meta {}", s3Path);
+
+        Optional<ObjectMetadata> meta = getFileMeta(s3Path);
+        if (!meta.isPresent()) {
+            throw new NotFoundException();
+        }
+
+        Response r = new Response();
+        r.getHeaders().put(Headers.CONTENT_TYPE, meta.get().getContentType());
+        r.getHeaders().put(Headers.CONTENT_LENGTH, Long.toString(meta.get().getContentLength()));
+
+        return r;
+    }
+
+    @Override
+    protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
+        log.debug("File {} will be stored in {} buckets", path, buckets.size());
         buckets.forEach(bucket -> {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(contentType);
             metadata.setContentLength(bytes.length);
+            metadata.setUserMetadata(meta);
 
             log.info("Storing {} bytes in bucket {} in path {}", bytes.length, bucket, path);
             PutObjectResult res = s3.putObject(bucket, path, new ByteArrayInputStream(bytes), metadata);
-            log.info("Stored under ETag {}", res.getETag());
+            log.debug("Stored under ETag {}", res.getETag());
         });
     }
 
     @Override
     public void delete(String path) {
-        log.info("Deleting {}", path);
+        log.debug("Deleting {}", path);
         buckets.forEach(bucket -> {
-            log.info("Deleting from bucket {}", bucket);
+            log.debug("Deleting from bucket {}", bucket);
             s3.deleteObject(bucket, path);
         });
         log.info("Deleted {}", path);
     }
 
     @Override
-    protected String getTsPrefix(String from, String namespace) {
-        if (from.length() < 13) {
-            from = "0000000000000";
-        }
-
-        StringBuilder tsBuild = new StringBuilder(namespace);
-
-        ListObjectsV2Request req = new ListObjectsV2Request();
-        req.setBucketName(getBucket());
-        int posStart = 0;
-        int posEnd = from.length() - 13 + 2;
-        String tsPrefix;
-        List<S3ObjectSummary> objs;
-        String lastListed = namespace;
-
-        try {
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            posEnd += 2;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart, posEnd) + "/";
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-
-            posStart = posEnd;
-            namespace = tsBuild.toString();
-            tsPrefix = from.substring(posStart);
-            req.setPrefix(namespace + tsPrefix);
-            req.setMaxKeys(1);
-            objs = s3.listObjectsV2(req).getObjectSummaries();
-            if (objs.size() < 1) {
-                return lastListed;
-            }
-            tsBuild.append(tsPrefix);
-            lastListed = objs.get(0).getKey();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // we don't care;
-        }
-
-        return lastListed;
+    public void link(String linkTargetPath, String linkPath) {
+        buckets.forEach(bucket -> {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.addUserMetadata("X-Solid-Serverless-Link", linkTargetPath);
+            s3.putObject(bucket, linkPath, new ByteArrayInputStream(new byte[0]), metadata);
+            log.info("Stored link in bucket {} from {} to {}", bucket, linkTargetPath, linkPath);
+        });
     }
 
     @Override
-    public Page getPage(Target t, String from, String by, boolean isFullFormat) {
+    protected String getTsPrefix(String from, String namespace) {
+        final String delimiter = "/";
+
+        if (namespace.endsWith(delimiter)) {
+            namespace = namespace.substring(0, namespace.length() - 1);
+        }
+
+        log.debug("Finding prefix for TS {}", from);
+
+        // We find by year
+        Instant ts = Instant.ofEpochMilli(Long.parseLong(from));
+        String formatted = dtf.format(LocalDateTime.ofInstant(ts, ZoneOffset.UTC));
+        log.debug("Formatted: {}", formatted);
+        String[] paths = formatted.split(delimiter);
+        String prefix = namespace + delimiter;
+
+        for (String path : paths) {
+            log.debug("-- Loop --");
+            log.debug("Prefix: {}", prefix);
+
+            int max = Integer.parseInt(path);
+            log.debug("Max: {}", max);
+
+            ListObjectsV2Request req = new ListObjectsV2Request();
+            req.setBucketName(getBucket());
+            req.setDelimiter(delimiter);
+            req.setPrefix(prefix);
+
+            ListObjectsV2Result res = s3.listObjectsV2(req);
+            List<String> prefixes = new ArrayList<>();
+            for (String cp : res.getCommonPrefixes()) {
+                cp = cp.substring(prefix.length());
+                if (cp.endsWith(delimiter)) cp = cp.substring(0, cp.length() - 1);
+                log.debug("Common prefix: {}", cp);
+                prefixes.add(cp);
+            }
+            Optional<String> before = prefixes.stream().filter(p -> Integer.parseInt(p) >= max).min(Comparator.naturalOrder());
+
+            if (before.isPresent()) {
+                log.debug("Found previous path: {}", before.get());
+                prefix = prefix + before.get() + delimiter;
+            } else {
+                log.debug("No previous path, we do not continue further");
+                prefix = prefix + max + delimiter;
+                return prefix;
+            }
+        }
+
+        log.debug("Finished looking for matches, returning current prefix");
+        return prefix;
+    }
+
+    @Override
+    public Page getPage(Target t, String by, String from, boolean isFullFormat, boolean isTemporal) {
         Page p = new Page();
 
-        String prefix = "entities/" + t.getHost() + "/data/by-id";
+        boolean isTs = false;
+
+        if (StringUtils.equals("datetime", by)) {
+            Instant i = Instant.parse(from);
+            by = "timestamp";
+            from = Long.toString(i.toEpochMilli());
+        }
+
+        if (StringUtils.equals("timestamp", by)) {
+            isTemporal = true;
+            isTs = true;
+        }
+
+        String prefix = isTemporal ? "entities/" + t.getHost() + "/data/by-ts" : "entities/" + t.getHost() + "/data/by-id";
         String namespace = prefix + t.getPath();
 
         ListObjectsV2Request req = new ListObjectsV2Request();
         req.setBucketName(getBucket());
-        req.setDelimiter("/");
+        req.setPrefix(namespace);
+        if (!"".equals(from)) {
+            if (!isTs) {
+                String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
+                log.info("Starting after {}", sinceDecoded);
+                req.setStartAfter(sinceDecoded);
+            } else {
+                String tsPrefix = getTsPrefix(from, namespace);
+                log.debug("TS Prefix: " + tsPrefix);
+                req.setStartAfter(tsPrefix);
+            }
+        } else {
+            log.info("Starting from the beginning");
+        }
 
-        switch (by) {
-            case "timestamp":
-                req.setPrefix(getTsPrefix(from, namespace));
-                break;
-            case "path":
-                req.setPrefix(getIdPrefix(namespace, t.getHost(), t.getPath(), from));
-                break;
-            case "token":
-                req.setPrefix(namespace);
-                if (!"".equals(from)) {
-                    String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
-                    log.info("Starting after {}", sinceDecoded);
-                    req.setStartAfter(sinceDecoded);
-                } else {
-                    log.info("Starting from the beginning");
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown from type: " + by);
+        if (!isTemporal) {
+            req.setDelimiter("/");
         }
 
         do {
+            log.debug("Looping");
+            log.debug("Start after: " + req.getStartAfter());
+
             req.setMaxKeys(pageMaxKeys - p.getContains().size());
             ListObjectsV2Result res = s3.listObjectsV2(req);
             p.setNext(res.getNextContinuationToken());
@@ -295,29 +316,65 @@ public class S3Store extends EntityBasedStore {
                     continue;
                 }
 
-                log.info("Adding {}", obj.getKey());
+                log.debug("Adding {}", obj.getKey());
                 if (isFullFormat) {
-                    S3Object s3obj = s3.getObject(obj.getBucketName(), obj.getKey());
-                    log.info("Redirection location: {}", s3obj.getRedirectLocation());
-                    JsonElement el = GsonUtil.parse(s3obj.getObjectContent(), JsonElement.class);
-                    p.getContains().add(el);
+                    Optional<S3Object> dataOpt = getFile(obj.getKey());
+
+                    boolean done = false;
+                    do {
+                        if (!dataOpt.isPresent()) {
+                            log.warn("S3 object vanished at {}, ignoring", obj.getKey());
+                            break;
+                        }
+
+                        S3Object data = dataOpt.get();
+                        String redirect = data.getObjectMetadata().getUserMetaDataOf("X-Solid-Serverless-Link");
+                        if (StringUtils.isNotBlank(redirect)) {
+                            log.debug("Following link from {} to {}", data.getKey(), redirect);
+
+                            try {
+                                data.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            dataOpt = getFile(redirect);
+                            if (!dataOpt.isPresent()) {
+                                log.warn("Cleaning up dead link at {} towards {}", data.getKey(), redirect);
+                                delete(data.getKey());
+                                break;
+                            }
+
+                            continue;
+                        }
+
+                        JsonElement el;
+                        try {
+                            el = GsonUtil.parse(data.getObjectContent(), JsonElement.class);
+                        } catch (RuntimeException e) {
+                            String idPath = t.getId().toString() + Paths.get(obj.getKey().substring(namespace.length())).getFileName().toString();
+                            throw new EncodingNotSupportedException("Cannot create listing: Invalid JSON object at " + idPath);
+                        }
+
+                        p.getContains().add(el);
+                        done = true;
+                    } while (!done);
                 } else {
                     p.getContains().add(new JsonPrimitive(Paths.get(obj.getKey().substring(namespace.length())).getFileName().toString()));
                 }
+
                 p.setNext(Base64Util.encode(obj.getKey().substring(namespace.length()).getBytes(StandardCharsets.UTF_8)));
                 req.setPrefix(null);
                 req.setStartAfter(obj.getKey());
             }
 
             if (!res.isTruncated()) {
-                log.info("No more elements in scope");
+                log.debug("No more elements in scope");
                 break;
             }
-
-            log.info("Looping");
         } while (p.getContains().size() < pageMaxKeys);
 
-        log.info("Next token: {}", p.getNext());
+        log.debug("Next token: {}", p.getNext());
 
         return p;
     }
@@ -333,7 +390,7 @@ public class S3Store extends EntityBasedStore {
             obj.getObjectContent().close();
 
             Response r = new Response();
-            r.getHeaders().put(Headers.CONTENT_TYPE, obj.getObjectMetadata().getContentType());
+            r.setContentType(obj.getObjectMetadata().getContentType());
             r.getHeaders().put(Headers.CONTENT_LENGTH, Long.toString(obj.getObjectMetadata().getContentLength()));
             r.setBody(data);
 

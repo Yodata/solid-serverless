@@ -1,6 +1,8 @@
 // @ts-check
-const {Lambda} = require('aws-sdk')
+const logger = require('./logger')
+const { Lambda } = require('aws-sdk')
 const stringify = require('fast-safe-stringify').default
+const has = require('../lib/object-has')
 
 const defaultLambdaConfig = {
 	region: 'us-west-2'
@@ -17,20 +19,19 @@ const invokeLambdaFunction = async (FunctionName, event, lambdaConfig) => {
 	const config = Object.assign(defaultLambdaConfig, lambdaConfig)
 	const lambda = new Lambda(config)
 	const Payload = stringify(event)
-	const lambdaResponse = await lambda.invoke({FunctionName, Payload}).promise()
-	if (functionError(lambdaResponse)) {
+	const lambdaResponse = await lambda.invoke({ FunctionName, Payload }).promise()
+	if (has(lambdaResponse, 'FunctionError', false)) {
 		let message = lambdaResponse.Payload.toString()
-		let error = new Error(message)
-		error.name = `INVOKE_ERROR:${FunctionName}`
-		throw error
+		let name = `INVOKE_ERROR:${FunctionName}`
+		logger.error(name, { message })
+		throw new Error(name)
 	} else {
-		let payload = lambdaResponse.Payload.toString()
-		return JSON.parse(payload)
+		try {
+			return JSON.parse(lambdaResponse.Payload.toString())
+		} catch (e) {
+			return lambdaResponse.Payload.toString()
+		}
 	}
-}
-
-const functionError = response => {
-	return (typeof response.FunctionError !== 'undefined')
 }
 
 module.exports = invokeLambdaFunction

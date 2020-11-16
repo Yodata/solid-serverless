@@ -21,6 +21,7 @@ public class Response {
     private Map<String, String> headers = new HashMap<>();
     private String body;
     private boolean isBase64Encoded = true;
+    private String fileId;
 
     public int getStatus() {
         return status;
@@ -73,6 +74,14 @@ public class Response {
     public void setJsonBody(Object o) {
         setBody(GsonUtil.toJson(o).getBytes(StandardCharsets.UTF_8));
         setContentType(MimeTypes.APPLICATION_JSON);
+    }
+
+    public String getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
     }
 
 }

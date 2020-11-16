@@ -90,6 +90,18 @@ Required permissions for each component:
 - Memory: 128MB minimum, 192MB recommended
 - Timeout: 1 min
 
+#### Publish processor
+- Runtime: `Java 8`
+- Handler: `LambdaPublishProcessor::handleRequest`
+- Memory: 128MB minimum, 192MB recommended
+- Timeout: 1 min
+
+#### Notify processor
+- Runtime: `Java 8`
+- Handler: `LambdaNotifyProcessor::handleRequest`
+- Memory: 128MB minimum, 192MB recommended
+- Timeout: 1 min
+
 #### Outbox processor
 - Runtime: `Java 8`
 - Handler: `LambdaOutboxProcessor::handleRequest`
@@ -112,7 +124,11 @@ A subscription has the following structure:
   "object": "<URI of the resource to match>",
   "target": "<URI of where the notification should be sent>",
   "scope": {
-      "smth": "smth"
+    "smth": "smth"
+  },
+  "config": {
+    "arbitraryKey": "arbitraryValue",
+    "otherKey": "otherValue"
   },
   "needContext": false
 }
@@ -154,10 +170,49 @@ Example of valid URIs:
 
 ---
 
+---
+
+`config` is an arbitrary object depending on the scheme used in the URI. See below for more information.
+
+---
+
 `needContext` is a basic filter to remove personal/confidential/credentials data from the raw store event that triggered
 the subscription. It is `false` by default and will strip out those values.
 
+### Schemes
+#### HTTP
+```json
+{
+  "sign": {
+    "type": "sha1-salt",
+    "salt": "<If application, salt value to hash the payload with>"
+  },
+  "headers": {
+    "X-Header-Single-Value": [
+      "value"
+    ],
+    "X-Header-Multi-Values": [
+      "value1",
+      "value2"
+    ]
+  }
+}
+```
+
+##### Signatures
+
+HTTP requests can be signed
+
+The following signature methods are available:
+
+- `sha1-salt`: Following Github's [signature method](https://developer.github.com/webhooks/securing/), this is a SHA-1 signature on the body content and a given salt, usually called "secret".
+
+##### Headers
+
+Arbitrary headers can be set. Header names are set has an object key, and the value is an array of strings, to be RFC compliant.
+
 ### Files
+
 #### Pod-specific
 Pod-specific subscriptions are stored at `/settings/subscriptions` and can be modified by the pod owner directly.
 

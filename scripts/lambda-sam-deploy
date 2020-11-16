@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+SERVICE="$1"
+if [ -z "$SERVICE" ]; then
+	SERVICE=$(service-compute-name)
+fi
+
+sam deploy --region "$AWS_REGION" --capabilities CAPABILITY_IAM --template-file template-package.yaml --stack-name "$SERVICE" --parameter-overrides clientid="$CLIENT_ID"
+
+rc=$?
+if [ $rc -eq 255 ]; then
+	rc=0
+fi
+
+exit $rc

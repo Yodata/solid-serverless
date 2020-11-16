@@ -1,4 +1,3 @@
-const defaults = require('lodash/defaults')
 const logger = require('./logger')
 const client = require('./solid-client')
 
@@ -15,16 +14,16 @@ const policyDefaults = {
  * @param {object} event
  * @param {string} event.name - http uri of the policy
  * @param {object} event.value - the policy value
- * @returns {string} the policy iri
+ * @returns {Promise<string>} the policy iri
  */
 module.exports = async event => {
-	const DOMAIN = process.env.DOMAIN
+	const DOMAIN = String(process.env.DOMAIN || process.env.SOLID_HOST)
 	const policyName = event.name
-	const policy = defaults(event.value, policyDefaults)
+	const policy = Object.assign(policyDefaults, { value: event.value })
 	const body = JSON.stringify(policy)
-	const headers = {'Content-Type': 'application/ld+json'}
+	const headers = { 'Content-Type': 'application/ld+json' }
 	const iri = `https://${DOMAIN}/public/data-policy/${policyName}`
-	const result = await client.put(iri, {headers, body}).then(response => {
+	const result = await client.put(iri, { headers, body }).then(() => {
 		return iri
 	}).catch(error => {
 		logger.error(error.message, error)

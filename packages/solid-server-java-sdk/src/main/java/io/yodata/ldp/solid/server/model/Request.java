@@ -1,11 +1,11 @@
 package io.yodata.ldp.solid.server.model;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import io.yodata.Base64Util;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.model.transform.Policies;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -13,8 +13,14 @@ import java.util.*;
 
 public class Request {
 
+    public static Request post() {
+        Request r = new Request();
+        r.setMethod("POST");
+        return r;
+    }
+
     protected String id;
-    protected Instant timestamp;
+    protected Instant timestamp = Instant.now();
     protected SecurityContext security;
     protected String url;
     protected Target target;
@@ -26,6 +32,7 @@ public class Request {
     protected String body;
     protected Policies policy = new Policies();
     protected boolean isBase64Encoded = true;
+    protected boolean solidService = false;
 
     public String getId() {
         return id;
@@ -48,7 +55,11 @@ public class Request {
     }
 
     public Optional<String> getContentType() {
-        return rawHeaders.getOrDefault("content-type", Collections.emptyList()).stream().findFirst();
+        return rawHeaders.getOrDefault("content-type", Collections.emptyList()).stream()
+                .findFirst()
+                .map(ct -> StringUtils.substringBefore(ct, ";"))
+                .map(StringUtils::trimToEmpty)
+                .map(String::toLowerCase);
     }
 
     public void setContentType(String contentType) {
@@ -113,11 +124,15 @@ public class Request {
     }
 
     public List<String> getScope() {
-        return getAcl().computeEntity(getSecurity().getIdentity()).getScope();
+        return new ArrayList<>(getAcl().computeEntity(getSecurity().getIdentity()).getScope());
     }
 
     public void setAcl(Acl acl) {
         this.acl = acl;
+    }
+
+    public boolean hasBody() {
+        return StringUtils.isNotBlank(body);
     }
 
     public byte[] getBody() {
@@ -159,6 +174,19 @@ public class Request {
 
     public void setBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
+    }
+
+    public boolean isInternal() {
+        return solidService;
+    }
+
+    public void setInternal(boolean isInternal) {
+        solidService = isInternal;
+    }
+
+    public Request internal() {
+        setInternal(true);
+        return this;
     }
 
 }

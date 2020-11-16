@@ -1,0 +1,15 @@
+{
+  "type": "CreateAction",
+  "object": {
+    "type": "RealEstateAgent",
+    "givenName": "Laura26",
+    "additionalName": "",
+    "familyName": "Vierkandt27",
+    "email": "dave+bsmtest3@yodata.io",
+    "telephone": "408-482-8947",
+    "branchCode": "CA301-001",
+    "roleName": "Part Time Sales Professional",
+    "jobTitle": "Sales Associate",
+    "bmsID": "4323"
+  }
+}

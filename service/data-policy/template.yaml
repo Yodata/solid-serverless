@@ -1,26 +1,46 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  data policy service
-  serves functions: apply-policy get-policy
+Description: data policy service serves functions apply-policy get-policy
 
 Parameters:
   clientid:
     Type: String
+  solidkey:
+    Type: String
+  solidhost:
+    Type: String
+  datapolicysvchost:
+    Type: String
+  domain:
+    Type: String
+  nodeenv:
+    Type: String
+
 
 Globals:
   Function:
-    Timeout: 10
-    Runtime: nodejs8.10
+    Timeout: 30
+    Runtime: nodejs12.x
     Tags:
       app: solid-serverless
-      domain: dev.yodata.io
+      domain:
+        Ref: domain
     Environment:
       Variables:
-        NODE_ENV: development
-        DOMAIN: dev.yodata.io
+        NODE_ENV:
+          Ref: nodeenv
+        DOMAIN:
+          Ref: solidhost
         CLIENT_ID:
           Ref: clientid
+        SOLID_HOST:
+          Ref: solidhost
+        SOLID_KEY:
+          Ref: solidkey
+        DATA_POLICY_PATH: /public/yodata/data-policy.json
+        DATA_POLICY_SVC_HOST:
+          Ref: datapolicysvchost
+
 
 Resources:
   ApplyPolicyFunction:
@@ -29,7 +49,7 @@ Resources:
       CodeUri: src/
       Handler: index.applyPolicy
       FunctionName: 'apply-policy'
-      AutoPublishAlias: next
+      AutoPublishAlias: last
 
   GetPoliciesFunction:
     Type: AWS::Serverless::Function
@@ -37,6 +57,7 @@ Resources:
       CodeUri: src/
       Handler: index.getPolicies
       FunctionName: 'get-policies'
+      AutoPublishAlias: last
 
   SetPolicyFunction:
     Type: AWS::Serverless::Function
@@ -44,3 +65,4 @@ Resources:
       CodeUri: src/
       Handler: index.setPolicy
       FunctionName: 'set-policy'
+      AutoPublishAlias: last

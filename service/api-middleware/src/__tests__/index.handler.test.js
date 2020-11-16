@@ -1,27 +1,33 @@
-/* eslint-disable no-undef */
-const handler = require('..').handler
-const getData = require('../lib/get-event-data')
+// @ts-nocheck
 
-describe('api-middleware', () => {
-	
-	test('returns a Promise', () => {
+/* eslint-disable no-undef */
+jest.mock('../process-request.js')
+const { handler } = require('../index')
+
+describe('index.handler', () => {
+	let pr
+
+	beforeEach(() => {
+		pr = require('../process-request')
+	})
+
+
+	test('returns a Promise', async () => {
 		expect(handler).toBeInstanceOf(Function)
-		const event = require('../example/response.json')
-		const response = handler(event)
+		const event = require('../example/response')
+		const response = handler(event, {})
 		return expect(response).toBeInstanceOf(Promise)
 	})
 
-	test('example event/response', () => {
-		const event = require('../example/event.json')
-		const response = require('../example/response.json')
-		expect(handler(event)).resolves.toEqual(response)
+	test('calls process request', async () => {
+		const event = require('../example/event')
+		const id = Date.now()
+		event.id = id
+		expect.assertions(2)
+		return handler(event).then(res => {
+			expect(res).toHaveProperty('id', id)
+			expect(pr).toHaveBeenCalledWith(event)
+		})
 	})
 
-	test('parses uri object keys', async () => {
-		const event = require('../example/test-event.json')
-		const data = getData(event)
-		const response = await handler(event)
-		return expect(response.object).toEqual(data)
-	})
 })
-

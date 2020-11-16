@@ -3,7 +3,7 @@ const getEventData = require('../get-event-data')
 
 
 const createEvent = (phase, contentType, contentTypeValue, data) => {
-	const body = new Buffer(JSON.stringify(data)).toString('base64')
+	const body = Buffer.from(JSON.stringify(data)).toString('base64')
 	return ({
 		[phase]: {
 			headers: {

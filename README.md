@@ -3,6 +3,8 @@
 
 
 ## Resources
+
+- [Developer guide](dev.md) **<-- START HERE**
 - [AWS Deployment guide](deploy/aws/README.md)
 
 ## Services
@@ -10,7 +12,7 @@
 ### API
 
 - [Front](service/api-front/README.md)
-- [Key Manager](service/api-key-manager/README.md)
+- [Key Service](service/api-key-service/README.md)
 - [Middleware](service/api-middleware/README.md)
 
 ### Middleware
@@ -23,8 +25,11 @@
 - [validate-schema](service/validate-schema/README.md)
 
 ### Subscription
-
-- [Manager](service/subscription-manager/README.md)
+  - [Manager](service/subscription-manager/README.md) made of:
+  - Event processor
+  - Inbox processor
+  - Outbox processor
+  - Push processor
 
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FYodata%2Fsolid-serverless.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FYodata%2Fsolid-serverless?ref=badge_large)

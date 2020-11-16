@@ -58,8 +58,18 @@ public class GsonUtil {
         return l;
     }
 
+    public static List<JsonElement> asList(JsonArray a) {
+        List<JsonElement> l = new ArrayList<>();
+        a.forEach(l::add);
+        return l;
+    }
+
     public static <T> List<T> asList(JsonObject obj, String member, Class<T> c) {
         return asList(getArray(obj, member), c);
+    }
+
+    public static List<JsonElement> asList(JsonObject obj, String member) {
+        return asList(getArray(obj, member));
     }
 
     public static JsonObject makeObj(Object o) {
@@ -197,6 +207,21 @@ public class GsonUtil {
         return Optional.ofNullable(o.get(key));
     }
 
+    public static List<String> findArrayOrString(JsonObject o, String key) {
+        List<String> values = new ArrayList<>();
+        Optional<JsonElement> elOpt = findElement(o, key);
+        if (elOpt.isPresent()) {
+            JsonElement el = elOpt.get();
+            if (el.isJsonArray()) {
+                values.addAll(asList(el.getAsJsonArray(), String.class));
+            }
+            if (el.isJsonPrimitive()) {
+                values.add(el.getAsJsonPrimitive().getAsString());
+            }
+        }
+        return values;
+    }
+
     public static Optional<JsonPrimitive> findPrimitive(JsonObject o, String key) {
         return findElement(o, key).map(el -> el.isJsonPrimitive() ? el.getAsJsonPrimitive() : null);
     }
@@ -223,6 +248,11 @@ public class GsonUtil {
 
     public static Optional<JsonArray> findArray(JsonObject o, String key) {
         return findElement(o, key).filter(JsonElement::isJsonArray).map(JsonElement::getAsJsonArray);
+    }
+
+    public static String extractString(JsonObject o, String key, String defaultValue) {
+        List<String> data = findArrayOrString(o, key);
+        return data.isEmpty() ? defaultValue : data.get(0);
     }
 
     public static String toJson(Object o) {

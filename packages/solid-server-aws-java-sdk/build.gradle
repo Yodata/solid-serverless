@@ -1,6 +1,8 @@
 apply plugin: 'java-library'
 
 group = 'io.yodata.solid-server'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     jcenter()
@@ -14,4 +16,5 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
 }

@@ -1,0 +1,8 @@
+{
+	"redacttestdate": {
+		"effect": "Transform",
+		"processor": "Yodata",
+		"type": "DataPolicy",
+		"value": "{\"testdate\":{\"@redact\":true}}"
+	}
+}

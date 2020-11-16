@@ -1,28 +1,42 @@
 /* eslint-disable no-undef */
 const hasData = require('../request-has-data')
 
-const createRequest = (contentTypeKey, contentTypeValue) => ({
+const createRequest = (contentType, body = JSON.stringify({ type: 'test' })) => ({
 	headers: {
-		[contentTypeKey]: contentTypeValue
-	}
+		'content-type': contentType
+	},
+	body: body
 })
 
-test('content-type', () => {
-	const request = createRequest('content-type', 'application/json') 
-	expect(hasData(request)).toBe(true)
-})
-
-test('Content-Type', () => {
-	const request = createRequest('Content-Type', 'application/json') 
+test('json', () => {
+	const request = createRequest('application/json')
 	expect(hasData(request)).toBe(true)
 })
 
 test('json-ld', () => {
-	const request = createRequest('content-type', 'application/ld+json') 
+	const request = createRequest('application/ld+json')
 	expect(hasData(request)).toBe(true)
 })
 
-test('ContentType', () => {
-	const request = createRequest('Content-Type', 'text/turtle') 
+test('turtle', () => {
+	const request = createRequest('text/turtle')
+	expect(hasData(request)).toBe(false)
+})
+
+test('yaml', () => {
+	const request = createRequest('application/x-yaml')
+	expect(hasData(request)).toBe(true)
+})
+
+
+test('no body = false', () => {
+	const request = createRequest('application/x-yaml')
+	delete request.body
+	expect(hasData(request)).toBe(false)
+})
+
+test('empty body = false', () => {
+	const request = createRequest('application/x-yaml')
+	request.body = ''
 	expect(hasData(request)).toBe(false)
 })

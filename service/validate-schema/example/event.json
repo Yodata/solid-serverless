@@ -1,0 +1,13 @@
+{
+    "object": {
+        "type": "test"
+    },
+    "schema": {
+        "properties": {
+            "test": {
+                "type": "string",
+                "const": "test"
+            }
+        }
+    }
+}

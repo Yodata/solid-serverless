@@ -12,9 +12,18 @@ public class Target {
     }
 
     public static Target forPath(URI base, String path) {
+        base = URI.create(base.toString().toLowerCase());
         Target t = new Target(base.resolve(path));
         t.setAccessType(AclMode.Read);
         return t;
+    }
+
+    public static Target forProfileCard(URI base) {
+        return forPath(base, "/profile/card#me");
+    }
+
+    public static Target forProfileCard(String base) {
+        return forProfileCard(URI.create(base.toLowerCase()));
     }
 
     protected URI id;
@@ -45,7 +54,7 @@ public class Target {
     }
 
     public void setHost(String host) {
-        this.host = host;
+        this.host = host.toLowerCase();
     }
 
     public String getPath() {
@@ -71,7 +80,6 @@ public class Target {
     public boolean pathMatches(String globPattern) {
         String regexBuild = globPattern.replace("/*", "[^/]+(/?)").replace("*", "[^/]*(/?)");
         String regex = "^" + regexBuild + "$";
-        System.out.println("Regex: " + regex);
         return Pattern.compile(regex).matcher(getPath()).matches();
     }
 

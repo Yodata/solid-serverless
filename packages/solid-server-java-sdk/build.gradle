@@ -1,6 +1,8 @@
 apply plugin: 'java-library'
 
 group = 'io.yodata.solid-server'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     jcenter()

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+ENV_BOOTSTRAP="$(pwd)/env"
+
+echo "Checking for settings file at $ENV_BOOTSTRAP"
+if ! [ -f "$ENV_BOOTSTRAP" ]; then
+	echo
+	echo "Could not find your configuration file 'env'. Make sure the environment is configured before running the Docker image"
+	echo
+	exit 1
+fi
+
+. "$ENV_BOOTSTRAP"
+
+export SOLID_AWS_S3_BUCKET_PREFIX=$SOLID_COMPANY-$SOLID_PROJECT-$SOLID_ENV-solid
+export SOLID_AWS_S3_BUCKET_STORE=$SOLID_AWS_S3_BUCKET_PREFIX-storage
+export SOLID_AWS_S3_BUCKET_CREATE_VIEW=$SOLID_AWS_S3_BUCKET_PREFIX-$SOLID_SERVICE_CREATE_VIEW_NAME
+export SOLID_AWS_S3_BUCKET_API_MIDDLEWARE=$SOLID_AWS_S3_BUCKET_PREFIX-$SOLID_SERVICE_API_MIDDLEWARE_NAME
+export SOLID_AWS_S3_BUCKET_VALIDATE_SCHEMA=$SOLID_AWS_S3_BUCKET_PREFIX-$SOLID_SERVICE_VALIDATE_SCHEMA_NAME
+export SOLID_AWS_S3_BUCKET_CHECK_SCOPE=$SOLID_AWS_S3_BUCKET_PREFIX-$SOLID_SERVICE_VALIDATE_SCHEMA_NAME
+
+export AWS_DEFAULT_REGION="$AWS_REGION"
+
+export PATH=$HOME/src/scripts:$HOME/.local/bin:./node_modules/.bin:$PATH

@@ -1,0 +1,19 @@
+{
+  "name": "create-sfdc-contact",
+  "version": "0.0.0",
+  "description": "stub",
+  "main": "index.js",
+  "author": "yodaveduran <dave@yodata.io>",
+  "license": "MIT",
+  "private": "true",
+  "dependencies": {
+    "@yodata/logger": "^2.1.1"
+  },
+  "scripts": {
+    "test": "npx jest --env node"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.783.0",
+    "@types/jest": "^26.0.15"
+  }
+}

@@ -1,27 +1,13 @@
 # solid-serverless/create-view
 
-## deployment
+Processes data with a [yodata/transform](https://github.com/Yodata/yodata/tree/master/packages/transform#readme) context definition file.
 
-```bash
-# bundle the current code version
-> sam build
+## Usage
 
-# update the bundle to s3 using the given aws_profile
-# <account_name> must match one of hsf | rl | solid
-#
-> source package <account_name>
-
-# deploy the service
-# <account_name> must match one of hsf | rl | solid
-#
-> source deploy <account_name>
+```javascript
+const event = {
+  object: { },
+  context: 'https://subscriber.dev.yodata.io/public/context/stage/testcontext.cdef.yaml'
+}
 
 ```
-
-## test
-
-```bash
-> jest create-view
-```
-
-todo: update readme on service scripts to this content.

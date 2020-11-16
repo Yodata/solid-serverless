@@ -1,4 +1,4 @@
-const {transform, toLower} = require('lodash')
+const transform = require('lodash.transform')
 
 /**
  * Transform httpMessage.rawHeaders -> headers
@@ -10,7 +10,7 @@ const {transform, toLower} = require('lodash')
 module.exports = httpMessage => {
 	const headers = httpMessage.headers || httpMessage.rawHeaders || {}
 	return transform(headers, (object, value, key) => {
-		const K = toLower(key)
+		const K = String(key).toLowerCase()
 		let V
 		if (Array.isArray(value)) {
 			if (value.length === 1) {
@@ -22,5 +22,6 @@ module.exports = httpMessage => {
 			V = value
 		}
 		object[K] = V
+		return object
 	})
 }
