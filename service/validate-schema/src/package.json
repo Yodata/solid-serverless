@@ -6,9 +6,9 @@
   "author": "yodaveduran <dave@yodata.io>",
   "license": "MIT",
   "dependencies": {
-    "@yodata/logger": "^2.0.9",
-    "ajv": "^6.6.2",
-    "ajv-keywords": "^3.2.0",
+    "@yodata/logger": "^2.1.2",
+    "ajv": "^6.12.6",
+    "ajv-keywords": "^3.5.2",
     "json-schema-ref-parser": "^9.0.6"
   },
   "scripts": {

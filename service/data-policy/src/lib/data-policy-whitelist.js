@@ -20,13 +20,13 @@ function isWhiteListed(event) {
 
 	// master account always whitelisted
 	if (agent_host === SOLID_HOST) {
-		logger.debug('AGENT_IS_SOLID_HOST')
+		logger.debug(`agent ${agent_host} was whitelisted as the SOLID_HOST`)
 		return true
 	}
 
 	// data policy svc always whitelisted
 	if (agent_host === DATA_POLICY_SVC_HOST) {
-		logger.debug('AGENT_IS_DATA_POLICY_SVC_HOST')
+		logger.debug(`agent ${agent_host} was whitelisted as DATA_POLICY_SVC_HOST`)
 		return true
 	}
 
@@ -34,7 +34,11 @@ function isWhiteListed(event) {
 	if (String(DATA_POLICY_WL).length > 0) {
 		const whitelist = String(DATA_POLICY_WL).split(',')
 		const index = whitelist.findIndex((v) => (String(agent_host).includes(v)))
-		return (index >= 0) ? true : false
+		const result = (index >= 0) ? true : false
+		if (result == true) {
+			logger.debug(`${agent_host} was whitelested by DATA_POLICY_WL`)
+		}
+		return result
 	}
 	return false
 }

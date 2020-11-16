@@ -48,6 +48,7 @@ describe('data-policy-apply-policy', () => {
 				}
 			}
 		}
+		// @ts-ignore
 		const result = await applyPolicy(event)
 		expect(result).toHaveProperty('object')
 		expect(result).toHaveProperty('policy')
@@ -83,11 +84,31 @@ describe('data-policy-apply-policy', () => {
 			}
 		}
 
+		// @ts-ignore
 		let result = await applyPolicy(event)
-		expect(result).toHaveProperty('object.type','test')
+		expect(result).toHaveProperty('object.type', 'test')
 		expect(result).toHaveProperty('policy.global.removegolivedate.effect', 'Transform')
 		expect(result).toHaveProperty('object.additionalProperty.originalAffiliationDate', '@redact')
 		return expect(result).not.toHaveProperty('object.goLiveDate')
+	})
+
+	test('no policies returns event unchnaged', () => {
+		const event = {
+			agent: 'https://bob.example.com/profile/card#me',
+			object: {
+				password: 'test'
+			},
+			policy: {
+				local: {},
+				global: {},
+				default: {}
+			},
+			baz: 'bat'
+		}
+		expect(applyPolicy(event)).resolves.toBe(event)
+		delete event.policy
+		expect(applyPolicy(event)).resolves.toBe(event)
+
 	})
 
 

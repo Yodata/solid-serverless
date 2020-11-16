@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 
-const { EventBridge } = require('aws-sdk')
 const normalizeEvent = require('../normalize-event')
 let event
 
@@ -45,6 +44,7 @@ test('request-event', async () => {
 })
 
 test('response-event', async () => {
+	expect.assertions(4)
 	const eventData = { 'foo': 'bar' }
 	const event = {
 		request: createRequest('application/json', eventData),
