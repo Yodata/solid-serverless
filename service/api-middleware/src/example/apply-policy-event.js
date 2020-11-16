@@ -15,7 +15,7 @@ module.exports = {
 		'target': {
 			'id': 'https://dave.bhhs.dev.yodata.io/event/data/topic/realestate/profile/xxx',
 			'host': 'dave.bhhs.dev.yodata.io',
-			'path': '/publish/',
+			'path': '/profile/card',
 			'accessType': 'Read'
 		},
 		'acl': {

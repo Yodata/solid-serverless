@@ -26,6 +26,6 @@
     "url": "https://github.com/Yodata/solid-serverless/issues"
   },
   "dependencies": {
-    "@yodata/logger": "^2.0.9"
+    "@yodata/logger": "^2.1.2"
   }
 }

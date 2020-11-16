@@ -1,0 +1,29 @@
+{
+  "version": "0",
+  "items": [
+    {
+      "object": "/inbox/",
+      "target": "aws-sqs://sqs.us-west-2.amazonaws.com/479725367499/solid-server-inbox-processor"
+    },
+    {
+      "object": "/outbox/",
+      "target": "aws-sqs://sqs.us-west-2.amazonaws.com/479725367499/solid-server-outbox-processor"
+    },
+    {
+      "object": "/publish/",
+      "target": "aws-sqs://sqs.us-west-2.amazonaws.com/479725367499/solid-server-publish-processor-new"
+    },
+    {
+      "object": "/event/topic/yodata/subscription/",
+      "target": "aws-sqs://sqs.us-west-2.amazonaws.com/479725367499/solid-server-subscription-processor"
+    },
+    {
+      "object": "/profile/card",
+      "target": "aws-sqs://sqs.us-west-2.amazonaws.com/540541948463/solid-server-profile-storage-events-from-yodata-dev"
+    },
+    {
+      "object": "/profile/card",
+      "target": "aws-sqs://sqs.us-west-2.amazonaws.com/479725367499/CacheProfileStaging-InQueue-1A1FS6PEM8O4E"
+    }
+  ]
+}

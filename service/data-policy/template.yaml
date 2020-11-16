@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  data policy service
-  serves functions: apply-policy get-policy
+Description: data policy service serves functions apply-policy get-policy
 
 Parameters:
   clientid:
@@ -13,17 +11,24 @@ Parameters:
     Type: String
   datapolicysvchost:
     Type: String
+  domain:
+    Type: String
+  nodeenv:
+    Type: String
+
 
 Globals:
   Function:
-    Timeout: 10
+    Timeout: 30
     Runtime: nodejs12.x
     Tags:
       app: solid-serverless
-      domain: rl.hsfaffiliates.com
+      domain:
+        Ref: domain
     Environment:
       Variables:
-        NODE_ENV: production
+        NODE_ENV:
+          Ref: nodeenv
         DOMAIN:
           Ref: solidhost
         CLIENT_ID:

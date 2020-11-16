@@ -11,12 +11,13 @@
                 "effect": "Transform",
                 "value": "{\"password\": {\"value\":\"[PASSWORD]\"}}"
             },
-            "@id": "https://example.com/public/yodata/data-policy.json",
-            "id": "https://example.com/public/yodata/data-policy.json/",
-            "remotePolicy": "https://remote.example.com/public/yodata/remote-policy.json"
+            "duplicate": "https://example.com/duplicate-policy"
         },
         "global": {
-            "DeleteMe": "https://dev.bhhs.yodata.io/public/test/RemotePolicy.json"
+            "remotePolicy": "https://remote.example.com/public/yodata/remote-policy.json"
+        },
+        "default": {
+            "duplicate": "https://example.com/duplicate-policy"
         }
     }
 }

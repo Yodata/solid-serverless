@@ -17,7 +17,7 @@ const policyDefaults = {
  * @returns {Promise<string>} the policy iri
  */
 module.exports = async event => {
-	const DOMAIN = process.env.DOMAIN
+	const DOMAIN = String(process.env.DOMAIN || process.env.SOLID_HOST)
 	const policyName = event.name
 	const policy = Object.assign(policyDefaults, { value: event.value })
 	const body = JSON.stringify(policy)

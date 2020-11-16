@@ -5,6 +5,40 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "api-middleware:ApiMiddlewareFn",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "service/api-middleware/template.yaml",
+                "logicalId": "ApiMiddlewareFn"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "data-policy:ApplyPolicyFunction",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "service/data-policy/template.yaml",
+                "logicalId": "ApplyPolicyFunction"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {
+                    "SOLID_HOST": "bhhs.hsfaffiliates.com",
+                    "SOLID_KEY": "zmzJyTwgRJ7wCKg9S5Qzxp86xzXacJ6CkbxnAbCLGV",
+                    "DATA_POLICY_SVC_HOST": "dps.bhhs.hsfaffiliates.com",
+                    "DATA_POLICY_WL": "profile-,service-",
+                    "DATA_POLICY_PATH": "get:/profile/card,put"
+                }
+            }
+        },
+        {
             "type": "node",
             "name": "vscode-jest-tests",
             "request": "launch",

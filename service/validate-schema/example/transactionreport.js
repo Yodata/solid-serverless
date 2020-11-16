@@ -44,7 +44,7 @@ module.exports = {
 				'apn': 'ABC-12345-XX-XXXX',
 				'listingId': 'string',
 				'streetAddress': '1007 Mountain Gate Rd',
-				'addressRegion': 'New Jersey',
+				'addressRegion': 'NJ',
 				'addressLocality': 'Gotham City',
 				'postalCode': '10010',
 				'addressCountry': 'US',
