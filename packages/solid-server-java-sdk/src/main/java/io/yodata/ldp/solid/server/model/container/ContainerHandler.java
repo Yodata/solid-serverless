@@ -92,7 +92,9 @@ public class ContainerHandler extends GenericHandler {
         res.setBody(GsonUtil.makeObj("id", id));
         ex.setResponse(res);
 
-        return outCheck.post(ex);
+        res = outCheck.post(ex);
+        res.setFileId(id);
+        return res;
     }
 
 }

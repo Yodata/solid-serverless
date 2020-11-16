@@ -257,7 +257,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 } else {
                     log.info("Matching subscription already in place, removing");
 
-                    Request in = new Request();
+                    Request in = new Request().internal();
                     in.setMethod("PUT");
                     in.setTimestamp(Instant.now());
                     in.setTarget(Target.forPath(pod, "/settings/subscriptions"));

@@ -119,7 +119,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
-        Request r = Request.post();
+        Request r = Request.post().internal();
         r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
         r.setTarget(target);
         r.setBody(message);

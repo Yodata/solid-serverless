@@ -4,8 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.model.container.ContainerHandler;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
+import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import org.apache.commons.io.IOUtils;
@@ -26,17 +26,21 @@ public class App implements RequestStreamHandler {
 
     private static final Logger log = LoggerFactory.getLogger(App.class);
 
-    private ContainerHandler storeHandler;
+    private final SolidServer srv;
     private URI mainPod;
-    private boolean toSpecificPod;
+    private final String processorAgentId;
+    private final boolean toSpecificPod;
 
     public App() {
-        storeHandler = new ContainerHandler(S3Store.getDefault());
+        AmazonS3Config.register();
+        srv = new SolidServer(new AwsServerBackend());
 
         String mainPodUriRaw = System.getenv("BASE_POD_URI");
         if (StringUtils.isNotEmpty(mainPodUriRaw)) {
             mainPod = URI.create(mainPodUriRaw);
         }
+
+        processorAgentId = System.getenv("PROCESSOR_AGENT_URI");
 
         String toSpecificPodRaw = System.getenv("TO_SPECIFIC_POD");
         if (StringUtils.isEmpty(toSpecificPodRaw)) {
@@ -100,6 +104,7 @@ public class App implements RequestStreamHandler {
         notification.addProperty("topic", "realestate/profile#" + event.getType().replace("Action","").toLowerCase());
         notification.addProperty(ActionPropertyKey.Type.getId(), "Notification");
         notification.addProperty(ActionPropertyKey.Timestamp.getId(), Instant.now().toEpochMilli());
+        notification.addProperty(ActionPropertyKey.Agent.getId(), processorAgentId);
         notification.addProperty(ActionPropertyKey.Instrument.getId(), podId);
         notification.add("data", actionNew);
 
@@ -119,14 +124,13 @@ public class App implements RequestStreamHandler {
 
     private void send(URI base, SecurityContext sc, JsonObject notification) {
         Target target = Target.forPath(new Target(base), "/event/topic/realestate/profile/");
-        Request r = new Request();
-        r.setMethod("POST");
+        Request r = Request.post().internal();
         r.setTarget(target);
         r.setSecurity(sc);
         r.setBody(notification);
 
-        Response res = storeHandler.post(r);
-        String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
+        Response res = srv.post(r);
+        String eventId = GsonUtil.parseObj(res.getBody().orElse("{}".getBytes())).get("id").getAsString();
         log.info("Topic event was saved at {}", eventId);
     }
 

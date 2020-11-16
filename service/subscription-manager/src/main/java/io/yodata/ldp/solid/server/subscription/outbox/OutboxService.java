@@ -196,7 +196,7 @@ public class OutboxService {
             sc.setAgent(sc.getInstrument());
 
             // We build an internal request
-            Request r = Request.post();
+            Request r = Request.post().internal();
             r.setSecurity(sc);
             r.setTarget(new Target(recipientUri));
             r.setBody(data);

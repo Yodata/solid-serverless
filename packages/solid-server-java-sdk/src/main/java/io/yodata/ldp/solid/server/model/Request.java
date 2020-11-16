@@ -32,6 +32,7 @@ public class Request {
     protected String body;
     protected Policies policy = new Policies();
     protected boolean isBase64Encoded = true;
+    protected boolean solidService = false;
 
     public String getId() {
         return id;
@@ -173,6 +174,19 @@ public class Request {
 
     public void setBase64Encoded(boolean base64Encoded) {
         isBase64Encoded = base64Encoded;
+    }
+
+    public boolean isInternal() {
+        return solidService;
+    }
+
+    public void setInternal(boolean isInternal) {
+        solidService = isInternal;
+    }
+
+    public Request internal() {
+        setInternal(true);
+        return this;
     }
 
 }
