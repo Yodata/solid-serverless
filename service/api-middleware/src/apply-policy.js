@@ -27,12 +27,7 @@ const hasData = (event) => {
 // temporary fix for performance and data policy issues is only call the service on data profile reads
 const dataPolicyRequest = (event) => {
 	const DATA_POLICY_PATH = getEnvValue(event, 'DATA_POLICY_PATH', '/public/yodata/data-policy.json')
-	const SOLID_HOST = getEnvValue(event, 'SOLID_HOST', 'bhhs.dev.yodata.io')
-	const DATA_POLICY_SVC_HOST = getEnvValue(event, 'DATA_POLICY_SVC_HOST', `dps.${SOLID_HOST}`)
-	return (
-		has(event, 'request.target.path', DATA_POLICY_PATH)
-		|| has(event, 'agent', v => (String(v).includes(DATA_POLICY_SVC_HOST)))
-	)
+	return has(event, 'request.target.path', DATA_POLICY_PATH)
 }
 
 const isWhiteListed = (event) => {
