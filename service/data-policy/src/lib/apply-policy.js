@@ -5,6 +5,7 @@ const logger = require('./logger')
 const getPolicies = require('./get-policies')
 const { reduce } = require('p-iteration')
 const has = require('./object-has')
+const get = require('get-value')
 const isWhiteListed = require('./data-policy-whitelist')
 
 // event must have a policy to apply (duh)
@@ -14,21 +15,43 @@ const hasPolicy = (event) => {
 
 /**
  * Apply event.policy to event.object
- * @param {object} event
+ * @param {object} event - the api middleware event
  * @param {object} event.object - the data to be transformed
  * @param {object} event.policy - from pod:settings/yodata/data-policies.json
  * @param {string} event.agent - the event requestor
  * @returns {Promise<object>} - the event with object transformed
  */
 module.exports = async function ApplyDataPolicies(event) {
-	// if event.agent is data policy service (todo: add whitelist)
-	if (
-		!hasPolicy(event)
-		|| isWhiteListed(event)
-	) { return event }
+	// no policy no work
 
-	const policySet = await getPolicies(event)
-	event.object = await reduce(policySet, applyPolicy, event.object)
+	// test events (todo: formalize this pattern so we don't need to handcode)
+
+
+	if (!hasPolicy(event)) { return event }
+	// agent checks
+	if (typeof event.agent === 'string' && event.agent.startsWith('http')) {
+		//  abort if agent is whitelisted
+		if (isWhiteListed(event)) { return event }
+	}
+
+	let mustApplyDataPolicies = false
+	const { path, accessType } = get(event, 'request.target', { default: {} })
+
+	// test events (todo: formalize this pattern so we don't need to handcode)
+
+	if (accessType === 'read' && String(path) == '/profile/card') {
+		mustApplyDataPolicies = true
+	}
+
+	if (accessType == 'write' && String(path).startsWith('/outbox/')) {
+		mustApplyDataPolicies = true
+	}
+
+	if (mustApplyDataPolicies) {
+		const policySet = await getPolicies(event)
+		event.object = await reduce(policySet, applyPolicy, event.object)
+	}
+
 	return event
 }
 

@@ -17,7 +17,12 @@ describe('data-policy-apply-policy', () => {
 					}
 				}
 			},
-			baz: 'bat'
+			request: {
+				target: {
+					path: '/profile/card',
+					accessType: 'read'
+				}
+			}
 		}
 		const result = await applyPolicy(event)
 		expect(result).toHaveProperty('object')
@@ -45,6 +50,12 @@ describe('data-policy-apply-policy', () => {
 							}
 						}
 					}
+				}
+			},
+			request: {
+				target: {
+					accessType: 'write',
+					path: '/outbox/'
 				}
 			}
 		}
@@ -81,6 +92,12 @@ describe('data-policy-apply-policy', () => {
 					'originalAffiliationDate': '2020-10-21T19:49:01Z'
 				},
 				'goLiveDate': '2020-10-21T19:49:01Z'
+			},
+			request: {
+				target: {
+					path: '/outbox/',
+					accessType: 'write'
+				}
 			}
 		}
 
