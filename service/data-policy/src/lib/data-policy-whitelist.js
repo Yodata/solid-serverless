@@ -36,7 +36,7 @@ function isWhiteListed(event) {
 		const index = whitelist.findIndex((v) => (String(agent_host).includes(v)))
 		const result = (index >= 0) ? true : false
 		if (result == true) {
-			logger.debug(`${agent_host} was whitelested by DATA_POLICY_WL`)
+			logger.debug(`${agent_host} was whitelisted by DATA_POLICY_WL`)
 		}
 		return result
 	}
