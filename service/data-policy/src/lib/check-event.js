@@ -1,6 +1,5 @@
 // @ts-check
 
-const logger = require('./logger')
 const has = require('./object-has')
 const get = require('get-value')
 const isWhiteListed = require('./data-policy-whitelist')
@@ -15,6 +14,7 @@ const WRITE_ACCESS = 'Write'
 /**
  * @typedef CheckEventResponse
  * @property {string} object - id of the event or object
+ * @property {string} agent - event agent
  * @property {object} [result] - the result
  * @property {string} result.message = reponse/error message
  * @property {boolean} result.policyExecutionRequired	 - true if policy execution is necessary
@@ -44,25 +44,25 @@ const hasAgent = event => (typeof event.agent === 'string' && event.agent.starts
  */
 function checkEvent(event) {
 	// no policy no work
-	if (!hasPolicy(event)) return allClear('check-event:no-policy-found', event)
+	if (!hasPolicy(event)) return allClear('data-policy:skipped:no-policy', event)
 
-	if (!hasAgent(event)) return policyRequired('check-event:no-agent', event)
+	if (!hasAgent(event)) return policyRequired('data-policy:required:no-agent', event)
 
-	if (isWhiteListed(event)) return allClear(`check-event:is-white-listed:${event.agent}`, event)
+	if (isWhiteListed(event)) return allClear(`data-policy:skipped:white-list:${event.agent}`, event)
 
 	const { path, accessType } = get(event, 'request.target', { default: {} })
 
 	// test events (todo: formalize this pattern so we don't need to handcode)
 
 	if (accessType === READ_ACCESS && String(path) == PROFILE_PATH) {
-		return policyRequired('check-policy:profile-read', event)
+		return policyRequired('data-policy:required:profile-read', event)
 	}
 
 	if ((accessType == WRITE_ACCESS || accessType == APPEND_ACCESS) && String(path).startsWith(OUTBOX_PATH)) {
-		return policyRequired(`check-policy:outbox:${String(accessType).toLowerCase()}`, event)
+		return policyRequired(`data-policy:required:outbox-${String(accessType).toLowerCase()}`, event)
 	}
 
-	return allClear('check-event:no-matches', event)
+	return allClear('data-policy:no-matches', event)
 
 }
 
@@ -74,10 +74,9 @@ function checkEvent(event) {
  * @returns {CheckEventResponse}
  */
 const policyRequired = (message, event) => {
-	const { id } = event
-	logger.info(`${message}:${id}`, event)
 	return {
-		object: id,
+		object: get(event, 'request.url'),
+		agent: get(event, 'agent'),
 		result: {
 			message,
 			policyExecutionRequired: true

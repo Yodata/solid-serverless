@@ -5,15 +5,15 @@ const logger = require('./logger')
  * @param {function} fn - an async handler function
  * @param {string} name - handler name
  */
-const createHandler = (fn, name) => async (event, context) => {
+const createHandler = (fn, name) => async (event) => {
 	const { object } = event
 	try {
-		logger.debug(`start:${name}`, { object, context })
+		logger.debug(`start:${name}`)
 		event = await fn(event)
 	} catch (error) {
 		logger.error(`error:${name}:${error.message}`, { object })
 	}
-	logger.info(`completed:${name}`, { object })
+	logger.debug(`completed:${name}`)
 	return event
 }
 

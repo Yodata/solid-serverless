@@ -122,7 +122,7 @@ describe('check-event', () => {
 			const result = checkEvent(postevent)
 			expect(result).toHaveProperty('object', postevent.id)
 			expect(result).toHaveProperty('result.policyExecutionRequired', false)
-			expect(result).toHaveProperty('result.message', expect.stringContaining('policy'))
+			expect(result).toHaveProperty('result.message', expect.stringContaining('skipped:no-policy'))
 		})
 
 		test('policy should execute if there is no agent', () => {
@@ -131,7 +131,7 @@ describe('check-event', () => {
 			const result = checkEvent(postevent)
 			expect(result).toHaveProperty('object', postevent.id)
 			expect(result).toHaveProperty('result.policyExecutionRequired', true)
-			expect(result).toHaveProperty('result.message', expect.stringContaining('agent'))
+			expect(result).toHaveProperty('result.message', expect.stringContaining('required:no-agent'))
 		})
 
 		test('white-listed agent should return policyExecutionRequired false', () => {
@@ -143,7 +143,7 @@ describe('check-event', () => {
 			const result = checkEvent(postevent)
 			expect(result).toHaveProperty('object', postevent.id)
 			expect(result).toHaveProperty('result.policyExecutionRequired', false)
-			expect(result).toHaveProperty('result.message', expect.stringContaining('white'))
+			expect(result).toHaveProperty('result.message', expect.stringContaining('skipped:white'))
 		})
 
 		test('data policy execute on profile reads', () => {
@@ -153,7 +153,7 @@ describe('check-event', () => {
 			const result = checkEvent(postevent)
 			expect(result).toHaveProperty('object', postevent.id)
 			expect(result).toHaveProperty('result.policyExecutionRequired', true)
-			expect(result).toHaveProperty('result.message', expect.stringContaining('profile-read'))
+			expect(result).toHaveProperty('result.message', expect.stringContaining('required:profile-read'))
 		})
 
 		test('data policy execute on outbox post or put', () => {
@@ -163,7 +163,7 @@ describe('check-event', () => {
 			const result = checkEvent(postevent)
 			expect(result).toHaveProperty('object', postevent.id)
 			expect(result).toHaveProperty('result.policyExecutionRequired', true)
-			expect(result).toHaveProperty('result.message', expect.stringContaining('outbox:append'))
+			expect(result).toHaveProperty('result.message', expect.stringContaining('required:outbox-append'))
 		})
 
 	})

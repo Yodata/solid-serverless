@@ -15,13 +15,12 @@ const { checkEvent } = require('./check-event')
  * @returns {Promise<object>} - the event with object transformed
  */
 module.exports = async function ApplyDataPolicies(event) {
-	const { result } = checkEvent(event)
-
-	if (result.policyExecutionRequired) {
+	const response = checkEvent(event)
+	logger.info(response)
+	if (response.result.policyExecutionRequired) {
 		const policySet = await getPolicies(event)
 		event.object = await reduce(policySet, applyPolicy, event.object)
 	}
-
 	return event
 }
 
