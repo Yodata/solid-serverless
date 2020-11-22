@@ -20,7 +20,7 @@ describe('data-policy-apply-policy', () => {
 			request: {
 				target: {
 					path: '/profile/card',
-					accessType: 'read'
+					accessType: 'Read'
 				}
 			}
 		}
@@ -54,7 +54,7 @@ describe('data-policy-apply-policy', () => {
 			},
 			request: {
 				target: {
-					accessType: 'write',
+					accessType: 'Append',
 					path: '/outbox/'
 				}
 			}
@@ -96,7 +96,7 @@ describe('data-policy-apply-policy', () => {
 			request: {
 				target: {
 					path: '/outbox/',
-					accessType: 'write'
+					accessType: 'Write'
 				}
 			}
 		}
@@ -109,7 +109,7 @@ describe('data-policy-apply-policy', () => {
 		return expect(result).not.toHaveProperty('object.goLiveDate')
 	})
 
-	test('no policies returns event unchnaged', () => {
+	test('no policies returns event unchanged', () => {
 		const event = {
 			agent: 'https://bob.example.com/profile/card#me',
 			object: {

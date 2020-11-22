@@ -7,5 +7,5 @@ describe('Tests index', () => {
 		const result = await handler(event, context)
 		return expect(result).toMatchObject(response)
 	})
-})
 
+})
