@@ -2,9 +2,7 @@ package io.yodata.ldp.solid.server.subscription.inbox;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.store.S3Store;
 import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
-import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
 import io.yodata.ldp.solid.server.model.transform.TransformService;
@@ -45,8 +43,8 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         }
 
         JsonObject message = opt.get();
-        String topic = GsonUtil.findString(message, "topic").orElse("");
-        if (StringUtils.isBlank(topic)) {
+        PublishContext pb = srv.getPublishContext(message);
+        if (StringUtils.isBlank(pb.getTopic())) {
             log.info("No topic found, ignoring as Topic event");
             return;
         }
@@ -62,27 +60,9 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         String identity = c.ev.getRequest().getSecurity().getIdentity();
         log.info("Checking for permissions of {}", identity);
 
-        Subscriptions subs = srv.store().getSubscriptions(hostId);
-        String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
-        if (StringUtils.isNotBlank(subManager)) {
-            String subManagerId = Target.forProfileCard(subManager).getId().toString();
-            Subscription sub = new Subscription();
-            sub.setId("subscription-manager-onthefly-add");
-            sub.setAgent(subManagerId);
-            sub.getPublishes().add("yodata/subscription");
-            subs.getItems().add(sub);
-        }
-
-        Optional<Subscription> subOpt = Optional.ofNullable(subs.toAgentMap().get(identity));
-        Subscription sub;
-        if (!subOpt.isPresent()) {
-            log.info("No subscription(s) present for {}, we allow per default", identity);
-        } else {
-            sub = subOpt.get();
-            if (sub.getPublishes().stream().noneMatch(t -> Topic.matches(t, topic))) {
-                log.info("{} is not allowed to publish to the topic {}, skipping", identity, topic);
-                return;
-            }
+        if (!srv.canPublish(hostId, URI.create(identity), pb.getTopic())) {
+            log.info("Not authorized to publish: from {} on topic {}", identity, pb.getTopic());
+            return;
         }
 
         log.info("Normalizing event {}", c.ev.getId());
@@ -92,7 +72,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             TransformMessage msg = new TransformMessage();
             msg.setSecurity(c.ev.getRequest().getSecurity());
             msg.setScope(c.scope);
-            msg.setPolicy(S3Store.getDefault().getPolicies(c.ev.getRequest().getTarget().getId()));
+            msg.setPolicy(srv.store().getPolicies(c.ev.getRequest().getTarget().getId()));
             msg.setObject(message);
             JsonObject data = transform.transform(msg);
             if (data.keySet().isEmpty()) {
@@ -103,7 +83,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             message = data;
         }
 
-        String topicPath = StringUtils.defaultIfBlank(topic, "");
+        String topicPath = pb.getTopic();
         if (topicPath.contains(":")) {
             String[] splitValues = StringUtils.split(topicPath, ":", 2);
             topicPath = splitValues[1];
@@ -118,15 +98,14 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
             topicPath = topicPath + "/";
         }
 
-        Target target = Target.forPath(new Target(URI.create(c.ev.getId())), "/event/topic/" + topicPath);
+        Target target = Target.forPath(new Target(URI.create(c.ev.getId())), Subscriptions.BASE_PATH + topicPath);
         Request r = Request.post().internal();
         r.setSecurity(c.ev.getRequest().getSecurity()); // We use the original agent and instrument
         r.setTarget(target);
         r.setBody(message);
 
         Response res = srv.post(r);
-        String eventId = GsonUtil.parseObj(res.getBody().get()).get("id").getAsString();
-        log.info("Topic event was saved at {}", eventId);
+        log.info("Topic event was saved at {}", res.getFileId());
     }
 
 }
