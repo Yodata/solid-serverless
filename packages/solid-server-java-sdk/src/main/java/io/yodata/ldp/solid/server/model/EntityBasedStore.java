@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
+import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.transform.Policies;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -208,7 +209,7 @@ public abstract class EntityBasedStore implements Store {
         return subs;
     }
 
-    private List<Subscription> getGlobalSubscriptions() {
+    private List<Subscription> getExtractedGlobalSubscriptions() {
         log.info("Getting global subscriptions");
         List<Subscription> subs = new ArrayList<>();
         String entPath = "global/subscriptions";
@@ -220,8 +221,23 @@ public abstract class EntityBasedStore implements Store {
     public List<Subscription> getAllSubscriptions(URI entity) {
         log.info("Getting all subscriptions for {}", entity);
         List<Subscription> subs = getInternalSubscriptions();
-        subs.addAll(getGlobalSubscriptions());
+        subs.addAll(getExtractedGlobalSubscriptions());
         subs.addAll(getEntitySubscriptions(entity));
+        return subs;
+    }
+
+    @Override
+    public Subscriptions getGlobalSubscriptions() {
+        Subscriptions subs = GsonUtil.get().fromJson(getRawSubscriptions(getData("global/subscriptions")), Subscriptions.class);
+        String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
+        if (StringUtils.isNotBlank(subManager)) {
+            String subManagerId = Target.forProfileCard(subManager).getId().toString();
+            Subscription sub = new Subscription();
+            sub.setId("subscription-manager-onthefly-add");
+            sub.setAgent(subManagerId);
+            sub.getPublishes().add("yodata/subscription");
+            subs.getItems().add(sub);
+        }
         return subs;
     }
 
@@ -230,30 +246,25 @@ public abstract class EntityBasedStore implements Store {
         return GsonUtil.get().fromJson(getRawSubscriptions(entity), Subscriptions.class);
     }
 
-    @Override
-    public JsonObject getRawSubscriptions(URI entity) {
-        Optional<String> rawOpt = findEntityData(entity, SUBS_PATH);
-
-        String raw;
-        if (rawOpt.isPresent()) {
-            raw = rawOpt.get();
-        } else {
-            log.info("No subscriptions file for {}, using empty", entity);
-            raw = "{}";
-        }
-
+    public JsonObject getRawSubscriptions(Optional<String> rawOpt) {
+        String raw = rawOpt.orElse("{}");
         JsonElement rawEl = GsonUtil.parse(raw);
         if (rawEl.isJsonArray()) {
-            log.info("Old format, we turn info an object");
+            log.debug("Old format, we turn info an object");
             rawEl = GsonUtil.makeObj("items", rawEl);
         }
 
         if (!rawEl.isJsonObject()) { //
-            log.info("Invalid format, we ignore");
+            log.debug("Invalid format, we ignore");
             rawEl = GsonUtil.makeObj("version", "1");
         }
 
         return rawEl.getAsJsonObject();
+    }
+
+    @Override
+    public JsonObject getRawSubscriptions(URI entity) {
+        return getRawSubscriptions(findEntityData(entity, SUBS_PATH));
     }
 
     @Override

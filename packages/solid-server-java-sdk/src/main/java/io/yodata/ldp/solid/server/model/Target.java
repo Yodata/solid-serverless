@@ -1,5 +1,7 @@
 package io.yodata.ldp.solid.server.model;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.URI;
 import java.util.regex.Pattern;
 
@@ -19,7 +21,11 @@ public class Target {
     }
 
     public static Target forProfileCard(URI base) {
-        return forPath(base, "/profile/card#me");
+        String baseRaw = base.toString();
+        if (StringUtils.startsWithIgnoreCase(baseRaw, "http://")) {
+            baseRaw = StringUtils.replaceOnceIgnoreCase(baseRaw, "http://", "https://");
+        }
+        return forPath(URI.create(baseRaw), "/profile/card#me");
     }
 
     public static Target forProfileCard(String base) {

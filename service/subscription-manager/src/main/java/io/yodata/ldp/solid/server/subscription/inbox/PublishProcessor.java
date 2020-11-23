@@ -60,7 +60,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         String identity = c.ev.getRequest().getSecurity().getIdentity();
         log.info("Checking for permissions of {}", identity);
 
-        if (!srv.canPublish(hostId, URI.create(identity), pb.getTopic())) {
+        if (!srv.canPublish(URI.create(identity), hostId, pb.getTopic())) {
             log.info("Not authorized to publish: from {} on topic {}", identity, pb.getTopic());
             return;
         }

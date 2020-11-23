@@ -164,29 +164,20 @@ public class SolidServer {
 
     public boolean canPublish(URI senderId, URI receiverId, String topic) {
         Subscriptions subs = store.getSubscriptions(receiverId);
-        String subManager = Configs.get().find("reflex.subscription.manager.id").orElse("");
-        if (StringUtils.isNotBlank(subManager)) {
-            String subManagerId = Target.forProfileCard(subManager).getId().toString();
-            Subscription sub = new Subscription();
-            sub.setId("subscription-manager-onthefly-add");
-            sub.setAgent(subManagerId);
-            sub.getPublishes().add("yodata/subscription");
-            subs.getItems().add(sub);
-        }
+        return canPublish(senderId, subs, topic).orElseGet(() -> {
+            Subscriptions globalSubs = store.getGlobalSubscriptions();
+            return canPublish(senderId, globalSubs, topic).orElse(true);
+        });
+    }
 
+    public Optional<Boolean> canPublish(URI senderId, Subscriptions subs, String topic) {
         Optional<Subscription> subOpt = Optional.ofNullable(subs.toAgentMap().get(senderId.toString()));
-        Subscription sub;
         if (!subOpt.isPresent()) {
-            log.info("No subscription(s) present for {}, we allow per default", senderId);
+            return Optional.empty();
         } else {
-            sub = subOpt.get();
-            if (sub.getPublishes().stream().noneMatch(t -> Topic.matches(t, topic))) {
-                log.info("{} is not allowed to publish to the topic {}", senderId, topic);
-                return false;
-            }
-
+            Subscription sub = subOpt.get();
+            return Optional.of(sub.getPublishes().stream().anyMatch(t -> Topic.matches(t, topic)));
         }
-        return true;
     }
 
     private void validatePublish(Request in) {
@@ -219,7 +210,7 @@ public class SolidServer {
             throw new BadRequestException("No recipient found");
         }
 
-        URI senderId = in.getTarget().getId();
+        URI senderId = Target.forProfileCard(in.getTarget().getId()).getId();
         for (String recipient : c.getRecipients()) {
             URI recipientId;
             try {

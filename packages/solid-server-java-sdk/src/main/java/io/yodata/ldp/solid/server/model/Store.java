@@ -50,6 +50,13 @@ public interface Store {
 
     List<Subscription> getAllSubscriptions(URI entity);
 
+    /**
+     * Get the global subscriptions
+     *
+     * @return
+     */
+    Subscriptions getGlobalSubscriptions();
+
     Subscriptions getSubscriptions(URI entity);
 
     JsonObject getRawSubscriptions(URI entity);
