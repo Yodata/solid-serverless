@@ -78,7 +78,7 @@ exports.isJSON = isJSON
  * @param {object} [event.error]
  */
 exports.applyDataPolicy = async (event) => {
-	if (hasData(event) && hasPolicy(event) && isJSON(event) && !isWhiteListed(event) && !dataPolicyRequest(event)) {
+	if (hasData(event) && hasPolicy(event) && !isWhiteListed(event) && !dataPolicyRequest(event)) {
 		const functionName = getEnvValue(event, 'APPLY_POLICY_FUNCTION_NAME', 'apply-policy')
 		await invoke(functionName, event)
 			.then(response => {

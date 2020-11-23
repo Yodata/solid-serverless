@@ -42,8 +42,8 @@ const createRequest = (method = 'GET', path = '/profile/card', contentType = 'ap
 			'host': 'buyside.bhhs.hsfaffiliates.com',
 			'path': '/publish/f0f813b4132f4a9782aab61710186412'
 		},
-		'acl': {
-			'default': {
+		acl: {
+			default: {
 				'modes': [],
 				'scope': []
 			},

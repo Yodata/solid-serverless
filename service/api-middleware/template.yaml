@@ -2,6 +2,43 @@ AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: solid-serverless api
 
+Parameters:
+  applypolicyfn:
+    Type: String
+    Default: apply-policy
+  bmstransactionfn:
+    Type: String
+    Default: production-bms-transaction
+  checkscopefn:
+    Type: String
+    Default: check-scope
+  createviewfn:
+    Type: String
+    Default: create-view
+  createsfdccontact:
+    Type: String
+    Default: production-create-sfdc-contact
+  datapolicysvchost:
+    Type: String
+  datapolicywl:
+    Type: String
+    Default: profile-,service-
+  solidkey:
+    Type: String
+  solidhost:
+    Type: String
+  defaultjsonldcontext:
+    Type: String
+  nodeenv:
+    Type: String
+    Default: production
+  loglevel:
+    Type: String
+    Default: info
+  validateschemafn:
+    Type: String
+    Default: validate-schema
+
 Globals:
   Function:
     Timeout: 30
@@ -11,17 +48,32 @@ Globals:
       component: api-middleware
     Environment:
       Variables:
-        APPLY_POLICY_FUNCTION_NAME: apply-policy
-        BMS_TRANSACTION_FUNCTION_NAME: staging-bms-transaction
-        CHECK_SCOPE_FUNCTION_NAME: check-scope
-        CREATE_SFDC_CONTACT_FUNCTION_NAME: staging-create-sfdc-contact
-        CREATE_VIEW_FUNCTION_NAME: create-view
-        DATA_POLICY_SVC_HOST: dps.bhhs.hsfaffiliates.com
-        DATA_POLICY_WL: profile-,service-
-        DEFAULT_JSONLD_CONTEXT: 'https://dev.yodata.io/public/real-estate/context.json'
-        LOG_LEVEL: debug
-        SOLID_HOST: bhhs.hsfaffiliates.com
-        VALIDATE_SCHEMA_FUNCTION_NAME: validate-schema
+        APPLY_POLICY_FUNCTION_NAME:
+          Ref: applypolicyfn
+        BMS_TRANSACTION_FUNCTION_NAME:
+          Ref: bmstransactionfn
+        CHECK_SCOPE_FUNCTION_NAME:
+          Ref: checkscopefn
+        CREATE_SFDC_CONTACT_FUNCTION_NAME:
+          Ref: createsfdccontact
+        CREATE_VIEW_FUNCTION_NAME:
+          Ref: createviewfn
+        DATA_POLICY_SVC_HOST:
+          Ref: datapolicysvchost
+        DATA_POLICY_WL:
+          Ref: datapolicywl
+        DEFAULT_JSONLD_CONTEXT:
+          Ref: defaultjsonldcontext
+        LOG_LEVEL:
+          Ref: loglevel
+        SOLID_HOST:
+          Ref: solidhost
+        SOLID_KEY:
+          Ref: solidkey
+        VALIDATE_SCHEMA_FUNCTION_NAME:
+          Ref: validateschemafn
+        NODE_ENV:
+          Ref: nodeenv
 
 
 

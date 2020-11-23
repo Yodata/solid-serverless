@@ -13,7 +13,9 @@ const WRITE_ACCESS = 'Write'
 
 /**
  * @typedef CheckEventResponse
- * @property {string} object - id of the event or object
+ * @property {object} object - event
+ * @property {string} [object.id] - event id
+ * @property {string} [object.url] - event id
  * @property {string} agent - event agent
  * @property {object} [result] - the result
  * @property {string} result.message = reponse/error message
@@ -46,8 +48,6 @@ function checkEvent(event) {
 	// no policy no work
 	if (!hasPolicy(event)) return allClear('data-policy:skipped:no-policy', event)
 
-	if (!hasAgent(event)) return policyRequired('data-policy:required:no-agent', event)
-
 	if (isWhiteListed(event)) return allClear(`data-policy:skipped:white-list:${event.agent}`, event)
 
 	const { path, accessType } = get(event, 'request.target', { default: {} })
@@ -62,6 +62,8 @@ function checkEvent(event) {
 		return policyRequired(`data-policy:required:outbox-${String(accessType).toLowerCase()}`, event)
 	}
 
+	// if (!hasAgent(event)) return policyRequired('data-policy:required:no-agent', event)
+
 	return allClear('data-policy:no-matches', event)
 
 }
@@ -75,8 +77,11 @@ function checkEvent(event) {
  */
 const policyRequired = (message, event) => {
 	return {
-		object: get(event, 'request.url'),
 		agent: get(event, 'agent'),
+		object: {
+			id: get(event, 'id'),
+			url: get(event, 'request.url')
+		},
 		result: {
 			message,
 			policyExecutionRequired: true

@@ -15,6 +15,9 @@ Parameters:
     Type: String
   nodeenv:
     Type: String
+  loglevel:
+    Type: String
+    Default: info
 
 
 Globals:
@@ -30,7 +33,7 @@ Globals:
         NODE_ENV:
           Ref: nodeenv
         DOMAIN:
-          Ref: solidhost
+          Ref: domain
         CLIENT_ID:
           Ref: clientid
         SOLID_HOST:
@@ -40,6 +43,8 @@ Globals:
         DATA_POLICY_PATH: /public/yodata/data-policy.json
         DATA_POLICY_SVC_HOST:
           Ref: datapolicysvchost
+        LOG_LEVEL:
+          Ref: loglevel
 
 
 Resources:
