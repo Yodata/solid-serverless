@@ -3,10 +3,7 @@ package io.yodata.ldp.solid.server.undertow.handler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.exception.EncodingNotSupportedException;
-import io.yodata.ldp.solid.server.exception.ForbiddenException;
-import io.yodata.ldp.solid.server.exception.NotFoundException;
-import io.yodata.ldp.solid.server.exception.UnauthorizedException;
+import io.yodata.ldp.solid.server.exception.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +41,7 @@ public class ExceptionHandler extends BasicHttpHandler {
             putHeader(exchange, "Pragma", "no-cache");
 
             h.handleRequest(exchange);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | BadRequestException e) {
             writeBody(exchange, 400, GsonUtil.makeObj("error", e.getMessage()));
         } catch (UnauthorizedException e) {
             writeBody(exchange, 401, GsonUtil.makeObj("error", e.getMessage()));

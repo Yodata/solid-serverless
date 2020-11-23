@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 public class Subscriptions {
 
+    public static String BASE_PATH = "/event/topic/";
+
     public static List<Subscription> toMatchList(Subscriptions subsMap) {
         List<Subscription> subsList = new ArrayList<>();
         for (Subscription sub : subsMap.items) {
@@ -29,7 +31,7 @@ public class Subscriptions {
                     for (String topic : topics) {
                         Subscription subNew = new Subscription();
                         subNew.setAgent(sub.getAgent());
-                        subNew.setObject("/event/topic/" + topic);
+                        subNew.setObject(BASE_PATH + topic);
                         subNew.setTarget(sub.getAgent());
                         subsList.add(subNew);
                     }
