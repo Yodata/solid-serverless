@@ -101,7 +101,7 @@ public abstract class EntityBasedStore implements Store {
     public boolean save(Request in) {
         String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
         boolean exists = exists(path);
-        save(in.getContentType().orElse("application/octet-stream"), in.getBody(), path);
+        save(in.getContentType().orElse(MimeTypes.APPLICATION_OCTET_STREAM), in.getBody(), path);
         return exists;
     }
 
@@ -303,7 +303,7 @@ public abstract class EntityBasedStore implements Store {
         if (Objects.nonNull(timestamp)) {
             meta.put("X-Solid-Serverless-Timestamp", Long.toString(timestamp.toEpochMilli()));
         }
-        save(in.getContentType().orElse("application/octet-stream"), in.getBody(), byIdPath, meta);
+        save(in.getContentType().orElse(MimeTypes.APPLICATION_OCTET_STREAM), in.getBody(), byIdPath, meta);
 
         if (Objects.nonNull(timestamp)) {
             log.debug("Timestamp: {}", timestamp.toEpochMilli());
