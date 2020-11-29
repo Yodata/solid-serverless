@@ -18,8 +18,8 @@ public class AwsServerBackend implements ServerBackend {
 
     public AwsServerBackend() {
         evBus = new AwsSnsEventBus();
-        inValProc = new LambdaInValidationProcessor();
-        outValProc = new LambdaOutValidationProcessor();
+        inValProc = new LambdaInValidationProcessor(S3Store.getDefault());
+        outValProc = new LambdaOutValidationProcessor(S3Store.getDefault());
     }
 
     @Override

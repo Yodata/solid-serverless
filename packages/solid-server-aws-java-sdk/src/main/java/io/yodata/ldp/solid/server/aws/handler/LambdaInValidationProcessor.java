@@ -9,6 +9,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.Exchange;
+import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.processor.InputValidationProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,7 +24,8 @@ public class LambdaInValidationProcessor extends LambdaValidationProcessor imple
     private final String lambdaName;
     private final AWSLambda lambda;
 
-    public LambdaInValidationProcessor() {
+    public LambdaInValidationProcessor(Store s) {
+        super(s);
         lambdaName = Configs.get().get("aws.lambda.middleware.in");
         lambda = AWSLambdaClientBuilder.defaultClient();
     }

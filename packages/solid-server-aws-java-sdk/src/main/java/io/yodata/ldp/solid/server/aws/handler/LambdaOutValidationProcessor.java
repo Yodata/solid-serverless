@@ -11,6 +11,7 @@ import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.Exchange;
 import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,7 +27,8 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
     private final String lambdaName;
     private final AWSLambda lambda;
 
-    public LambdaOutValidationProcessor() {
+    public LambdaOutValidationProcessor(Store s) {
+        super(s);
         lambdaName = Configs.get().get("aws.lambda.middleware.out");
         DefaultAWSCredentialsProviderChain credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
         lambda = AWSLambdaClientBuilder.standard()
