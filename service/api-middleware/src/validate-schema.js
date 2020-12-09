@@ -48,7 +48,7 @@ async function validateSchema(event) {
 		}
 		let response = await invokeLambdaFunction(functionName, props)
 		if (!response.isValid) {
-			event.object = response.errors || response.error || response.message || 'oh shit'
+			event.object = response.errors || response.error || response.message || 'validate-schema:unknown-error-type'
 			event.response = {
 				status: '400',
 				headers: {

@@ -1,3 +1,3 @@
 module.exports = {
-	'realestate/franchise#transactionreport': 'https://raw.githubusercontent.com/Yodata/real-estate/master/www/schemas/franchise/franchise.transactionreport.yaml'
+	'realestate/franchise#transactionreport': 'https://validate-schema.bhhs.hsfaffiliates.com/public/schema/realestate/franchise/transactionreport.json'
 }
