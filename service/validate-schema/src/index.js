@@ -5,9 +5,9 @@ const schemaParser = require('json-schema-ref-parser')
  * What does your function do?
  * @param {object} event
  * @param {object} event.object - the item to be validated
- * @param {object|string} event.schema - a validate json-schema (draft 7)
- * @param {boolean} [event.isValid] - response item
- * @param {string} [event.errors] - response item
+ * @param {object|string} event.schema - the json schema validation definition
+ * @param {boolean} [event.isValid] - true when event is valid
+ * @param {object[]} [event.errors] - response item
  * @param {object} [event.error] - response item
  *
  * @returns {Promise<Response>} response
@@ -16,17 +16,24 @@ const schemaParser = require('json-schema-ref-parser')
  * @property {object} object - the item to be validated
  * @property {object|string} schema - the schma (object) or URI to the schema
  * @property {boolean} [isValid] - true if the event schema was successfully validated
- * @property {string} [errors] - error message
+ * @property {object[]} [errors] - error message
  * @property {string} [error] - error message
  */
 exports.handler = async (event) => {
 	let { object, schema } = event
 	try {
 		if (typeof schema === 'string' && schema.startsWith('http')) {
-			schema = await schemaParser.dereference(schema).then(result => (result.payload ? result.payload : result))
+			schema = await schemaParser.dereference(schema)
+				.then(dereferencedSchema => {
+					if (typeof dereferencedSchema === 'object' && typeof dereferencedSchema[ 'payload' ] === 'object') {
+						return dereferencedSchema[ 'payload' ]
+					} else {
+						return dereferencedSchema
+					}
+				})
 			event.schema = schema
 		}
-		const ajv = new Ajv()
+		const ajv = new Ajv({ allErrors: true })
 		const validate = ajv.compile(schema)
 		event.isValid = await validate(object)
 		if (!event.isValid) {
@@ -37,7 +44,12 @@ exports.handler = async (event) => {
 		}
 	} catch (error) {
 		event.isValid = false
-		event.errors = error.message
+		event.errors = [
+			{
+
+				message: error.message
+			}
+		]
 		event.error = {
 			message: error.message,
 			stack: error.stack
