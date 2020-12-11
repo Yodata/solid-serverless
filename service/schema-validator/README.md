@@ -1,17 +1,4 @@
-# Deployment Process
-    * Set profile in app.arc 
-    * Run command => arc deploy
-# Run Test
-    * cd schema-validator/
-    * Run command => npm test
-# Request Format
-    {
-        event: {},
-        config: {
-            schemaURL
-        }
-    }
-# Resonse Format
-    {   
-        "isValid": true
-    }
+# deprecated
+
+This serice has been deprecated and replaced by the [validate-schema](../validate-schema/) serice in the same repo
+
