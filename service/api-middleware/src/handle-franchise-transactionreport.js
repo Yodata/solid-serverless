@@ -53,17 +53,10 @@ async function handleFranchiseTransactionReport(event) {
 		logger.debug('invoking-bms-transaction', { event })
 		await callBmsTransaction(event)
 			.then((response = {}) => {
-				logger.debug('bms-transactin-result', { response })
-				let object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
-				event.object = Object.assign(object, {
-					actionStatus: object.actionStatus || (response.status < 300) ? 'CompletedActionStatus' : 'FailedActionStatus'
-				})
-				let status = response.status || response.statusCode || 201
-				event.response = Object.assign(response, {
-					status: Number(status),
-					statusCode: String(status),
-					end: true
-				})
+				event.object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
+				event.object.actionStatus = 'CompletedActionStatus'
+				response.status = response.statusCode
+				event.response = response
 			})
 			.catch(error => {
 				event.object = Object.assign(event.object, {
@@ -74,9 +67,8 @@ async function handleFranchiseTransactionReport(event) {
 					}
 				})
 				event.response = {
-					status: 400,
-					statusCode: '400',
-					end: true,
+					status: '400',
+					statusCode: 400,
 					headers: {
 						'content-type': 'application/json'
 					}
