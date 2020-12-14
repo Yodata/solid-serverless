@@ -58,6 +58,8 @@ async function validateSchema(event) {
 				end: true,
 				body: Buffer.from(JSON.stringify(event.object)).toString('base64')
 			}
+		} else {
+			event.isValid = true
 		}
 		// } else {
 		// 	await callBmsTransaction(event)
