@@ -48,6 +48,43 @@ dependencies {
 }
 ```
 
+## Configuration
+### solid-serverless.json
+Base namespace is `reflex`. All keys below are relative to this namespace:
+
+Key                    | Purpose
+-----------------------|------------------------------------------------------
+`domain.base`          | Base domain served by the server
+`subscription.manager` | Linked-Data IDI for the subscription manager, given full rights to manage subscriptions
+`auth.saml.idp.url`    | URL of the SAML IDP
+`àuth.saml.acs.url`    | URL of the SAML ACS
+
+Example:
+```json
+{
+  "reflex": {
+    "auth": {
+      "saml": {
+        "acs": {
+          "url": "https://mymanager.saml.example.org/"
+        },
+        "idp": {
+          "url": "https://saml.example.org/idp/login?app=mySSOapp"
+        }
+      }
+    },
+    "domain": {
+      "base": "solid-serverless.example.org"
+    },
+    "subscription": {
+      "manager": {
+        "id": "https://subMgr.solid-serverless.example.org/profile/card#me"
+      }
+    }
+  }
+}
+```
+
 ## Structures
 ### Request
 Example:
