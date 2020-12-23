@@ -70,12 +70,14 @@ public class SolidServer {
     private final SecurityProcessor sec;
 
     private final Set<String> contentTypesAllowed;
+    private final boolean canPublishDefault;
 
     public SolidServer(ServerBackend backend) {
         this.store = backend.store();
         this.folder = new ContainerHandler(backend);
         this.file = new ResourceHandler(backend);
         this.sec = SecurityProcessor.getDefault(store);
+        this.canPublishDefault = Boolean.parseBoolean(Configs.get().findOrDefault("reflex.publish.default.allowed", "false"));
 
         if (StringUtils.isBlank(getBaseDomain())) {
             throw new IllegalStateException("Base domain cannot be empty/bank");
@@ -166,7 +168,7 @@ public class SolidServer {
         Subscriptions subs = store.getSubscriptions(receiverId);
         return canPublish(senderId, subs, topic).orElseGet(() -> {
             Subscriptions globalSubs = store.getGlobalSubscriptions();
-            return canPublish(senderId, globalSubs, topic).orElse(true);
+            return canPublish(senderId, globalSubs, topic).orElse(canPublishDefault);
         });
     }
 
