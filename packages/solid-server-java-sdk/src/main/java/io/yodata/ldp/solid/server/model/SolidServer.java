@@ -203,6 +203,11 @@ public class SolidServer {
             throw new BadRequestException("request body is not valid JSON object");
         }
 
+        if (msg.has("@context")) {
+            // FIXME skip for now since we need the valid format before applying any rule
+            return;
+        }
+
         PublishContext c = getPublishContext(msg);
         if (StringUtils.isBlank(c.getTopic())) {
             throw new BadRequestException("No valid topic found");
