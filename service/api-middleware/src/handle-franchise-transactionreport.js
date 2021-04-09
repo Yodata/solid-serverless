@@ -56,7 +56,7 @@ async function handleFranchiseTransactionReport(event) {
 				logger.debug('bms-transactin-result', { response })
 				let object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
 				event.object = Object.assign(object, {
-					actionStatus: object.actionStatus || (response.status < 300) ? 'CompletedActionStatus' : 'FailedActionStatus'
+					actionStatus: object.actionStatus || ((response.status < 300) ? 'CompletedActionStatus' : 'FailedActionStatus')
 				})
 				let status = response.status || response.statusCode || 201
 				event.response = Object.assign(response, {
