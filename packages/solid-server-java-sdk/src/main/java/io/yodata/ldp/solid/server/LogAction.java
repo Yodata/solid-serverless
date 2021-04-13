@@ -1,15 +1,21 @@
 package io.yodata.ldp.solid.server;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class LogAction {
 
+    public static LogAction withType() {
+        return new LogAction().setType(LogAction.class.getSimpleName());
+    }
+
+    private String type;
     private String actionStatus;
     private JsonElement object;
     private String target;
@@ -17,9 +23,16 @@ public class LogAction {
     private JsonObject result;
     private Boolean willRetry;
     private JsonObject error;
+    private List<JsonObject> children = new ArrayList<>();
 
     public LogAction() {
         result = new JsonObject();
+    }
+
+    public LogAction setType(String t) {
+        type = t;
+
+        return this;
     }
 
     public LogAction setObject(JsonElement s) {
@@ -84,6 +97,28 @@ public class LogAction {
         setError(t);
         willRetry = false;
 
+        return this;
+    }
+
+    public LogAction success(Object o) {
+        setResult(o);
+        setSuccess(true);
+
+        return this;
+    }
+
+    public LogAction addChild(LogAction child, Object type) {
+        return addChild(child, type.getClass().getSimpleName());
+    }
+
+    public LogAction addChild(LogAction child, String type) {
+        JsonObject childJson = GsonUtil.makeObj(child);
+        childJson.addProperty("type", type);
+        return addChild(childJson);
+    }
+
+    public LogAction addChild(JsonObject child) {
+        children.add(child);
         return this;
     }
 

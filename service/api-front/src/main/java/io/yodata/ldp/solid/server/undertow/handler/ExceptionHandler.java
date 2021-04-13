@@ -1,16 +1,19 @@
 package io.yodata.ldp.solid.server.undertow.handler;
 
-import io.undertow.server.HttpHandler;
+import com.google.gson.JsonObject;
 import io.undertow.server.HttpServerExchange;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.LogAction;
 import io.yodata.ldp.solid.server.exception.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 public class ExceptionHandler extends BasicHttpHandler {
 
-    private final transient Logger log = LoggerFactory.getLogger(ExceptionHandler.class);
+    private final transient Logger log = LoggerFactory.getLogger("main");
 
     private static final String CorsAllValue = "*";
     private static final String CorsOriginName = "Access-Control-Allow-Origin";
@@ -20,9 +23,9 @@ public class ExceptionHandler extends BasicHttpHandler {
     private static final String CorsCredName = "Access-Control-Allow-Credentials";
     private static final String CorsReqHeadName = "Access-Control-Request-Headers";
 
-    private final HttpHandler h;
+    private final ActionHttpHandler h;
 
-    public ExceptionHandler(HttpHandler h) {
+    public ExceptionHandler(ActionHttpHandler h) {
         this.h = h;
     }
 
@@ -36,8 +39,10 @@ public class ExceptionHandler extends BasicHttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        JsonObject resultTop = new JsonObject();
+        LogAction logged = LogAction.withType().setResult(resultTop);
         try {
-            log.info("HTTP Request {}: Start", exchange.hashCode());
+            logged.setTarget(exchange.getRequestURL());
 
             putHeader(exchange, CorsOriginName, getOrigin(exchange));
             putHeader(exchange, CorsCredName, "true");
@@ -47,7 +52,10 @@ public class ExceptionHandler extends BasicHttpHandler {
             putHeader(exchange, "Cache-control", "no-store");
             putHeader(exchange, "Pragma", "no-cache");
 
-            h.handleRequest(exchange);
+            LogAction result = h.actionRequest(exchange);
+            if (!Objects.isNull(result)) {
+                logged.addChild(result, "RequestHandler");
+            }
         } catch (IllegalArgumentException | BadRequestException e) {
             writeBody(exchange, 400, GsonUtil.makeObj("error", e.getMessage()));
         } catch (UnauthorizedException e) {
@@ -59,11 +67,12 @@ public class ExceptionHandler extends BasicHttpHandler {
         } catch (EncodingNotSupportedException e) {
             writeBody(exchange, 415, GsonUtil.makeObj("error", e.getMessage()));
         } catch (RuntimeException e) {
-            e.printStackTrace();
+            logged.setError(e);
             writeBody(exchange, 500, GsonUtil.makeObj("error", "An internal server occurred"));
         } finally {
             exchange.endExchange();
-            log.info("HTTP Request {}: End", exchange.hashCode());
+            resultTop.addProperty("statusCode", exchange.getStatusCode());
+            log.info(GsonUtil.toJson(logged));
         }
     }
 

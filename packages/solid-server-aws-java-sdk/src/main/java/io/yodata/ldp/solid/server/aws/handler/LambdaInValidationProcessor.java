@@ -30,11 +30,16 @@ public class LambdaInValidationProcessor extends LambdaValidationProcessor imple
         lambda = AWSLambdaClientBuilder.defaultClient();
     }
 
-    protected void process(Exchange ex) {
+    protected JsonObject process(Exchange ex) {
+        JsonObject result = new JsonObject();
+
         if (!StringUtils.startsWith(ex.getRequest().getContentType().orElse(""), MimeTypes.APPLICATION_JSON)) {
-            log.info("Request is not of Content-Type {}, skipping middleware", MimeTypes.APPLICATION_JSON);
-            return;
+            result.addProperty("actionStatus", "SkippedActionStatus");
+            result.addProperty("reason", "Request is not of Content-Type " + MimeTypes.APPLICATION_JSON + ", skipping");
+            return result;
         }
+
+        result.addProperty("lambda", lambdaName);
 
         log.debug("Request {} validation: start", ex.getRequest().getId());
         log.debug("Using lambda {}", lambdaName);
@@ -47,6 +52,7 @@ public class LambdaInValidationProcessor extends LambdaValidationProcessor imple
 
         log.debug("Calling lambda {}", lambdaName);
         InvokeResult invokeRes = lambda.invoke(invokeReq);
+        result.addProperty("status", invokeRes.getStatusCode());
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
             throw new RuntimeException("Lambda " + lambdaName + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }
@@ -62,27 +68,28 @@ public class LambdaInValidationProcessor extends LambdaValidationProcessor imple
         }
         ex.setResponse(exNew.getResponse());
 
-        log.info("Request {} validation: end", ex.getRequest().getId());
+        result.addProperty("actionStatus", "CompletedActionStatus");
+        return result;
     }
 
     @Override
-    public void get(Exchange ex) {
-        process(ex);
+    public JsonObject get(Exchange ex) {
+        return process(ex);
     }
 
     @Override
-    public void post(Exchange ex) {
-        process(ex);
+    public JsonObject post(Exchange ex) {
+        return process(ex);
     }
 
     @Override
-    public void put(Exchange ex) {
-        process(ex);
+    public JsonObject put(Exchange ex) {
+        return process(ex);
     }
 
     @Override
-    public void delete(Exchange ex) {
-        process(ex);
+    public JsonObject delete(Exchange ex) {
+        return process(ex);
     }
 
 }

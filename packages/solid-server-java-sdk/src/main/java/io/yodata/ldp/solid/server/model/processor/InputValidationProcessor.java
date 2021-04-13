@@ -1,15 +1,16 @@
 package io.yodata.ldp.solid.server.model.processor;
 
+import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.model.Exchange;
 
 public interface InputValidationProcessor {
 
-    void get(Exchange ex);
+    JsonObject get(Exchange ex);
 
-    void post(Exchange ex);
+    JsonObject post(Exchange ex);
 
-    void put(Exchange ex);
+    JsonObject put(Exchange ex);
 
-    void delete(Exchange ex);
+    JsonObject delete(Exchange ex);
 
 }

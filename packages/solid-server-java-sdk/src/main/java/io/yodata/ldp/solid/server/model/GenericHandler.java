@@ -93,23 +93,23 @@ public class GenericHandler {
         }
     }
 
-    public Response head(Request in) {
+    public ResponseLogAction head(Request in) {
         throw new ForbiddenException("This method is not allowed");
     }
 
-    public Response get(Request in) {
+    public ResponseLogAction get(Request in) {
         throw new ForbiddenException("This method is not allowed");
     }
 
-    public Response delete(Request in) {
+    public ResponseLogAction delete(Request in) {
         throw new ForbiddenException("This method is not allowed");
     }
 
-    public Response post(Request in) {
+    public ResponseLogAction post(Request in) {
         throw new ForbiddenException("This method is not allowed");
     }
 
-    public Response put(Request in) {
+    public ResponseLogAction put(Request in) {
         throw new ForbiddenException("This method is not allowed");
     }
 

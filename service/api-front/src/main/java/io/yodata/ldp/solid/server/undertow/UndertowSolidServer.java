@@ -13,12 +13,13 @@ import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.util.StatusCodes;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.LogAction;
 import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.config.EnvConfig;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.saml.ReflexSamlResponse;
-import io.yodata.ldp.solid.server.undertow.handler.BasicHttpHandler;
+import io.yodata.ldp.solid.server.undertow.handler.ActionHttpHandler;
 import io.yodata.ldp.solid.server.undertow.handler.ExceptionHandler;
 import io.yodata.ldp.solid.server.undertow.handler.HostControlHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +39,10 @@ public class UndertowSolidServer {
 
     public static final String AUTH_COOKIE_TY_NAME = "reflex_session_type";
     public static final String AUTH_COOKIE_TO_NAME = "reflex_session_token";
+
+    public static void log(LogAction action) {
+        log.info(GsonUtil.toJson(action));
+    }
 
     public static void main(String[] args) {
         log.info("-------/ Frontd is starting \\-------");
@@ -65,10 +70,10 @@ public class UndertowSolidServer {
         log.info("Load multiplier: {}", multiplier);
         log.info("Will use {} HTTP worker threads", workerThreads);
 
-        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
+        HttpHandler samlWhoamiHandler = new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
 
             @Override
-            public void handleRequest(HttpServerExchange ex) {
+            public ResponseLogAction actionRequest(HttpServerExchange ex) {
                 Cookie sessionTypeCookie = ex.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
                 Cookie sessionTokenCookie = ex.getRequestCookies().getOrDefault(AUTH_COOKIE_TO_NAME, new CookieImpl(AUTH_COOKIE_TO_NAME));
 
@@ -83,15 +88,21 @@ public class UndertowSolidServer {
                     //FIXME clear any possible remaining cookie
                     ex.setStatusCode(401);
                     ex.endExchange();
-                    return;
                 }
 
                 writeBody(ex, 200, sessionData);
+                return null; // we don't have anything to return
             }
 
         })));
 
-        HttpHandler redirectHandler = new RedirectHandler(samlIdpUrl);
+        ActionHttpHandler redirectHandler = new ActionHttpHandler() {
+            @Override
+            public LogAction actionRequest(HttpServerExchange exchange) throws Exception {
+                new RedirectHandler(samlIdpUrl).handleRequest(exchange);
+                return null;
+            }
+        };
 
         Undertow.builder().setWorkerThreads(workerThreads).addHttpListener(port, host).setHandler(Handlers.routing()
                 .get("/status", exchange -> {
@@ -99,146 +110,173 @@ public class UndertowSolidServer {
                     exchange.endExchange();
                 })
 
-                .add("OPTIONS", "/**", new ExceptionHandler(new HostControlHandler(srv, exchange -> {
-                })))
+                .add("OPTIONS", "/**", new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
+                    @Override
+                    public LogAction actionRequest(HttpServerExchange exchange) {
+                        return null;
+                    }
+                }
+                )))
 
-                .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(srv, exchange -> {
-                    log.info("Got a GET for /reflex/auth/saml/login");
-                    log.info("Redirecting to the SAML IDP URL");
-                    redirectHandler.handleRequest(exchange);
-                })))
+                .get("/reflex/auth/saml/login", new ExceptionHandler(new HostControlHandler(srv, redirectHandler)))
 
-                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, exchange -> {
-                    log.info("Got a GET for /reflex/auth/logout");
+                .get("/reflex/auth/logout", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
+                    @Override
+                    public LogAction actionRequest(HttpServerExchange exchange) {
+                        Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
+                        Cookie sessionTokenCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TO_NAME, new CookieImpl(AUTH_COOKIE_TO_NAME));
 
-                    Cookie sessionTypeCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TY_NAME, new CookieImpl(AUTH_COOKIE_TY_NAME));
-                    Cookie sessionTokenCookie = exchange.getRequestCookies().getOrDefault(AUTH_COOKIE_TO_NAME, new CookieImpl(AUTH_COOKIE_TO_NAME));
+                        String sessionType = sessionTypeCookie.getValue();
+                        String sessionToken = sessionTokenCookie.getValue();
 
-                    String sessionType = sessionTypeCookie.getValue();
-                    String sessionToken = sessionTokenCookie.getValue();
+                        if (StringUtils.isNotBlank(sessionType)) {
+                            // Clearing all active sessions
+                            srv.store().delete("global/security/api/token/" + sessionType + "/" + sessionToken);
+                        }
 
-                    if (StringUtils.isNotBlank(sessionType)) {
-                        log.info("Clearing all active sessions");
+                        sessionTypeCookie = sessionTypeCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
+                        sessionTokenCookie = sessionTokenCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
 
-                        srv.store().delete("global/security/api/token/" + sessionType + "/" + sessionToken);
+                        exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
+                        exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
+
+                        return null;
                     }
 
-                    sessionTypeCookie = sessionTypeCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
-                    sessionTokenCookie = sessionTokenCookie.setDiscard(true).setExpires(Date.from(Instant.EPOCH));
-
-                    exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
-                    exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
                 }))))
 
-                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, exchange -> {
-                    log.info("Got a POST for /reflex/auth/saml/acs");
-                    String body = UndertorwRequest.getBodyString(exchange);
-                    log.debug("Body: {}", body);
-                    ReflexSamlResponse saml = new ReflexSamlResponse(new SettingsBuilder().build(), exchange.getRequestURL(), body);
-                    log.debug("SAML XML: \n{}", saml.getSAMLResponseXml());
-                    log.debug("-----------");
-                    log.debug("Attributes: {}", GsonUtil.getPrettyForLog(saml.getAttributes()));
+                .post("/reflex/auth/saml/acs", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
 
-                    JsonObject samlAttributes = GsonUtil.makeObj(saml.getAttributes());
-                    String contactId = GsonUtil.extractString(samlAttributes, "contact_id", "");
-                    if (StringUtils.isBlank(contactId)) {
-                        throw new RuntimeException("IDP did not include mandatory data - key: contact_id");
+                    @Override
+                    public LogAction actionRequest(HttpServerExchange exchange) throws Exception {
+                        String body = UndertorwRequest.getBodyString(exchange);
+                        log.debug("Body: {}", body);
+                        ReflexSamlResponse saml = new ReflexSamlResponse(new SettingsBuilder().build(), exchange.getRequestURL(), body);
+                        log.debug("SAML XML: \n{}", saml.getSAMLResponseXml());
+                        log.debug("-----------");
+                        log.debug("Attributes: {}", GsonUtil.getPrettyForLog(saml.getAttributes()));
+
+                        JsonObject samlAttributes = GsonUtil.makeObj(saml.getAttributes());
+                        String contactId = GsonUtil.extractString(samlAttributes, "contact_id", "");
+                        if (StringUtils.isBlank(contactId)) {
+                            throw new RuntimeException("IDP did not include mandatory data - key: contact_id");
+                        }
+
+                        // FIXME we should sign this
+                        String sessionToken = UUID.randomUUID().toString().replace("-", "");
+                        Instant expiresAt = Instant.now().plusSeconds(24 * 60 * 60); // 24H
+                        Cookie sessionTypeCookie = new ReflexCookieImpl(AUTH_COOKIE_TY_NAME, "saml")
+                                .setSecure(true)
+                                .setSameSiteMode("None")
+                                .setPath("/")
+                                .setExpires(Date.from(expiresAt));
+                        Cookie sessionTokenCookie = new ReflexCookieImpl(AUTH_COOKIE_TO_NAME, sessionToken)
+                                .setSecure(true)
+                                .setSameSiteMode("None")
+                                .setPath("/")
+                                .setExpires(Date.from(expiresAt));
+
+                        JsonObject sessionData = new JsonObject();
+                        sessionData.add("raw", samlAttributes);
+                        sessionData.addProperty("profile_id", "https://" + contactId + "." + srv.getBaseDomain() + "/profile/card#me");
+                        sessionData.addProperty("valid_not_after", expiresAt.toEpochMilli());
+                        srv.store().save("global/security/api/token/saml/" + sessionToken, sessionData);
+
+                        exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
+                        exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
+
+                        new RedirectHandler(samlAppRedirectUrl).handleRequest(exchange);
+                        return null;
+                    }
+                }))))
+
+                .put("/reflex/auth/saml/acs", new ExceptionHandler(new ActionHttpHandler() {
+
+                    @Override
+                    public LogAction actionRequest(HttpServerExchange exchange) {
+                        exchange.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED);
+                        return null;
                     }
 
-                    // FIXME we should sign this
-                    String sessionToken = UUID.randomUUID().toString().replace("-", "");
-                    Instant expiresAt = Instant.now().plusSeconds(24 * 60 * 60); // 24H
-                    Cookie sessionTypeCookie = new ReflexCookieImpl(AUTH_COOKIE_TY_NAME, "saml")
-                            .setSecure(true)
-                            .setSameSiteMode("None")
-                            .setPath("/")
-                            .setExpires(Date.from(expiresAt));
-                    Cookie sessionTokenCookie = new ReflexCookieImpl(AUTH_COOKIE_TO_NAME, sessionToken)
-                            .setSecure(true)
-                            .setSameSiteMode("None")
-                            .setPath("/")
-                            .setExpires(Date.from(expiresAt));
-
-                    JsonObject sessionData = new JsonObject();
-                    sessionData.add("raw", samlAttributes);
-                    sessionData.addProperty("profile_id", "https://" + contactId + "." + srv.getBaseDomain() + "/profile/card#me");
-                    sessionData.addProperty("valid_not_after", expiresAt.toEpochMilli());
-                    srv.store().save("global/security/api/token/saml/" + sessionToken, sessionData);
-
-                    exchange.getResponseCookies().put(sessionTypeCookie.getName(), sessionTypeCookie);
-                    exchange.getResponseCookies().put(sessionTokenCookie.getName(), sessionTokenCookie);
-
-                    new RedirectHandler(samlAppRedirectUrl).handleRequest(exchange);
-                    log.info("Redirected to App URL");
-                }))))
-
-                .put("/reflex/auth/saml/acs", new ExceptionHandler(ex -> ex.setStatusCode(StatusCodes.METHOD_NOT_ALLOWED)))
-
+                }))
                 .get("/reflex/auth/whoami", samlWhoamiHandler)
                 .post("/reflex/auth/whoami", samlWhoamiHandler)
 
-                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
+                .add("HEAD", "/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
+
                     @Override
-                    public void handleRequest(HttpServerExchange exchange) {
+                    public ResponseLogAction actionRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
                         Map<String, List<String>> headers = getHeaders(exchange);
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-                        Response r = srv.head(request);
-                        writeBody(exchange, r);
+                        ResponseLogAction r = srv.head(request);
+                        writeBody(exchange, r.getResponse());
+                        return r;
                     }
+
                 }))))
 
-                .get("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
+                .get("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
+
                     @Override
-                    public void handleRequest(HttpServerExchange exchange) {
+                    public ResponseLogAction actionRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Read);
                         Map<String, List<String>> headers = getHeaders(exchange);
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-                        Response r = srv.get(request);
-                        writeBody(exchange, r);
+                        ResponseLogAction r = srv.get(request);
+                        writeBody(exchange, r.getResponse());
+                        return r;
                     }
+
                 }))))
 
-                .post("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
+                .post("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
+
                     @Override
-                    public void handleRequest(HttpServerExchange exchange) {
+                    public ResponseLogAction actionRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Append);
                         Map<String, List<String>> headers = getHeaders(exchange);
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-                        Response r = srv.post(request);
-                        writeBody(exchange, r);
+                        ResponseLogAction r = srv.post(request);
+                        writeBody(exchange, r.getResponse());
+                        return r;
                     }
+
                 }))))
 
-                .put("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
+                .put("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
+
                     @Override
-                    public void handleRequest(HttpServerExchange exchange) {
+                    public ResponseLogAction actionRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
                         Map<String, List<String>> headers = getHeaders(exchange);
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-                        Response r = srv.put(request);
-                        writeBody(exchange, r);
+                        ResponseLogAction r = srv.put(request);
+                        writeBody(exchange, r.getResponse());
+                        return r;
                     }
+
                 }))))
 
-                .delete("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new BasicHttpHandler() {
+                .delete("/**", new BlockingHandler(new ExceptionHandler(new HostControlHandler(srv, new ActionHttpHandler() {
                     @Override
-                    public void handleRequest(HttpServerExchange exchange) {
+                    public ResponseLogAction actionRequest(HttpServerExchange exchange) {
                         UndertowTarget target = UndertowTarget.build(exchange, AclMode.Write);
                         Map<String, List<String>> headers = getHeaders(exchange);
                         SecurityContext context = auth.authenticate(headers);
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
-                        Response r = srv.delete(request);
-                        writeBody(exchange, r);
+                        ResponseLogAction r = srv.delete(request);
+                        writeBody(exchange, r.getResponse());
+                        return r;
                     }
                 }))))).build().start();
 

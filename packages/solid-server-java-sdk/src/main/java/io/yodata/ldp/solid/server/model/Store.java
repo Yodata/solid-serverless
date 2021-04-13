@@ -30,7 +30,7 @@ public interface Store {
 
     Optional<String> findEntityData(URI entity, String path);
 
-    boolean saveEntityData(URI entity, String path, JsonElement el);
+    void saveEntityData(URI entity, String path, JsonElement el);
 
     Optional<Acl> getDefaultAcl(String path);
 
@@ -81,14 +81,14 @@ public interface Store {
 
     Response get(Target target);
 
-    void post(Request in);
+    JsonObject post(Request in);
 
-    void save(String path, JsonElement content);
+    JsonObject save(String path, JsonElement content);
 
-    boolean save(Request in);
+    JsonObject save(Request in);
 
-    void delete(Request in);
+    JsonObject delete(Request in);
 
-    void delete(String path);
+    JsonObject delete(String path);
 
 }

@@ -1,7 +1,10 @@
 package io.yodata.ldp.solid.server.model.resource;
 
+import com.google.gson.JsonObject;
+import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.model.Request;
 import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.ResponseLogAction;
 import io.yodata.ldp.solid.server.model.ServerBackend;
 
 public class ResourceStoreProcessor {
@@ -20,18 +23,24 @@ public class ResourceStoreProcessor {
         return backend.store().get(in.getTarget());
     }
 
-    public Response put(Request in) {
-        boolean replaced = backend.store().save(in);
+    public ResponseLogAction put(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
+
+        JsonObject backendResult = backend.store().save(in);
+        result.addChild(backendResult);
+
         backend.eventBus().sendStoreEvent(in);
 
         Response out = new Response();
-        out.setStatus(replaced ? 204 : 201);
-        return out;
+        out.setStatus(GsonUtil.giveBool(backendResult, "replaced", false) ? 204 : 201);
+        result.withResponse(out);
+        return result;
     }
 
-    public void delete(Request in) {
-        backend.store().delete(in);
+    public JsonObject delete(Request in) {
+        JsonObject result = backend.store().delete(in);
         backend.eventBus().sendStoreEvent(in);
+        return result;
     }
 
 }

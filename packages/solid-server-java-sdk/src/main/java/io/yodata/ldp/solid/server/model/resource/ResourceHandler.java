@@ -27,20 +27,31 @@ public class ResourceHandler extends GenericHandler {
     }
 
     @Override
-    public Response head(Request in) {
+    public ResponseLogAction head(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
         Exchange ex = build(in);
 
-        inCheck.get(ex);
+        JsonObject inCheckStatus = inCheck.get(ex);
+        result.addChild(inCheckStatus);
+
         if (Objects.nonNull(ex.getResponse())) {
-            return ex.getResponse();
+            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("hasResponse", true);
+            result.withResponse(ex.getResponse());
+            return result;
         }
 
         ex.setResponse(storeProc.head(in));
-        return outCheck.get(ex);
+        ResponseLogAction outCheckResponse = outCheck.get(ex);
+
+        result.addChild(outCheckResponse, outCheck);
+        result.withResponse(outCheckResponse.getResponse());
+        return result;
     }
 
     @Override
-    public Response get(Request in) {
+    public ResponseLogAction get(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
         Exchange ex = build(in);
 
         // We don't allow direct editing of ACL for now
@@ -48,9 +59,13 @@ public class ResourceHandler extends GenericHandler {
             throw new ForbiddenException("Direct ACL modification is not allowed");
         }
 
-        inCheck.get(ex);
+        JsonObject inCheckStatus = inCheck.get(ex);
+        result.addChild(inCheckStatus);
         if (Objects.nonNull(ex.getResponse())) {
-            return ex.getResponse();
+            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("hasResponse", true);
+            result.withResponse(ex.getResponse());
+            return result;
         }
 
         Request inProcessed = ex.getRequest();
@@ -89,29 +104,45 @@ public class ResourceHandler extends GenericHandler {
             });
         }
 
-        return outCheck.get(ex);
+        ResponseLogAction outCheckResponse = outCheck.get(ex);
+        result.addChild(outCheckResponse, outCheck);
+        result.withResponse(outCheckResponse.getResponse());
+        return result;
     }
 
     @Override
-    public Response put(Request in) {
+    public ResponseLogAction put(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
         Exchange ex = build(in);
 
-        inCheck.put(ex);
+        JsonObject inCheckStatus = inCheck.put(ex);
+        result.addChild(inCheckStatus);
         if (Objects.nonNull(ex.getResponse())) {
-            return ex.getResponse();
+            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("hasResponse", true);
+            result.withResponse(ex.getResponse());
+            return result;
         }
 
         String id = in.getTarget().getId().toString();
         addIdIfPossible(in, id);
         addKeyIfPossible(in, false, "id", id);
 
-        ex.setResponse(storeProc.put(in));
-        ex.setResponse(outCheck.put(ex));
-        return ex.getResponse();
+        ResponseLogAction outCheckResponse = outCheck.put(ex);
+        result.addChild(outCheckResponse, outCheck);
+        ex.setResponse(outCheckResponse.getResponse());
+
+        ResponseLogAction storeProcResponse = storeProc.put(in);
+        result.addChild(storeProcResponse, storeProc);
+        ex.setResponse(storeProcResponse.getResponse());
+
+        result.withResponse(ex.getResponse());
+        return result;
     }
 
     @Override
-    public Response delete(Request in) {
+    public ResponseLogAction delete(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
         Exchange ex = build(in);
 
         // We don't allow direct editing of ACL for now
@@ -119,16 +150,24 @@ public class ResourceHandler extends GenericHandler {
             throw new ForbiddenException("Direct ACL modification is not allowed");
         }
 
-        inCheck.delete(ex);
+        JsonObject inCheckStatus = inCheck.delete(ex);
+        result.addChild(inCheckStatus);
         if (Objects.nonNull(ex.getResponse())) {
-            return ex.getResponse();
+            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("hasResponse", true);
+            result.withResponse(ex.getResponse());
+            return result;
         }
 
-        storeProc.delete(in);
+        JsonObject storeResult = storeProc.delete(in);
+        storeResult.addProperty("type", "ResourceStoreProcessor");
         ex.setResponse(Response.successful());
-        ex.setResponse(outCheck.delete(ex));
+        ResponseLogAction outCheckResponse = outCheck.delete(ex);
+        result.addChild(outCheckResponse, outCheck);
+        ex.setResponse(outCheckResponse.getResponse());
 
-        return ex.getResponse();
+        result.withResponse(ex.getResponse());
+        return result;
     }
 
 }

@@ -98,21 +98,21 @@ public abstract class EntityBasedStore implements Store {
     }
 
     @Override
-    public boolean save(Request in) {
+    public JsonObject save(Request in) {
         String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
-        boolean exists = exists(path);
+        JsonObject result = GsonUtil.makeObj("replaced", exists(path));
         save(in.getContentType().orElse(MimeTypes.APPLICATION_OCTET_STREAM), in.getBody(), path);
-        return exists;
+        return result;
     }
 
     @Override
-    public boolean saveEntityData(URI entity, String path, JsonElement el) {
+    public void saveEntityData(URI entity, String path, JsonElement el) {
         Target t = new Target(entity.resolve(path));
         Request in = new Request();
         in.setTarget(t);
         in.setBody(el);
         in.setTimestamp(Instant.now());
-        return save(in);
+        save(in);
     }
 
     @Override
@@ -289,7 +289,9 @@ public abstract class EntityBasedStore implements Store {
     }
 
     @Override
-    public void post(Request in) {
+    public JsonObject post(Request in) {
+        JsonObject result = new JsonObject();
+
         Instant timestamp = in.getTimestamp();
 
         URI id = in.getDestination().getId();
@@ -303,7 +305,6 @@ public abstract class EntityBasedStore implements Store {
         if (Objects.nonNull(timestamp)) {
             meta.put("X-Solid-Serverless-Timestamp", Long.toString(timestamp.toEpochMilli()));
         }
-        save(in.getContentType().orElse(MimeTypes.APPLICATION_OCTET_STREAM), in.getBody(), byIdPath, meta);
 
         if (Objects.nonNull(timestamp)) {
             log.debug("Timestamp: {}", timestamp.toEpochMilli());
@@ -311,10 +312,12 @@ public abstract class EntityBasedStore implements Store {
             String tsPath = "entities/" + id.getHost() + "/data/by-ts" + idPath.getParent().toString() + ldt.format(dtf) + idPath.getFileName().toString();
             link(byIdPath, tsPath);
         }
+
+        return save(in.getContentType().orElse(MimeTypes.APPLICATION_OCTET_STREAM), in.getBody(), byIdPath, meta);
     }
 
     @Override
-    public void delete(Request in) {
+    public JsonObject delete(Request in) {
         URI id = in.getDestination().getId();
         Path idPath = Paths.get(id.getPath());
         String path = buildEntityPath(in.getTarget().getHost(), in.getTarget().getPath());
@@ -335,23 +338,23 @@ public abstract class EntityBasedStore implements Store {
         });
 
         delete(path);
-        log.info("Deleted ID: {}", path);
+        return GsonUtil.makeObj("deleted", true);
     }
 
     @Override
-    public void save(String path, JsonElement content) {
-        save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path, new HashMap<>());
+    public JsonObject save(String path, JsonElement content) {
+        return save(MimeTypes.APPLICATION_JSON, GsonUtil.toJsonBytes(content), path, new HashMap<>());
     }
 
-    public void save(String contentType, byte[] bytes, String path) {
-        save(contentType, bytes, path, new HashMap<>());
+    public JsonObject save(String contentType, byte[] bytes, String path) {
+        return save(contentType, bytes, path, new HashMap<>());
     }
 
     public abstract void link(String linkTargetPath, String linkPath);
 
     protected abstract String getTsPrefix(String from, String namespace);
 
-    protected abstract void save(String contentType, byte[] bytes, String path, Map<String, String> meta);
+    protected abstract JsonObject save(String contentType, byte[] bytes, String path, Map<String, String> meta);
 
     public abstract Optional<Map<String, String>> findMeta(String path);
 

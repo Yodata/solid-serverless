@@ -1,31 +1,31 @@
 package io.yodata.ldp.solid.server.model.processor;
 
 import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.ResponseLogAction;
 
 public class StubOutValidationProcessor implements OutputValidationProcessor {
 
-    private Response process(Exchange ex) {
-        return ex.getResponse();
+    private ResponseLogAction process(Exchange ex) {
+        return ResponseLogAction.response(ex.getResponse());
     }
 
     @Override
-    public Response get(Exchange ex) {
+    public ResponseLogAction get(Exchange ex) {
         return process(ex);
     }
 
     @Override
-    public Response post(Exchange ex) {
+    public ResponseLogAction post(Exchange ex) {
         return process(ex);
     }
 
     @Override
-    public Response put(Exchange ex) {
+    public ResponseLogAction put(Exchange ex) {
         return process(ex);
     }
 
     @Override
-    public Response delete(Exchange ex) {
+    public ResponseLogAction delete(Exchange ex) {
         return process(ex);
     }
 

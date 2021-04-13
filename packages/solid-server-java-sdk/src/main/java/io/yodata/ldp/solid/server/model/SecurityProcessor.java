@@ -88,11 +88,11 @@ public class SecurityProcessor {
         }
 
         if (!sc.getAllowedModes().contains(target.getAccessType())) {
-            log.info("Entity {} was denied {} access to {}", Objects.isNull(id) ? "<Anonymous>" : id, target.getAccessType(), target.getHostAndPath());
+            log.debug("Entity {} was denied {} access to {}", Objects.isNull(id) ? "<Anonymous>" : id, target.getAccessType(), target.getHostAndPath());
             throw new ForbiddenException();
         }
 
-        log.info("Authorized access to {} for {}", target.getId(), id);
+        log.debug("Authorized access to {} for {}", target.getId(), id);
         return acl;
     }
 

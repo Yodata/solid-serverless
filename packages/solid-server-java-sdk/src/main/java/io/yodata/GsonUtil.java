@@ -263,4 +263,8 @@ public class GsonUtil {
         return toJson(o).getBytes(StandardCharsets.UTF_8);
     }
 
+    public static boolean giveBool(JsonObject o, String key, boolean defValue) {
+        return getPrimitive(o, key).getAsBoolean();
+    }
+
 }

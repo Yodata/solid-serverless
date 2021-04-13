@@ -232,7 +232,7 @@ public class SolidServer {
         }
     }
 
-    public Response head(Request in) {
+    public ResponseLogAction head(Request in) {
         validate(in);
 
         if (in.getTarget().getPath().endsWith("/")) {
@@ -242,7 +242,7 @@ public class SolidServer {
         }
     }
 
-    public Response get(Request in) {
+    public ResponseLogAction get(Request in) {
         validate(in);
 
         if (in.getTarget().getPath().endsWith("/")) {
@@ -252,7 +252,7 @@ public class SolidServer {
         }
     }
 
-    public Response delete(Request in) {
+    public ResponseLogAction delete(Request in) {
         validate(in);
 
         if (in.getTarget().getPath().endsWith("/")) {
@@ -262,7 +262,7 @@ public class SolidServer {
         }
     }
 
-    public Response post(Request in) {
+    public ResponseLogAction post(Request in) {
         validate(in);
 
         validatePublish(in);
@@ -274,7 +274,7 @@ public class SolidServer {
         }
     }
 
-    public Response put(Request in) {
+    public ResponseLogAction put(Request in) {
         validate(in);
 
         validatePublish(in);

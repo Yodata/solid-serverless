@@ -10,7 +10,7 @@ import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.MimeTypes;
 import io.yodata.ldp.solid.server.config.Configs;
 import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.ResponseLogAction;
 import io.yodata.ldp.solid.server.model.Store;
 import io.yodata.ldp.solid.server.model.processor.OutputValidationProcessor;
 import org.apache.commons.lang3.StringUtils;
@@ -36,11 +36,18 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
                 .build();
     }
 
-    protected Response process(Exchange ex) {
+    protected ResponseLogAction process(Exchange ex) {
+        JsonObject processing = new JsonObject();
+        processing.addProperty("type", "LambdaProcessing");
+        ResponseLogAction result = new ResponseLogAction().addChild(processing);
+
         if (!StringUtils.startsWith(ex.getResponse().getContentType(), MimeTypes.APPLICATION_JSON)) {
-            log.info("Response of Content-Type {} and not {}, skipping middleware", ex.getResponse().getContentType(), MimeTypes.APPLICATION_JSON);
-            return ex.getResponse();
+            processing.addProperty("actionStatus", "SkippedActionStatus");
+            processing.addProperty("reason", "Not response type of " + MimeTypes.APPLICATION_JSON);
+            return result.addChild(processing).withResponse(ex.getResponse());
         }
+
+        processing.addProperty("lambda", lambdaName);
 
         log.debug("Exchange {}: Response validation: start", ex.getRequest().getId());
         log.debug("Using lambda {}", lambdaName);
@@ -54,6 +61,7 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
 
         log.debug("Calling lambda {}", lambdaName);
         InvokeResult invokeRes = lambda.invoke(invokeReq);
+        processing.addProperty("status", invokeRes.getStatusCode());
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
             throw new RuntimeException("Lambda " + lambdaName + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }
@@ -65,30 +73,30 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
             log.debug("Got response object");
             ex.setResponse(exNew.getResponse());
         } else {
-            log.warn("DID NOT get a response object, returning pre-call response");
+            processing.addProperty("hasResponse", false);
+            log.debug("DID NOT get a response object, returning pre-call response");
         }
 
-        log.info("Exchange {}: Response validation: end", ex.getRequest().getId());
-        return ex.getResponse();
+        return result.withResponse(ex.getResponse());
     }
 
     @Override
-    public Response get(Exchange ex) {
+    public ResponseLogAction get(Exchange ex) {
         return process(ex);
     }
 
     @Override
-    public Response post(Exchange ex) {
+    public ResponseLogAction post(Exchange ex) {
         return process(ex);
     }
 
     @Override
-    public Response put(Exchange ex) {
+    public ResponseLogAction put(Exchange ex) {
         return process(ex);
     }
 
     @Override
-    public Response delete(Exchange ex) {
+    public ResponseLogAction delete(Exchange ex) {
         return process(ex);
     }
 

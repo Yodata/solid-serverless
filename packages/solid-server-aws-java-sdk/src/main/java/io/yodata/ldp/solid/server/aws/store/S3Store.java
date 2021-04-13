@@ -5,9 +5,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.*;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import io.yodata.Base64Util;
 import io.yodata.EnvUtils;
 import io.yodata.GsonUtil;
@@ -158,7 +156,7 @@ public class S3Store extends EntityBasedStore {
     @Override
     public Response head(Target target) {
         String s3Path = "entities/" + target.getHost() + "/data/by-id" + target.getPath();
-        log.info("Getting Resource meta {}", s3Path);
+        log.debug("Getting Resource meta {}", s3Path);
 
         Optional<ObjectMetadata> meta = getFileMeta(s3Path);
         if (!meta.isPresent()) {
@@ -173,28 +171,43 @@ public class S3Store extends EntityBasedStore {
     }
 
     @Override
-    protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
+    protected JsonObject save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
+        JsonArray bucketsResult = new JsonArray();
+        long contentLength = bytes.length;
+
         log.debug("File {} will be stored in {} buckets", path, buckets.size());
         buckets.forEach(bucket -> {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(contentType);
-            metadata.setContentLength(bytes.length);
+            metadata.setContentLength(contentLength);
             metadata.setUserMetadata(meta);
 
-            log.info("Storing {} bytes in bucket {} in path {}", bytes.length, bucket, path);
-            PutObjectResult res = s3.putObject(bucket, path, new ByteArrayInputStream(bytes), metadata);
-            log.debug("Stored under ETag {}", res.getETag());
+            s3.putObject(bucket, path, new ByteArrayInputStream(bytes), metadata);
+
+            bucketsResult.add(GsonUtil.makeObj("bucket", bucket));
         });
+
+        JsonObject result = new JsonObject();
+        result.addProperty("path", path);
+        result.add("buckets", bucketsResult);
+        return result;
     }
 
     @Override
-    public void delete(String path) {
+    public JsonObject delete(String path) {
         log.debug("Deleting {}", path);
+
+        JsonArray list = new JsonArray();
         buckets.forEach(bucket -> {
             log.debug("Deleting from bucket {}", bucket);
             s3.deleteObject(bucket, path);
+            list.add(bucket);
         });
-        log.info("Deleted {}", path);
+
+        JsonObject result = new JsonObject();
+        result.addProperty("id", path);
+        result.add("buckets", list);
+        return result;
     }
 
     @Override
@@ -203,7 +216,7 @@ public class S3Store extends EntityBasedStore {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.addUserMetadata("X-Solid-Serverless-Link", linkTargetPath);
             s3.putObject(bucket, linkPath, new ByteArrayInputStream(new byte[0]), metadata);
-            log.info("Stored link in bucket {} from {} to {}", bucket, linkTargetPath, linkPath);
+            log.debug("Stored link in bucket {} from {} to {}", bucket, linkTargetPath, linkPath);
         });
     }
 
@@ -286,7 +299,7 @@ public class S3Store extends EntityBasedStore {
         if (!"".equals(from)) {
             if (!isTs) {
                 String sinceDecoded = namespace + new String(Base64Util.decode(from), StandardCharsets.UTF_8);
-                log.info("Starting after {}", sinceDecoded);
+                log.debug("Starting after {}", sinceDecoded);
                 req.setStartAfter(sinceDecoded);
             } else {
                 String tsPrefix = getTsPrefix(from, namespace);
@@ -312,7 +325,7 @@ public class S3Store extends EntityBasedStore {
             res.getCommonPrefixes().forEach(cp -> p.getContains().add(new JsonPrimitive(cp.substring(namespace.length()))));
             for (S3ObjectSummary obj : res.getObjectSummaries()) {
                 if (obj.getKey().endsWith(".acl")) {
-                    log.info("ACL found, skipping from listing");
+                    log.debug("ACL found, skipping from listing");
                     continue;
                 }
 
@@ -382,7 +395,7 @@ public class S3Store extends EntityBasedStore {
     @Override
     public Response get(Target target) {
         String s3Path = "entities/" + target.getHost() + "/data/by-id" + target.getPath();
-        log.info("Getting Resource {}", s3Path);
+        log.debug("Getting Resource {}", s3Path);
 
         try {
             S3Object obj = s3.getObject(getBucket(), s3Path);
@@ -397,11 +410,9 @@ public class S3Store extends EntityBasedStore {
             return r;
         } catch (AmazonS3Exception e) {
             if (e.getStatusCode() != 404) {
-                log.warn("Error while reading S3 object {}: {}", s3Path, e.getMessage());
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error while reading S3 object " + s3Path + " - Status code: " + e.getStatusCode(), e);
             }
 
-            log.info("S3 object {} not found", s3Path);
             throw new NotFoundException();
         } catch (IOException e) {
             throw new RuntimeException(e);

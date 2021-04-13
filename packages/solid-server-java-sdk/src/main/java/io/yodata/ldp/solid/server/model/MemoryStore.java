@@ -1,5 +1,6 @@
 package io.yodata.ldp.solid.server.model;
 
+import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.exception.NotFoundException;
 
 import java.net.URI;
@@ -46,16 +47,18 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    protected void save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
-
+    protected JsonObject save(String contentType, byte[] bytes, String path, Map<String, String> meta) {
+        return new JsonObject();
     }
 
     @Override
-    public void save(String contentType, byte[] bytes, String path) {
+    public JsonObject save(String contentType, byte[] bytes, String path) {
         Entity e = new Entity();
         e.setContentType(contentType);
         e.setData(bytes);
         entities.put(path, e);
+
+        return new JsonObject();
     }
 
     @Override
@@ -118,8 +121,10 @@ public class MemoryStore extends EntityBasedStore {
     }
 
     @Override
-    public void delete(String path) {
+    public JsonObject delete(String path) {
         entities.remove(path);
+
+        return new JsonObject();
     }
 
 }

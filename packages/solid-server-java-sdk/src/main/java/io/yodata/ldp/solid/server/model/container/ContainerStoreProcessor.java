@@ -1,6 +1,7 @@
 package io.yodata.ldp.solid.server.model.container;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.yodata.ldp.solid.server.model.Page;
 import io.yodata.ldp.solid.server.model.Request;
@@ -48,9 +49,10 @@ public class ContainerStoreProcessor {
         return r;
     }
 
-    public void post(Request in) {
-        backend.store().post(in);
+    public JsonObject post(Request in) {
+        JsonObject backendResult = backend.store().post(in);
         backend.eventBus().sendStoreEvent(in);
+        return backendResult;
     }
 
 }

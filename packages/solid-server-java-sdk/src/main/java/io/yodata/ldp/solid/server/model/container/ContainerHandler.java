@@ -1,6 +1,7 @@
 package io.yodata.ldp.solid.server.model.container;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.yodata.GsonUtil;
 import io.yodata.ldp.solid.server.model.*;
@@ -32,28 +33,44 @@ public class ContainerHandler extends GenericHandler {
     }
 
     @Override
-    public Response get(Request in) {
+    public ResponseLogAction get(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
         Exchange ex = build(in);
 
-        inCheck.get(ex);
+        JsonObject inCheckStatus = inCheck.get(ex);
+        result.addChild(inCheckStatus);
+
         if (Objects.nonNull(ex.getResponse())) {
-            return ex.getResponse();
+            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("hasResponse", true);
+            result.withResponse(ex.getResponse());
+            return result;
         }
 
         ex.setResponse(storeProc.get(in));
-        return outCheck.get(ex);
+
+        ResponseLogAction outCheckResponse = outCheck.get(ex);
+        result.addChild(outCheckResponse, outCheck);
+        ex.setResponse(outCheckResponse.getResponse());
+
+        return result.withResponse(ex.getResponse());
     }
 
     @Override
-    public Response post(Request in) {
+    public ResponseLogAction post(Request in) {
+        ResponseLogAction result = new ResponseLogAction();
+
         ensureEncoding(in);
 
         Exchange ex = build(in);
 
         // We run any custom rules tailored for content
-        inCheck.post(ex);
+        JsonObject inCheckStatus = inCheck.post(ex);
+        result.addChild(inCheckStatus);
         if (Objects.nonNull(ex.getResponse())) {
-            return ex.getResponse();
+            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("hasResponse", true);
+            return result.withResponse(ex.getResponse());
         }
 
         // We ensure we use the latest middleware data
@@ -83,7 +100,9 @@ public class ContainerHandler extends GenericHandler {
         addKeysIfPossible(in, keys);
 
         // We store
-        storeProc.post(in);
+        JsonObject storeProcResult = storeProc.post(in);
+        storeProcResult.addProperty("type", storeProc.getClass().getSimpleName());
+        result.addChild(storeProcResult);
 
         // We build the answer
         Response res = new Response();
@@ -92,9 +111,12 @@ public class ContainerHandler extends GenericHandler {
         res.setBody(GsonUtil.makeObj("id", id));
         ex.setResponse(res);
 
-        res = outCheck.post(ex);
-        res.setFileId(id);
-        return res;
+        ResponseLogAction outCheckResult = outCheck.post(ex);
+        outCheckResult.getResponse().setFileId(id);
+        result.addChild(outCheckResult, outCheck);
+        ex.setResponse(outCheckResult.getResponse());
+
+        return result.withResponse(ex.getResponse());
     }
 
 }

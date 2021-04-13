@@ -1,16 +1,16 @@
 package io.yodata.ldp.solid.server.model.processor;
 
 import io.yodata.ldp.solid.server.model.Exchange;
-import io.yodata.ldp.solid.server.model.Response;
+import io.yodata.ldp.solid.server.model.ResponseLogAction;
 
 public interface OutputValidationProcessor {
 
-    Response get(Exchange ex);
+    ResponseLogAction get(Exchange ex);
 
-    Response post(Exchange ex);
+    ResponseLogAction post(Exchange ex);
 
-    Response put(Exchange ex);
+    ResponseLogAction put(Exchange ex);
 
-    Response delete(Exchange ex);
+    ResponseLogAction delete(Exchange ex);
 
 }

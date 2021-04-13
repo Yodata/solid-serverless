@@ -1,27 +1,32 @@
 package io.yodata.ldp.solid.server.model.processor;
 
+import com.google.gson.JsonObject;
 import io.yodata.ldp.solid.server.model.Exchange;
 
 public class StubInValidationProcessor implements InputValidationProcessor {
 
     @Override
-    public void get(Exchange ex) {
+    public JsonObject get(Exchange ex) {
         // no-op
+        return new JsonObject();
     }
 
     @Override
-    public void post(Exchange ex) {
+    public JsonObject post(Exchange ex) {
         // no-op
+        return new JsonObject();
     }
 
     @Override
-    public void put(Exchange ex) {
+    public JsonObject put(Exchange ex) {
         // no-op
+        return new JsonObject();
     }
 
     @Override
-    public void delete(Exchange ex) {
+    public JsonObject delete(Exchange ex) {
         // no-op
+        return new JsonObject();
     }
 
 }
