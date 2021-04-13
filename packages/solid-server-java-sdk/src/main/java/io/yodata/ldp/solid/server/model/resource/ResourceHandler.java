@@ -128,13 +128,13 @@ public class ResourceHandler extends GenericHandler {
         addIdIfPossible(in, id);
         addKeyIfPossible(in, false, "id", id);
 
-        ResponseLogAction outCheckResponse = outCheck.put(ex);
-        result.addChild(outCheckResponse, outCheck);
-        ex.setResponse(outCheckResponse.getResponse());
-
         ResponseLogAction storeProcResponse = storeProc.put(in);
         result.addChild(storeProcResponse, storeProc);
         ex.setResponse(storeProcResponse.getResponse());
+
+        ResponseLogAction outCheckResponse = outCheck.put(ex);
+        result.addChild(outCheckResponse, outCheck);
+        ex.setResponse(outCheckResponse.getResponse());
 
         result.withResponse(ex.getResponse());
         return result;
