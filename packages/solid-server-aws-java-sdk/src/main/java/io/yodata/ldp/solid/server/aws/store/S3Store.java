@@ -215,6 +215,7 @@ public class S3Store extends EntityBasedStore {
         buckets.forEach(bucket -> {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.addUserMetadata("X-Solid-Serverless-Link", linkTargetPath);
+            metadata.setContentLength(0);
             s3.putObject(bucket, linkPath, new ByteArrayInputStream(new byte[0]), metadata);
             log.debug("Stored link in bucket {} from {} to {}", bucket, linkTargetPath, linkPath);
         });

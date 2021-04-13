@@ -45,6 +45,8 @@ public class UndertowSolidServer {
     }
 
     public static void main(String[] args) {
+        System.setProperty("org.jboss.logging.provider", "slf4j");
+
         log.info("-------/ Frontd is starting \\-------");
 
         AmazonS3Config.register();
