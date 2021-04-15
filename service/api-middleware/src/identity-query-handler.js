@@ -5,7 +5,10 @@ const invokeLambdaFunction = require('./lib/invoke-lambda-function')
 const graphIdentity = async (event) => {
     const stage = getEnvValue(event, 'NODE_ENV', 'staging')
     const functionName = getEnvValue(event, 'IDENTITY_RESOLVE_FUNCTION_NAME', `${stage}-graph-identity`)
-    return invokeLambdaFunction(functionName, event.object)
+    return invokeLambdaFunction(functionName, {
+        headers: { 'Content-Type': 'application/json' },
+        body: event.object
+    })
 }
 const matchPath = (url = '', subStr) => new URL(url).pathname == subStr
 const POST = 'post'
