@@ -4,7 +4,7 @@ const invokeLambdaFunction = require('./lib/invoke-lambda-function')
 
 const graphIdentity = async (event) => {
     const stage = getEnvValue(event, 'NODE_ENV', 'staging')
-    const functionName = getEnvValue(event, 'CREATE_SFDC_CONTACT_FUNCTION_NAME', `${stage}-graph-identity`)
+    const functionName = getEnvValue(event, 'IDENTITY_RESOLVE_FUNCTION_NAME', `${stage}-graph-identity`)
     return invokeLambdaFunction(functionName, event.object)
 }
 const matchPath = (url = '', subStr) => new URL(url).pathname == subStr
