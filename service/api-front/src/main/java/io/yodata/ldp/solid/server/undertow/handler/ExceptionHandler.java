@@ -12,12 +12,11 @@ public class ExceptionHandler extends BasicHttpHandler {
 
     private final transient Logger log = LoggerFactory.getLogger(ExceptionHandler.class);
 
+    private static final String CorsAllValue = "*";
     private static final String CorsOriginName = "Access-Control-Allow-Origin";
-    private static final String CorsOriginValue = "*";
     private static final String CorsMethodsName = "Access-Control-Allow-Methods";
     private static final String CorsMethodsValue = "GET, POST, PUT, DELETE, OPTIONS";
     private static final String CorsHeadersName = "Access-Control-Allow-Headers";
-    private static final String CorsHeadersValue = "*";
     private static final String CorsCredName = "Access-Control-Allow-Credentials";
     private static final String CorsReqHeadName = "Access-Control-Request-Headers";
 
@@ -27,15 +26,23 @@ public class ExceptionHandler extends BasicHttpHandler {
         this.h = h;
     }
 
+    private String getOrigin(HttpServerExchange ex) {
+        return StringUtils.defaultIfBlank(ex.getRequestHeaders().getFirst("Origin"), CorsAllValue);
+    }
+
+    private String getCorsRequestHeader(HttpServerExchange ex) {
+        return StringUtils.defaultIfBlank(ex.getRequestHeaders().getFirst(CorsReqHeadName), CorsAllValue);
+    }
+
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         try {
             log.info("HTTP Request {}: Start", exchange.hashCode());
 
-            putHeader(exchange, CorsOriginName, StringUtils.defaultIfBlank(exchange.getRequestHeaders().getFirst("Origin"), "*"));
+            putHeader(exchange, CorsOriginName, getOrigin(exchange));
             putHeader(exchange, CorsCredName, "true");
             putHeader(exchange, CorsMethodsName, CorsMethodsValue);
-            putHeader(exchange, CorsHeadersName, StringUtils.defaultIfBlank(exchange.getRequestHeaders().getFirst(CorsReqHeadName), "*"));
+            putHeader(exchange, CorsHeadersName, getCorsRequestHeader(exchange));
 
             putHeader(exchange, "Cache-control", "no-store");
             putHeader(exchange, "Pragma", "no-cache");
