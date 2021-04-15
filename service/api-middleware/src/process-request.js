@@ -8,6 +8,7 @@ const processContext = require('./process-context')
 const validateSchema = require('./validate-schema')
 const createBmsContact = require('./create-bms-contact')
 const handlFranchiseTransactionReport = require('./handle-franchise-transactionreport')
+const identityQueryHandler = require('./identity-query-handler')
 const has = require('./lib/object-has')
 
 const DEFAULT_MIDDLEWARES = [
@@ -17,7 +18,8 @@ const DEFAULT_MIDDLEWARES = [
 	processContext,
 	validateSchema,
 	createBmsContact,
-	handlFranchiseTransactionReport
+	handlFranchiseTransactionReport,
+	identityQueryHandler
 ]
 
 const handler = async (event, fn) => {
