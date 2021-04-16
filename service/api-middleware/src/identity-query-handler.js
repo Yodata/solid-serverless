@@ -39,10 +39,10 @@ async function identityQueryHandler(event) {
         await graphIdentity(event)
             .then((response = {}) => {
                 logger.debug('identity-graph-result', { response })
-                let object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
-                event.object = Object.assign(object, {
-                    actionStatus: object.actionStatus || ((response.status < 300) ? 'CompletedActionStatus' : 'FailedActionStatus')
-                })
+                // let object = (typeof response.body === 'string') ? JSON.parse(response.body) : response.body
+                // event.object = Object.assign(object, {
+                //     actionStatus: object.actionStatus || ((response.status < 300) ? 'CompletedActionStatus' : 'FailedActionStatus')
+                // })
                 let status = response.status || response.statusCode || 201
                 event.response = Object.assign(response, {
                     status: Number(status),
