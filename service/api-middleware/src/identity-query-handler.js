@@ -44,12 +44,7 @@ async function identityQueryHandler(event) {
                     actionStatus: object.actionStatus || ((response.status < 300) ? 'CompletedActionStatus' : 'FailedActionStatus')
                 })
                 let status = response.status || response.statusCode || 201
-                // event.response = Object.assign(response, {
-                //     status: Number(status),
-                //     statusCode: String(status),
-                //     end: true
-                // })
-                event.response = Object.assign(object, {
+                event.response = Object.assign(response.result, {
                     status: Number(status),
                     statusCode: String(status),
                     end: true
