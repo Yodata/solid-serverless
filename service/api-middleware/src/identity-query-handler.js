@@ -54,11 +54,6 @@ async function identityQueryHandler(event) {
                     statusCode: String(status),
                     end: true
                 })
-                event.response = Object.assign(response, {
-                    status: Number(status),
-                    statusCode: String(status),
-                    end: true
-                })
             })
             .catch(error => {
                 event.object = Object.assign(event.object, {
