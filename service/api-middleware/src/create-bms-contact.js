@@ -35,9 +35,9 @@ const isContactCreateRequest = (event = {}) => {
  */
 async function createBmsContact(event) {
 	if (isContactCreateRequest(event)) {
-		logger.debug('createbmscontact:received', event)
 		await createContact(event)
 			.then((response = {}) => {
+				logger.debug('identity:received', event)
 				event.object = response
 				let { actionStatus, error } = response
 				let status = (error || actionStatus === 'FailedActionStatus') ? 400 : 201
