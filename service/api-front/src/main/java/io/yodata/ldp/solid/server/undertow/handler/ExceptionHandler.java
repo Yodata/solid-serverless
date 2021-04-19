@@ -39,6 +39,8 @@ public class ExceptionHandler extends BasicHttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        boolean willLogAtInfo = true;
+
         JsonObject resultTop = new JsonObject();
         LogAction logged = LogAction.withType().setResult(resultTop);
         try {
@@ -52,15 +54,21 @@ public class ExceptionHandler extends BasicHttpHandler {
             putHeader(exchange, "Cache-control", "no-store");
             putHeader(exchange, "Pragma", "no-cache");
 
-            LogAction result = h.actionRequest(exchange);
-            if (!Objects.isNull(result)) {
-                logged.addChild(result, "RequestHandler");
+            LogAction requestResult = h.actionRequest(exchange);
+            if (!Objects.isNull(requestResult)) {
+                // There is no type, we get the children and do not log the main object
+                if (StringUtils.isBlank(requestResult.getType())) {
+                    logged.getChildren().addAll(requestResult.getChildren());
+                } else {
+                    logged.addChild(requestResult, "RequestHandler");
+                }
             }
         } catch (IllegalArgumentException | BadRequestException e) {
             writeBody(exchange, 400, GsonUtil.makeObj("error", e.getMessage()));
         } catch (UnauthorizedException e) {
             writeBody(exchange, 401, GsonUtil.makeObj("error", e.getMessage()));
         } catch (ForbiddenException e) {
+            willLogAtInfo = e.shouldBeLogged();
             writeBody(exchange, 403, GsonUtil.makeObj("error", e.getMessage()));
         } catch (NotFoundException e) {
             writeBody(exchange, 404, GsonUtil.makeObj("error", e.getMessage()));
@@ -71,8 +79,13 @@ public class ExceptionHandler extends BasicHttpHandler {
             writeBody(exchange, 500, GsonUtil.makeObj("error", "An internal server occurred"));
         } finally {
             exchange.endExchange();
-            resultTop.addProperty("statusCode", exchange.getStatusCode());
-            log.info(GsonUtil.toJson(logged));
+            resultTop.addProperty("method", exchange.getRequestMethod().toString());
+            resultTop.addProperty("code", exchange.getStatusCode());
+            if (willLogAtInfo) {
+                log.info(GsonUtil.toJson(logged));
+            } else {
+                log.debug(GsonUtil.toJson(logged));
+            }
         }
     }
 

@@ -18,7 +18,7 @@ public class HostControlHandler extends ActionHttpHandler {
     @Override
     public LogAction actionRequest(HttpServerExchange exchange) throws Exception {
         if (!srv.isServingDomain(exchange.getHostName())) {
-            throw new ForbiddenException();
+            throw new ForbiddenException("Illegal domain").notLogged();
         }
 
         return h.actionRequest(exchange);

@@ -35,7 +35,7 @@ public class ResourceHandler extends GenericHandler {
         result.addChild(inCheckStatus);
 
         if (Objects.nonNull(ex.getResponse())) {
-            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("type", "mw-in");
             inCheckStatus.addProperty("hasResponse", true);
             result.withResponse(ex.getResponse());
             return result;
@@ -62,7 +62,7 @@ public class ResourceHandler extends GenericHandler {
         JsonObject inCheckStatus = inCheck.get(ex);
         result.addChild(inCheckStatus);
         if (Objects.nonNull(ex.getResponse())) {
-            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("type", "mw-in");
             inCheckStatus.addProperty("hasResponse", true);
             result.withResponse(ex.getResponse());
             return result;
@@ -105,7 +105,7 @@ public class ResourceHandler extends GenericHandler {
         }
 
         ResponseLogAction outCheckResponse = outCheck.get(ex);
-        result.addChild(outCheckResponse, outCheck);
+        result.addChild(outCheckResponse, "mw-out");
         result.withResponse(outCheckResponse.getResponse());
         return result;
     }
@@ -118,7 +118,7 @@ public class ResourceHandler extends GenericHandler {
         JsonObject inCheckStatus = inCheck.put(ex);
         result.addChild(inCheckStatus);
         if (Objects.nonNull(ex.getResponse())) {
-            inCheckStatus.addProperty("type", "InputValidationProcessor");
+            inCheckStatus.addProperty("type", "mw-in");
             inCheckStatus.addProperty("hasResponse", true);
             result.withResponse(ex.getResponse());
             return result;
@@ -129,11 +129,11 @@ public class ResourceHandler extends GenericHandler {
         addKeyIfPossible(in, false, "id", id);
 
         ResponseLogAction storeProcResponse = storeProc.put(in);
-        result.addChild(storeProcResponse, storeProc);
+        result.addChild(storeProcResponse, "store");
         ex.setResponse(storeProcResponse.getResponse());
 
         ResponseLogAction outCheckResponse = outCheck.put(ex);
-        result.addChild(outCheckResponse, outCheck);
+        result.addChild(outCheckResponse, "mw-out");
         ex.setResponse(outCheckResponse.getResponse());
 
         result.withResponse(ex.getResponse());

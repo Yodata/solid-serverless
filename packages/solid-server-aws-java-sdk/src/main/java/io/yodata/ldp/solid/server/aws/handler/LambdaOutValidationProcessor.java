@@ -38,16 +38,14 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
 
     protected ResponseLogAction process(Exchange ex) {
         JsonObject processing = new JsonObject();
-        processing.addProperty("type", "LambdaProcessing");
-        ResponseLogAction result = new ResponseLogAction().addChild(processing);
+        ResponseLogAction result = new ResponseLogAction();
+        result.setResult(processing);
 
         if (!StringUtils.startsWith(ex.getResponse().getContentType(), MimeTypes.APPLICATION_JSON)) {
-            processing.addProperty("actionStatus", "SkippedActionStatus");
-            processing.addProperty("reason", "Not response type of " + MimeTypes.APPLICATION_JSON);
-            return result.addChild(processing).withResponse(ex.getResponse());
+            processing.addProperty("status", "skipped");
+            processing.addProperty("reason", "Not " + MimeTypes.APPLICATION_JSON);
+            return result.withResponse(ex.getResponse());
         }
-
-        processing.addProperty("lambda", lambdaName);
 
         log.debug("Exchange {}: Response validation: start", ex.getRequest().getId());
         log.debug("Using lambda {}", lambdaName);
@@ -61,7 +59,7 @@ public class LambdaOutValidationProcessor extends LambdaValidationProcessor impl
 
         log.debug("Calling lambda {}", lambdaName);
         InvokeResult invokeRes = lambda.invoke(invokeReq);
-        processing.addProperty("status", invokeRes.getStatusCode());
+        processing.addProperty("code", invokeRes.getStatusCode());
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
             throw new RuntimeException("Lambda " + lambdaName + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }

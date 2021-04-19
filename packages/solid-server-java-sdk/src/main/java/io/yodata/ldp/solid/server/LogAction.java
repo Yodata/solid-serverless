@@ -23,10 +23,26 @@ public class LogAction {
     private JsonObject result;
     private Boolean willRetry;
     private JsonObject error;
-    private List<JsonObject> children = new ArrayList<>();
+    private List<JsonObject> children;
 
     public LogAction() {
         result = new JsonObject();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public JsonObject getResult() {
+        return result;
+    }
+
+    public List<JsonObject> getChildren() {
+        if (Objects.isNull(children)) {
+            children = new ArrayList<>();
+        }
+
+        return children;
     }
 
     public LogAction setType(String t) {
@@ -118,6 +134,10 @@ public class LogAction {
     }
 
     public LogAction addChild(JsonObject child) {
+        if (Objects.isNull(children)) {
+            children = new ArrayList<>();
+        }
+
         children.add(child);
         return this;
     }

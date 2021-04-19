@@ -27,7 +27,7 @@ public class ResourceStoreProcessor {
         ResponseLogAction result = new ResponseLogAction();
 
         JsonObject backendResult = backend.store().save(in);
-        result.addChild(backendResult);
+        result.setResult(backendResult);
 
         backend.eventBus().sendStoreEvent(in);
 

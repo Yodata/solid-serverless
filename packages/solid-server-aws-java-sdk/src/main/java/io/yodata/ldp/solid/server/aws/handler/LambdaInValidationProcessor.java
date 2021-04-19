@@ -31,15 +31,16 @@ public class LambdaInValidationProcessor extends LambdaValidationProcessor imple
     }
 
     protected JsonObject process(Exchange ex) {
+        JsonObject invokResult = new JsonObject();
         JsonObject result = new JsonObject();
+        result.add("result", invokResult);
+        result.addProperty("type", "mw-in");
 
         if (!StringUtils.startsWith(ex.getRequest().getContentType().orElse(""), MimeTypes.APPLICATION_JSON)) {
-            result.addProperty("actionStatus", "SkippedActionStatus");
-            result.addProperty("reason", "Request is not of Content-Type " + MimeTypes.APPLICATION_JSON + ", skipping");
+            result.addProperty("status", "skipped");
+            result.addProperty("reason", "Not " + MimeTypes.APPLICATION_JSON);
             return result;
         }
-
-        result.addProperty("lambda", lambdaName);
 
         log.debug("Request {} validation: start", ex.getRequest().getId());
         log.debug("Using lambda {}", lambdaName);
@@ -52,7 +53,7 @@ public class LambdaInValidationProcessor extends LambdaValidationProcessor imple
 
         log.debug("Calling lambda {}", lambdaName);
         InvokeResult invokeRes = lambda.invoke(invokeReq);
-        result.addProperty("status", invokeRes.getStatusCode());
+        invokResult.addProperty("code", invokeRes.getStatusCode());
         if (invokeRes.getStatusCode() != 200 || StringUtils.equals("Unhandled", invokeRes.getFunctionError())) {
             throw new RuntimeException("Lambda " + lambdaName + " completed with status " + invokeRes.getStatusCode() + " and/or error " + invokeRes.getFunctionError());
         }
