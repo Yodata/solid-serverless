@@ -11,12 +11,28 @@ import java.util.Objects;
 
 public class LogAction {
 
+    public static class Identity {
+
+        private Boolean isAnonymous;
+        private String iri;
+
+        public void setAnonymous() {
+            isAnonymous = true;
+        }
+
+        public void setIri(String iri) {
+            this.iri = iri;
+        }
+
+    }
+
     public static LogAction withType() {
         return new LogAction().setType(LogAction.class.getSimpleName());
     }
 
     private String type;
     private String actionStatus;
+    private Identity identity;
     private JsonElement object;
     private String target;
     private JsonObject config;
@@ -139,6 +155,20 @@ public class LogAction {
         }
 
         children.add(child);
+        return this;
+    }
+
+    public Identity getId() {
+        if (Objects.isNull(identity)) {
+            identity = new Identity();
+        }
+
+        return identity;
+    }
+
+    public LogAction setId(Identity identity) {
+        this.identity = identity;
+
         return this;
     }
 

@@ -214,6 +214,11 @@ public class UndertowSolidServer {
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.head(request);
+                        if (context.isAnonymous()) {
+                            r.getId().setAnonymous();
+                        } else {
+                            r.getId().setIri(context.getIdentity());
+                        }
                         writeBody(exchange, r.getResponse());
                         return r;
                     }
@@ -230,6 +235,11 @@ public class UndertowSolidServer {
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.get(request);
+                        if (context.isAnonymous()) {
+                            r.getId().setAnonymous();
+                        } else {
+                            r.getId().setIri(context.getIdentity());
+                        }
                         writeBody(exchange, r.getResponse());
                         return r;
                     }
@@ -246,6 +256,11 @@ public class UndertowSolidServer {
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.post(request);
+                        if (context.isAnonymous()) {
+                            r.getId().setAnonymous();
+                        } else {
+                            r.getId().setIri(context.getIdentity());
+                        }
                         writeBody(exchange, r.getResponse());
                         return r;
                     }
@@ -262,6 +277,11 @@ public class UndertowSolidServer {
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.put(request);
+                        if (context.isAnonymous()) {
+                            r.getId().setAnonymous();
+                        } else {
+                            r.getId().setIri(context.getIdentity());
+                        }
                         writeBody(exchange, r.getResponse());
                         return r;
                     }
@@ -277,6 +297,11 @@ public class UndertowSolidServer {
                         Acl rights = auth.authorize(context, target);
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.delete(request);
+                        if (context.isAnonymous()) {
+                            r.getId().setAnonymous();
+                        } else {
+                            r.getId().setIri(context.getIdentity());
+                        }
                         writeBody(exchange, r.getResponse());
                         return r;
                     }
