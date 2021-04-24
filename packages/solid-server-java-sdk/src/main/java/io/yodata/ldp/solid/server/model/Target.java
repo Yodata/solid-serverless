@@ -32,6 +32,10 @@ public class Target {
         return forProfileCard(URI.create(base.toLowerCase()));
     }
 
+    public static boolean isProfileCard(String toMatch) {
+        return StringUtils.endsWithAny(toMatch, "/profile/card", "/profile/card#me");
+    }
+
     protected URI id;
     protected String host;
     protected String path;
