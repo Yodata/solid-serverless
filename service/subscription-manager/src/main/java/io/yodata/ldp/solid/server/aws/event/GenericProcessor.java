@@ -2,8 +2,6 @@ package io.yodata.ldp.solid.server.aws.event;
 
 import com.google.gson.JsonObject;
 import io.yodata.GsonUtil;
-import io.yodata.ldp.solid.server.aws.SqsPusher;
-import io.yodata.ldp.solid.server.aws.transform.AWSTransformService;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
@@ -24,12 +22,12 @@ public class GenericProcessor {
 
     private final SolidServer srv;
     private final TransformService transform;
-    private final SqsPusher pusher;
+    private final Pusher pusher;
 
-    public GenericProcessor(SolidServer srv) {
+    public GenericProcessor(SolidServer srv, TransformService transform, Pusher pusher) {
         this.srv = srv;
-        this.transform = new AWSTransformService();
-        this.pusher = new SqsPusher();
+        this.transform = transform;
+        this.pusher = pusher;
     }
 
     public void handleEvent(JsonObject event) {
