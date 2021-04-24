@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -145,9 +144,8 @@ public class GenericProcessor {
                 r.setBody(msg);
 
                 // We send to store
-                Response res = srv.post(r);
-                String eventId = GsonUtil.parseObj(res.getBody()
-                        .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                Response res = srv.post(r).getResponse();
+                String eventId = res.getFileId();
                 log.info("Data was saved at {}", eventId);
             } else {
                 // We rebuild the storage action to be sure only specific fields are there
@@ -173,9 +171,8 @@ public class GenericProcessor {
                 r.setBody(publication);
 
                 // We send to store
-                Response res = srv.post(r);
-                String eventId = GsonUtil.parseObj(res.getBody()
-                        .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                Response res = srv.post(r).getResponse();
+                String eventId = res.getFileId();
                 log.info("Data was saved at {}", eventId);
             }
         } else {

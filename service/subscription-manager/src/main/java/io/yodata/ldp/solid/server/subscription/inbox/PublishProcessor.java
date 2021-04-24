@@ -104,7 +104,7 @@ public class PublishProcessor implements Consumer<InboxService.Wrapper> {
         r.setTarget(target);
         r.setBody(message);
 
-        Response res = srv.post(r);
+        Response res = srv.post(r).getResponse();
         log.info("Topic event was saved at {}", res.getFileId());
     }
 

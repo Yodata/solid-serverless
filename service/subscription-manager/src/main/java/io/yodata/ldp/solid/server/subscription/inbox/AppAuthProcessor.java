@@ -369,7 +369,7 @@ public class AppAuthProcessor implements Consumer<InboxService.Wrapper> {
                 r.setMethod("POST");
                 r.setTarget(Target.forPath(pod, "/outbox/"));
                 r.setBody(subPending);
-                Response res = srv.post(r);
+                Response res = srv.post(r).getResponse();
                 log.info("SC for sending potential subscribe: {}", res.getStatus());
             }
 

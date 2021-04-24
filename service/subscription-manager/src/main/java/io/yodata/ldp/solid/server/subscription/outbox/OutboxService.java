@@ -37,7 +37,7 @@ public class OutboxService {
         URI target;
         try {
             target = new URI(recipient);
-            if (!StringUtils.endsWithAny(recipient, "/profile/card", "/profile/card#me")) {
+            if (!Target.isProfileCard(recipient)) {
                 return Optional.of(target);
             }
 
@@ -202,8 +202,8 @@ public class OutboxService {
             r.setBody(data);
 
             // We send
-            Response res = srv.post(r);
-            String messageId = GsonUtil.parseObj(res.getBody().orElseGet("{}"::getBytes)).get("id").getAsString();
+            Response res = srv.post(r).getResponse();
+            String messageId = res.getFileId();
             log.info("Message was saved at {}", messageId);
         } else {
             log.info("Domain {} is external, sending using pusher", recipientHost);

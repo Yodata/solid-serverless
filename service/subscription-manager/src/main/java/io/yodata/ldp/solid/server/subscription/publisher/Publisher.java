@@ -71,7 +71,7 @@ public class Publisher {
                 r.setBody(publication);
 
                 // We send to store
-                Response res = srv.post(r);
+                Response res = srv.post(r).getResponse();
                 String eventId = res.getFileId();
                 log.info("Publish to {} - Data was saved at {}", recipient, eventId);
             } catch (RuntimeException e) {
@@ -82,7 +82,7 @@ public class Publisher {
         Request d = new Request().internal();
         d.setMethod("DELETE");
         d.setTarget(new Target(from));
-        Response dRes = srv.delete(d);
+        Response dRes = srv.delete(d).getResponse();
         log.info("{} delete status: {}", from, dRes.getStatus());
     }
 

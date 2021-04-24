@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -77,15 +76,14 @@ public class Notifier {
                 r.setBody(notification);
 
                 // We send to store
-                Response res = srv.post(r);
-                String eventId = GsonUtil.parseObj(res.getBody()
-                        .orElse("{\"id\":\"<NOT RETURNED>\"".getBytes(StandardCharsets.UTF_8))).get("id").getAsString();
+                Response res = srv.post(r).getResponse();
+                String eventId = res.getFileId();
                 log.info("Data was saved at {}", eventId);
 
                 Request d = new Request().internal();
                 d.setMethod("DELETE");
                 d.setTarget(new Target(from));
-                Response dRes = srv.delete(d);
+                Response dRes = srv.delete(d).getResponse();
                 log.info("{} delete status: {}", from, dRes.getStatus());
             } catch (RuntimeException e) {
                 log.warn("Unable to produce notification from {} for {}", from, recipient, e);
