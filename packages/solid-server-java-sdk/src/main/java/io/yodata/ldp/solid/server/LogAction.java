@@ -112,8 +112,12 @@ public class LogAction {
     }
 
     public LogAction setError(Throwable t) {
+        return setError(t, "Error");
+    }
+
+    public LogAction setError(Throwable t, String messagePrefix) {
         error = new JsonObject();
-        error.addProperty("message", t.getMessage());
+        error.addProperty("message", messagePrefix + ": " + t.getMessage());
         if (t instanceof RuntimeException && Objects.nonNull(t.getCause())) {
             t = t.getCause();
         }

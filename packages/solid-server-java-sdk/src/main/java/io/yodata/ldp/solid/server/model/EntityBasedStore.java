@@ -202,7 +202,7 @@ public abstract class EntityBasedStore implements Store {
     }
 
     private List<Subscription> getInternalSubscriptions() {
-        log.info("Getting internal subscriptions");
+        log.debug("Getting internal subscriptions");
         List<Subscription> subs = new ArrayList<>();
         String intPath = "internal/subscriptions";
         getData(intPath).ifPresent(obj -> subs.addAll(extractSubs(intPath, obj, true)));
@@ -210,7 +210,7 @@ public abstract class EntityBasedStore implements Store {
     }
 
     private List<Subscription> getExtractedGlobalSubscriptions() {
-        log.info("Getting global subscriptions");
+        log.debug("Getting global subscriptions");
         List<Subscription> subs = new ArrayList<>();
         String entPath = "global/subscriptions";
         getData(entPath).ifPresent(obj -> subs.addAll(extractSubs(entPath, obj, true)));
@@ -219,7 +219,7 @@ public abstract class EntityBasedStore implements Store {
 
     @Override
     public List<Subscription> getAllSubscriptions(URI entity) {
-        log.info("Getting all subscriptions for {}", entity);
+        log.debug("Getting all subscriptions for {}", entity);
         List<Subscription> subs = getInternalSubscriptions();
         subs.addAll(getExtractedGlobalSubscriptions());
         subs.addAll(getEntitySubscriptions(entity));

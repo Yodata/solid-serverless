@@ -1,7 +1,9 @@
 package io.yodata.ldp.solid.server.aws.event;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.Action;
 import io.yodata.ldp.solid.server.model.*;
 import io.yodata.ldp.solid.server.model.event.StorageAction;
 import io.yodata.ldp.solid.server.model.transform.TransformMessage;
@@ -11,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -30,40 +33,89 @@ public class GenericProcessor {
         this.pusher = pusher;
     }
 
-    public void handleEvent(JsonObject event) {
-        StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        URI id = URI.create(StringUtils.defaultIfBlank(action.getId(), "https://fail.yodata.io/unknown/id"));
-        URI target = URI.create(action.getTarget());
-        log.info("Processing storage event {} about {}", action.getType(), action.getId());
+    private Optional<Action> logOpt(Action a) {
+        return log.isDebugEnabled() ? Optional.of(a) : Optional.empty();
+    }
+
+    public void handleEvent(Action resultAction, JsonObject event) {
+        resultAction.withResult(new JsonObject());
+        StorageAction action;
+
+        try {
+            action = GsonUtil.get().fromJson(event, StorageAction.class);
+        } catch (JsonSyntaxException e) {
+            resultAction.skipped("Invalid input", event).setError(e);
+            return;
+        }
+
+        if (StringUtils.isBlank(action.getId())) {
+            resultAction.skipped("ID not found/blank", event);
+            return;
+        }
+
+        if (StringUtils.isBlank(action.getTarget())) {
+            resultAction.skipped("Target not found/blank", event);
+            return;
+        }
+
+        URI id;
+        try {
+            id = new URI(action.getId());
+        } catch (URISyntaxException e) {
+            resultAction.skipped("ID invalid, not a URI", action.getId()).setError(e);
+            return;
+        }
+        resultAction.setObject(id);
+
+        URI target;
+        try {
+            target = new URI(action.getTarget());
+        } catch (URISyntaxException e) {
+            resultAction.skipped("Target invalid, not a URI", action.getTarget()).setError(e);
+            return;
+        }
+        log.debug("Processing storage event {} about {}", action.getType(), action.getId());
 
         List<Subscription> subs = srv.store().getAllSubscriptions(id);
         if (subs.isEmpty()) {
-            log.info("No subscription found");
+            JsonObject result = new JsonObject();
+            result.addProperty("status", "done");
+            result.addProperty("message", "No subscription found");
+            resultAction.withResult(result);
             return;
         }
-        log.info("Processing {} subscription(s)", subs.size());
+        log.debug("Processing {} subscription(s)", subs.size());
 
         for (Subscription sub : subs) {
-            process(sub, target, event.deepCopy());
+            try {
+                process(sub, target, event.deepCopy()).ifPresent(resultAction::addChild);
+            } catch (RuntimeException e) {
+                Action subAction = new Action();
+                subAction.setError(e);
+                subAction.withResult(GsonUtil.makeObj("subId", sub.getId()));
+            }
         }
 
-        log.info("All subscriptions processed");
+        JsonObject result = new JsonObject();
+        result.addProperty("status", "done");
+        resultAction.withResult(result);
     }
 
-    public void process(Subscription sub, URI target, JsonObject event) {
-        log.info("Processing subscription ID {} on target {}", sub.getId(), target.toString());
+    public Optional<Action> process(Subscription sub, URI target, JsonObject event) {
+        Action result = new Action();
+        result.withResult(new JsonObject());
+        result.getResult().addProperty("subId", sub.getId());
+        log.debug("Processing subscription ID {} on target {}", sub.getId(), target.toString());
 
         if (StringUtils.isBlank(sub.getObject())) {
-            log.warn("Object is blank, ignoring");
-            return;
+            return Optional.of(result.failed("Sub object is blank", GsonUtil.toJson(sub)));
         }
 
         URI subObj;
         try {
             subObj = URI.create(sub.getObject());
         } catch (IllegalArgumentException e) {
-            log.warn("Object \"{}\" is not a valid URI, skipping", sub.getObject());
-            return;
+            return Optional.of(result.failed("Object is not a valid URI", sub.getObject()));
         }
 
         String host = subObj.getHost();
@@ -71,67 +123,74 @@ public class GenericProcessor {
             if (host.startsWith("*.")) {
                 host = host.substring(1);
                 if (!target.getHost().endsWith(host)) {
-                    log.info("Subscription ID {} does not match the object host pattern, skipping", sub.getId());
-                    return;
+                    return logOpt(result.skipped("Does not match the object host pattern"));
                 }
 
                 if (target.getHost().equalsIgnoreCase(subObj.getHost())) {
-                    log.info("Subscription target host is the same as event source host. Not allowing with a wildcard subscription");
-                    return;
+                    return logOpt(result.skipped("Target host is the same as event source host, not allowing with a wildcard subscription"));
                 }
             } else {
                 if (!StringUtils.equals(target.getHost(), host)) {
-                    log.info("Subscription ID {} does not match the object host, skipping", sub.getId());
-                    return;
+                    return logOpt(result.skipped("Not a match"));
                 }
             }
         }
 
         if (!target.getPath().startsWith(subObj.getPath())) {
-            log.info("Subscription ID {} does not match the object, skipping", sub.getId());
-            return;
+            return logOpt(result.skipped("Not a match"));
         }
 
         StorageAction action = GsonUtil.get().fromJson(event, StorageAction.class);
-        URI id = URI.create(StringUtils.defaultIfBlank(action.getId(), "https://fail.yodata.io/unknown/id"));
+        URI id = URI.create(action.getId());
 
         if (!action.getObject().isPresent()) {
-            log.info("Object is not present in the event: Fetching data from store to process");
+            log.debug("Object is not present in the event: Fetching data from store to process");
+            Action child = result.addChild(new Action().withResult());
+
+            child.setType("DownloadFromStore");
             Optional<String> obj = srv.store().findEntityData(id, id.getPath());
             if (!obj.isPresent()) {
-                log.info("We got a notification about {} which doesn't exist anymore, setting empty object", id);
                 action.setObject(new JsonObject());
+                child.skipped("Not found in store, using empty object");
             } else {
                 action.setObject(GsonUtil.parseObj(obj.get()));
+                child.done();
             }
         }
 
+        Action child = result.addChild(new Action().withResult());
+        child.setType("TransformForScope");
         if (Objects.nonNull(sub.getScope())) {
-            log.info("Subscription has a scope, processing");
+            log.debug("Subscription has a scope, processing");
+
             TransformMessage msg = new TransformMessage();
             msg.setSecurity(action.getRequest().getSecurity());
             msg.setScope(sub.getScope());
             msg.setPolicy(srv.store().getPolicies(id));
             msg.setObject(action.getObject().get());
             JsonObject rawData = transform.transform(msg);
+            child.done();
             if (rawData.keySet().isEmpty()) {
-                log.info("Sub {}: Transform removed all data, not sending notification", sub.getId());
-                return;
+                return Optional.of(result.skipped("Transform removed all data"));
             }
 
             action.setObject(rawData);
+        } else {
+            child.skipped("no scope");
         }
-        log.info("Data after scope: {}", GsonUtil.toJson(action));
 
-        if (!StringUtils.isEmpty(sub.getAgent())) {
-            log.info("Subscription is external");
+        log.debug("Data after scope: {}", GsonUtil.toJson(action));
 
+        boolean isExternal = !StringUtils.isEmpty(sub.getAgent());
+        result.getResult().addProperty("isExternal", isExternal);
+        if (isExternal) {
             if (!action.getObject().isPresent()) {
-                log.info("No content to send, skipping sub");
-                return;
+                return Optional.of(result.skipped("No content to send"));
             }
 
-            if (target.getPath().startsWith("/event/")) {
+            boolean isEvent = target.getPath().startsWith("/event/");
+            result.getResult().addProperty("isEvent", isEvent);
+            if (isEvent) {
                 // This is the event bus container, we consider the message final
                 JsonObject msg = action.getObject().get();
                 msg.addProperty("@to", sub.getAgent());
@@ -144,7 +203,7 @@ public class GenericProcessor {
                 // We send to store
                 Response res = srv.post(r).getResponse();
                 String eventId = res.getFileId();
-                log.info("Data was saved at {}", eventId);
+                result.getResult().addProperty("savedAt", eventId);
             } else {
                 // We rebuild the storage action to be sure only specific fields are there
                 JsonObject actionNew = new JsonObject();
@@ -171,18 +230,14 @@ public class GenericProcessor {
                 // We send to store
                 Response res = srv.post(r).getResponse();
                 String eventId = res.getFileId();
-                log.info("Data was saved at {}", eventId);
+                result.getResult().addProperty("savedAt", eventId);
             }
         } else {
-            log.info("Subscription is internal");
-
             JsonObject notification = new JsonObject();
+            result.getResult().addProperty("withContext", sub.needsContext());
             if (sub.needsContext()) {
-                log.info("Context is needed, sending full version to endpoint");
                 notification = GsonUtil.get().toJsonTree(action).getAsJsonObject();
             } else {
-                log.info("Context is not needed, sending content only");
-
                 if (action.getObject().isPresent()) {
                     notification = action.getObject().get();
                 } else {
@@ -191,7 +246,10 @@ public class GenericProcessor {
             }
 
             pusher.send(notification, sub.getTarget(), sub.getConfig());
+            result.getResult().addProperty("sentToPusher", true);
         }
+
+        return Optional.of(result.done());
     }
 
 }

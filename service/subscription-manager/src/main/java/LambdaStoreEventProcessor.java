@@ -2,9 +2,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import io.yodata.GsonUtil;
+import io.yodata.ldp.solid.server.Action;
 import io.yodata.ldp.solid.server.AwsServerBackend;
+import io.yodata.ldp.solid.server.LogAction;
 import io.yodata.ldp.solid.server.aws.AmazonS3Config;
 import io.yodata.ldp.solid.server.aws.SqsPusher;
 import io.yodata.ldp.solid.server.aws.event.GenericProcessor;
@@ -32,19 +33,28 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
     }
 
     @Override
-    public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        String raw = IOUtils.toString(input, UTF_8);
+    public void handleRequest(InputStream input, OutputStream output, Context context) {
+        LogAction ra = LogAction.withType();
+        Action processing = new Action();
         try {
-            handleRequest(GsonUtil.parseObj(raw));
-        } catch (JsonSyntaxException | IllegalStateException | IllegalArgumentException e) {
-            log.error("Invalid JSON object received: {}", raw, e);
+            String raw = IOUtils.toString(input, UTF_8);
+            handleRequest(processing, GsonUtil.parseObj(raw));
+            ra.setResult(processing);
+            log.info(GsonUtil.toJson(ra.setSuccess(true)));
+        } catch (IOException e) {
+            ra.setError(e);
+            log.error(GsonUtil.toJson(ra));
+        } catch (Throwable t) {
+            ra.setError(t);
+            log.error(GsonUtil.toJson(ra));
+            throw t;
         }
     }
 
-    private void handleRequest(JsonObject obj) {
+    private void handleRequest(Action processing, JsonObject obj) {
         if (!obj.has("Records")) { // This is not from SNS/SQS
             log.debug("This is a regular message");
-            svc.handleEvent(obj);
+            svc.handleEvent(processing, obj);
         } else {
             log.debug("Processing as wrapped messages");
             JsonArray records = obj.getAsJsonArray("Records");
@@ -53,7 +63,7 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
                 if (record.has("Sns")) {
                     String dataRaw = record.get("Sns").getAsJsonObject().get("Message").getAsString();
                     log.debug("SNS data: {}", dataRaw);
-                    svc.handleEvent(GsonUtil.parseObj(dataRaw));
+                    svc.handleEvent(processing, GsonUtil.parseObj(dataRaw));
                 } else if (record.has("body")) {
                     String body = record.getAsJsonPrimitive("body").getAsString();
                     log.debug("SQS data: {}", body);
@@ -64,7 +74,7 @@ public class LambdaStoreEventProcessor implements RequestStreamHandler {
                     }
 
                     try {
-                        svc.handleEvent(message);
+                        svc.handleEvent(processing, message);
                     } catch (NullPointerException e) {
                         log.warn("Invalid JSON data: {}", body, e);
                     }
