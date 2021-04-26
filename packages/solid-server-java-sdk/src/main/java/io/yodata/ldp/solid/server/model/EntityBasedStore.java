@@ -137,7 +137,7 @@ public abstract class EntityBasedStore implements Store {
     @Override
     public List<Subscription> getEntitySubscriptions(URI entity) {
         String host = new Target(entity).getHost();
-        log.info("Getting entity subscriptions for {}", host);
+        log.debug("Getting entity subscriptions for {}", host);
         List<Subscription> subs = new ArrayList<>();
         findEntityData(entity, SUBS_PATH).ifPresent(obj -> subs.addAll(extractSubs(SUBS_PATH, obj, false)));
         return subs;

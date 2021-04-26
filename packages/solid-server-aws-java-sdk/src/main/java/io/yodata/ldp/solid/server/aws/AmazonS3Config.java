@@ -80,7 +80,7 @@ public class AmazonS3Config implements Config {
 
             configBucket = s;
 
-            log.info("Getting config from {}/{}", configBucket, configKeyName);
+            log.debug("Getting config from {}/{}", configBucket, configKeyName);
             if (!s3.doesObjectExist(configBucket, configKeyName)) {
                 return;
             }

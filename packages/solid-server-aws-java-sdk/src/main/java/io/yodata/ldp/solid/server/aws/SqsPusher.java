@@ -34,7 +34,7 @@ public class SqsPusher implements Pusher {
         }
         req.setMessageBody(GsonUtil.toJson(payload));
         sqs.get().sendMessage(req);
-        log.info("Event dispatched to SQS queue {}", req.getQueueUrl());
+        log.debug("Event dispatched to SQS queue {}", req.getQueueUrl());
     }
 
 }
