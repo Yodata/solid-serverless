@@ -56,7 +56,7 @@ public class ExceptionHandler extends BasicHttpHandler {
 
             LogAction requestResult = h.actionRequest(exchange);
             if (!Objects.isNull(requestResult)) {
-                logged.setId(requestResult.getId());
+                logged.setAgent(requestResult.getAgent());
                 // There is no type, we get the children and do not log the main object
                 if (StringUtils.isBlank(requestResult.getType())) {
                     logged.getChildren().addAll(requestResult.getChildren());
@@ -80,9 +80,30 @@ public class ExceptionHandler extends BasicHttpHandler {
             writeBody(exchange, 500, GsonUtil.makeObj("error", "An internal server occurred"));
         } finally {
             exchange.endExchange();
-            resultTop.addProperty("ip", exchange.getSourceAddress().getAddress().getHostAddress());
-            resultTop.addProperty("method", exchange.getRequestMethod().toString());
-            resultTop.addProperty("code", exchange.getStatusCode());
+
+            // We log identity data
+            logged.getAgent().setIpAddress(exchange.getSourceAddress().getAddress().getHostAddress());
+
+            // We log request data
+            JsonObject headersReq = new JsonObject();
+            exchange.getRequestHeaders().forEach(hv -> {
+                headersReq.addProperty(hv.getHeaderName().toString(), hv.getFirst());
+            });
+
+            JsonObject object = new JsonObject();
+            object.addProperty("method", exchange.getRequestMethod().toString());
+            object.add("headers", headersReq);
+            logged.setObject(object);
+
+            // We log response data
+            resultTop.addProperty("statusCode", exchange.getStatusCode());
+
+            JsonObject headersRes = new JsonObject();
+            exchange.getResponseHeaders().forEach(hv -> {
+                headersRes.addProperty(hv.getHeaderName().toString(), hv.getFirst());
+            });
+            resultTop.add("headers", headersRes);
+
             if (willLogAtInfo) {
                 log.info(GsonUtil.toJson(logged));
             } else {

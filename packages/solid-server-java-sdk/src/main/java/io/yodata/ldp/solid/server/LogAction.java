@@ -14,16 +14,25 @@ public class LogAction {
     public static class Identity {
 
         private Boolean isAnonymous;
-        private String iri;
+        private String id;
+        private String ipAddress;
+        private String xApiKey;
 
         public void setAnonymous() {
             isAnonymous = true;
         }
 
-        public void setIri(String iri) {
-            this.iri = iri;
+        public void setId(String id) {
+            this.id = id;
         }
 
+        public void setIpAddress(String ipAddress) {
+            this.ipAddress = ipAddress;
+        }
+
+        public void setxApiKey(String xApiKey) {
+            this.xApiKey = xApiKey;
+        }
     }
 
     public static LogAction withType() {
@@ -32,7 +41,7 @@ public class LogAction {
 
     private String type;
     private String actionStatus;
-    private Identity identity;
+    private Identity agent;
     private JsonElement object;
     private String target;
     private JsonObject config;
@@ -162,16 +171,16 @@ public class LogAction {
         return this;
     }
 
-    public Identity getId() {
-        if (Objects.isNull(identity)) {
-            identity = new Identity();
+    public Identity getAgent() {
+        if (Objects.isNull(agent)) {
+            agent = new Identity();
         }
 
-        return identity;
+        return agent;
     }
 
-    public LogAction setId(Identity identity) {
-        this.identity = identity;
+    public LogAction setAgent(Identity agent) {
+        this.agent = agent;
 
         return this;
     }

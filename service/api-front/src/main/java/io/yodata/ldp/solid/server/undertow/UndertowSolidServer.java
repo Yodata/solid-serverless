@@ -215,9 +215,9 @@ public class UndertowSolidServer {
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.head(request);
                         if (context.isAnonymous()) {
-                            r.getId().setAnonymous();
+                            r.getAgent().setAnonymous();
                         } else {
-                            r.getId().setIri(context.getIdentity());
+                            r.getAgent().setId(context.getIdentity());
                         }
                         writeBody(exchange, r.getResponse());
                         return r;
@@ -236,9 +236,9 @@ public class UndertowSolidServer {
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.get(request);
                         if (context.isAnonymous()) {
-                            r.getId().setAnonymous();
+                            r.getAgent().setAnonymous();
                         } else {
-                            r.getId().setIri(context.getIdentity());
+                            r.getAgent().setId(context.getIdentity());
                         }
                         writeBody(exchange, r.getResponse());
                         return r;
@@ -257,9 +257,9 @@ public class UndertowSolidServer {
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.post(request);
                         if (context.isAnonymous()) {
-                            r.getId().setAnonymous();
+                            r.getAgent().setAnonymous();
                         } else {
-                            r.getId().setIri(context.getIdentity());
+                            r.getAgent().setId(context.getIdentity());
                         }
                         writeBody(exchange, r.getResponse());
                         return r;
@@ -278,9 +278,9 @@ public class UndertowSolidServer {
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.put(request);
                         if (context.isAnonymous()) {
-                            r.getId().setAnonymous();
+                            r.getAgent().setAnonymous();
                         } else {
-                            r.getId().setIri(context.getIdentity());
+                            r.getAgent().setId(context.getIdentity());
                         }
                         writeBody(exchange, r.getResponse());
                         return r;
@@ -298,9 +298,9 @@ public class UndertowSolidServer {
                         Request request = UndertorwRequest.build(exchange, context, target, rights, headers);
                         ResponseLogAction r = srv.delete(request);
                         if (context.isAnonymous()) {
-                            r.getId().setAnonymous();
+                            r.getAgent().setAnonymous();
                         } else {
-                            r.getId().setIri(context.getIdentity());
+                            r.getAgent().setId(context.getIdentity());
                         }
                         writeBody(exchange, r.getResponse());
                         return r;
