@@ -106,12 +106,15 @@ public class PusherService {
     }
 
     public void send(LogAction tracer, JsonObject data, String targetRaw, JsonObject cfg) {
-        Optional<String> idRaw = GsonUtil.findString(data, "@id");
-        if (!idRaw.isPresent()) {
-            idRaw = GsonUtil.findString(data, "id");
-        }
+        Optional<String> idRaw = GsonUtil.findString(data, "@id"); // messageId
+        Optional<String> eventIdRaw = GsonUtil.findString(data, "id"); // eventId
+
+        JsonObject objectIds = new JsonObject();
+        idRaw.ifPresent(id -> objectIds.addProperty("messageId", id));
+        eventIdRaw.ifPresent(id -> objectIds.addProperty("eventId", id));
+
         JsonElement id = idRaw.isPresent() ? new JsonPrimitive(idRaw.get()) : data;
-        tracer.setObject(id);
+        tracer.setObject(objectIds);
         tracer.setTarget(targetRaw);
         tracer.setConfig(cfg);
 
