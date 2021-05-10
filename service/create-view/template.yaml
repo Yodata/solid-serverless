@@ -4,7 +4,7 @@ Description: create-view-service
 
 Globals:
   Function:
-    Timeout: 6
+    Timeout: 30
     Runtime: nodejs12.x
     Tags:
       app: solid-serverless
