@@ -9,6 +9,7 @@ const validateSchema = require('./validate-schema')
 const createBmsContact = require('./create-bms-contact')
 const handlFranchiseTransactionReport = require('./handle-franchise-transactionreport')
 const identityQueryHandler = require('./identity-query-handler')
+const addSameAsEventHandler = require('./add-sameAs-event-handler')
 const has = require('./lib/object-has')
 
 const DEFAULT_MIDDLEWARES = [
@@ -19,7 +20,8 @@ const DEFAULT_MIDDLEWARES = [
 	validateSchema,
 	createBmsContact,
 	handlFranchiseTransactionReport,
-	identityQueryHandler
+	identityQueryHandler,
+	addSameAsEventHandler
 ]
 
 const handler = async (event, fn) => {
