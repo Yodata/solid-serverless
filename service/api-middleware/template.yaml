@@ -38,6 +38,9 @@ Parameters:
   validateschemafn:
     Type: String
     Default: validate-schema
+  functionname:
+      Type: String
+      Default: staging-api-middleware
 
 Globals:
   Function:
@@ -83,7 +86,8 @@ Resources:
     Properties:
       CodeUri: src/
       Handler: index.handler
-      FunctionName: production-api-middleware
+      FunctionName:
+          Ref: functionname
       AutoPublishAlias: PreviousVersion
     Policies:
       - AWSLambdaExecute
