@@ -1,5 +1,8 @@
 # Solid Serverless
 
+Solid Serverless is a cloud-native, decentralized message bus that implements the Linked-Data family of standards.
+It's currently in production use by several companies with the largest hosting over 100,000 PODs.
+
 ## Resources
 
 - [Developer guide](dev.md) **<-- START HERE**
