@@ -1,6 +1,26 @@
 # Solid Serverless
 
-Solid Serverless is a cloud-native, decentralized message bus that implements the Linked-Data family of standards.
+Solid Serverless is a multi-tenant, USER CENTRIC (aka decentralized) data hosting platform that has been in production use 
+for over 2 years with accounts in the residential real estate domain serving over 100,000 agents
+with 50+ vendor integrations to date.
+
+SS serves a vendor agnostic API for your internal and external services will use to send and recieve messages with you (or any of your hosted pods).
+
+## Benefits of the decentralized,open-source solution.
+
+1. Realtime backup from all systems in one place
+2. Protection in the event a vendor is compromised by ransoware
+3. Reduces the time and cost of a CRM migration by 75%+
+5. Reduces cost of related analytics projects by up to 80%
+6. Reduces long-term maintenance fees
+7. No restrictions on customization
+8. Customizations can be proprietary
+
+## What is Yodata Enterprise Solid Serverless for Real Estate(YESSRE)
+
+Solid Serverless is an AWS cloud-native implementation of Linked-Data notification 1.0 spec.
+In conjunction with [standard real estate events](https://github.com/Yodata/real-estate)
+decentralized message bus that implements the Linked-Data family of standards.
 It's currently in production use by several companies with the largest hosting over 100,000 PODs.
 
 ## Resources
