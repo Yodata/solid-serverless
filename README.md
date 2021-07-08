@@ -1,4 +1,6 @@
 # Solid Serverless
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FYodata%2Fsolid-serverless.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FYodata%2Fsolid-serverless?ref=badge_shield)
+
 
 Solid Serverless is a multi-tenant, USER CENTRIC (aka decentralized) data hosting platform that has been in production use 
 for over 2 years with accounts in the residential real estate domain serving over 100,000 agents
@@ -46,9 +48,11 @@ It's currently in production use by several companies with the largest hosting o
 - [validate-schema](service/validate-schema/README.md)
 
 ### Subscription
-
-- [Manager](service/subscription-manager/README.md) made of:
+  - [Manager](service/subscription-manager/README.md) made of:
   - Event processor
   - Inbox processor
   - Outbox processor
   - Push processor
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FYodata%2Fsolid-serverless.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FYodata%2Fsolid-serverless?ref=badge_large)
