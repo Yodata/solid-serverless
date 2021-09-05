@@ -22,7 +22,7 @@ Parameters:
     Type: String
   datapolicywl:
     Type: String
-    Default: profile-,service-
+    Default: profile-,service-,svc
   solidkey:
     Type: String
   solidhost:

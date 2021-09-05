@@ -5,7 +5,7 @@ const OLD_ENV = process.env
 
 beforeEach(() => {
 	jest.resetModules()
-	process.env = {...OLD_ENV}
+	process.env = Object.assign({}, OLD_ENV)
 	process.env.DEFAULT_JSONLD_CONTEXT = DEFAULT_JSONLD_CONTEXT
 })
 afterEach(() => {
