@@ -30,7 +30,7 @@ const get = require('get-value')
  * @param {string} 	event.agent - the uri of the request agent
  * @param {boolean} event.hasData
  * @param {string} 	event.contentType
- * @param {object} 	[event.object]
+ * @param {object} 	[event.object] - if event.hasData = true then the parsed body is here.
  *
  * @returns {Promise<NormalizeEventResponse>}
  */
