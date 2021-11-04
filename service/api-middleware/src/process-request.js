@@ -33,12 +33,23 @@ const responseTerminated = event => {
 }
 
 /**
+ * @typedef MiddlewareResponse
+ * @property {object}  request - http.request
+ * @property {object}	 [response] - http.response
+ * @property {string}  stage - request | response
+ * @property {boolean} hasData - true if event has parsed data.object
+ * @property {string}	 contentType - mapi.contenttype
+ * @property {object}  event.headers
+ * @property {object}	 [object] - parsed event body
+ */
+
+/**
  * @param {object} event
  * @param {object} event.request
  * @param {object} [event.response]
  * @param {array} [middlewares]
  *
- * @returns {Promise<object>}
+ * @returns {Promise<MiddlewareResponse>}
  */
 module.exports = async (event, middlewares = DEFAULT_MIDDLEWARES) => {
 	return reduce(middlewares, handler, event)

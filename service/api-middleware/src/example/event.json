@@ -6,7 +6,11 @@
         "application/json"
       ]
     },
-    "body": ""
+    "body": "",
+    "security": {
+      "agent": "https://dave.example.com/profile/card#me",
+      "instrument": "https://dave.example.com/profile/card#me"
+    }
   },
   "response": {
     "headers": {
