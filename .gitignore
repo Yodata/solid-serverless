@@ -338,6 +338,7 @@ solid-serverless.json
 /service/**/sam.json
 /service/**/sam.yaml
 .autoenv.zsh
+preferences.arc
 
 # don't save aws template defaults
 .aws

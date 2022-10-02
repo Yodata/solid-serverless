@@ -11,6 +11,57 @@
     "/template/**",
     "/template"
   ],
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "yaml.schemas": {
+    "file:///Users/dave/Library/Application%20Support/Code/User/globalStorage/amazonwebservices.aws-toolkit-vscode/sam.schema.json": [
+      "sam.yaml",
+      "service/profile-image-import/sam.yaml",
+      "service/bms-transaction/sam.yaml",
+      "service/profile-sub-update/sam.yaml",
+      "service/profile-to-affiliate/sam.yaml",
+      "service/sameAs-modifier-graph/sam.yaml",
+      "service/team-event-handler/sam.yaml",
+      "service/store-event-logger/sam.yaml",
+      "service/create-sfdc-contact/sam.yaml",
+      "service/cache-profile/sam.yaml",
+      "service/check-parent-suborgs/sam.yaml",
+      "service/sam.yaml",
+      "service/copy-event/sam.yaml",
+      "template.yaml",
+      "service/validate-schema/sam.yaml",
+      "service/validate-schema/template.yaml",
+      "service/create-view/template.yaml",
+      "service/create-sfdc-contact/template.yaml",
+      "service/echo-service/template.yaml",
+      "service/check-scope/template.yaml",
+      "service/data-processing/template.yaml",
+      "service/data-policy/template.yaml",
+      "service/data-policy/src/sam.yaml",
+      "service/api-middleware/template.yaml",
+      "template/lambda-service/{{cookiecutter.name}}/template.yaml",
+      "service/api-middleware/template.1.yaml",
+      "service/api-middleware/prod-template.yaml",
+      "prod-template.yaml",
+      "dev-template.yaml",
+      "service/api-middleware/dev-template.yaml"
+    ],
+    "file:/Users/dave/Library/Application Support/Code/User/globalStorage/amazonwebservices.aws-toolkit-vscode/sam.schema.json": [
+      "service/bms-transaction/sam.yaml",
+      "service/profile-sub-update/sam.yaml",
+      "service/team-event-handler/sam.yaml",
+      "service/sameAs-modifier-graph/sam.yaml",
+      "service/store-event-logger/sam.yaml",
+      "service/profile-to-affiliate/sam.yaml",
+      "service/create-sfdc-contact/sam.yaml",
+      "service/check-parent-suborgs/sam.yaml",
+      "service/cache-profile/sam.yaml",
+      "service/copy-event/sam.yaml",
+      "service/sam.yaml",
+      "service/profile-image-import/sam.yaml",
+      "sam.yaml"
+    ],
+    "https://raw.githubusercontent.com/asyncapi/asyncapi/master/versions/1.2.0/schema.json": "asyncapi.yaml",
+    "https://json.schemastore.org/eslintrc": "file:///Users/dave/git/yodata/solid-serverless/.eslintrc.yml"
+  }
 
 }

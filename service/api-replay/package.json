@@ -1,0 +1,16 @@
+{
+  "name": "@yodata/api-replay",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "@architect/functions": "^5.2.2",
+    "@yodata/logger": "^2.1.6"
+  }
+}
