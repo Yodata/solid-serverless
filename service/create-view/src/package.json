@@ -9,7 +9,7 @@
     "@yodata/logger": "^2.0.9",
     "@yodata/transform": "^1.6.6",
     "@yodata/transform-plugin-view": "^1.6.12",
-    "got": "^11.8.0",
+    "got": "^11.8.5",
     "js-yaml": "^3.14.0",
     "lodash": "^4.17.20"
   },
