@@ -20,13 +20,22 @@ function createItemReducer (endPath) {
 }
 
 async function publishItems (target, items) {
-	arc.queues.publish({
+	return arc.queues.publish({
 		name: 'replay-items',
 		payload: {
 			target,
 			items
 		}
+	}).then(result => {
+		logger.debug('PUBLISHED_ITEMS', {
+			target,
+			items,
+			result
+		})
 	})
+		.catch(error => {
+			logger.error('PUBLISH_ITEM_ERROR', { target, items, error })
+		})
 }
 /**
  * gets replay list from store (S3 bucket) &
