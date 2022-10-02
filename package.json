@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/Yodata/solid-serverless#readme",
   "devDependencies": {
-    "@types/jest": "^29.1.0",
+    "@types/jest": "^29.1.1",
     "@types/nock": "^11.1.0",
     "@types/node": "^18.7.23",
     "@types/typescript": "^2.0.0",
@@ -36,9 +36,9 @@
     "eslint-plugin-n": "^15.3.0",
     "eslint-plugin-promise": "^6.0.1",
     "inquirer": "^7.3.3",
-    "jest": "^29.1.1",
+    "jest": "^29.1.2",
     "lerna": "^5.5.4",
-    "nock": "^13.0.5",
+    "nock": "^13.2.9",
     "typescript": "^4.0.5"
   },
   "dependencies": {

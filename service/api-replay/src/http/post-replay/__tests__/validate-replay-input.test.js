@@ -26,5 +26,5 @@ test('returns true when input is valid', () => {
 
 test('throws an error when input is invalid', () => {
 	const input = getTestInput({ startDate: '2022-09-29T22:59:53.288' })
-	expect(() => validateReplayInput(input)).rejects()
+	expect(() => validateReplayInput(input)).toThrowError()
 })

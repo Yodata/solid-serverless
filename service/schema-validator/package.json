@@ -1,5 +1,5 @@
 {
-  "name": "schema-validator",
+  "name": "@yodata/schema-validator-old",
   "version": "1.0.0",
   "main": "index.js",
   "directories": {
