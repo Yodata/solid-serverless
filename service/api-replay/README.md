@@ -32,8 +32,8 @@ $ arc env [-e staging|production|testing] [--add|--remove] VARIABLE_NAME VARIABL
 | REPLAY_BATCH_SIZE       | 10                                  |
 | REPLAY_ITEM_CONCURRENCY | 5                                   |
 | REPLAY_ITEM_LIMIT       | 100                                 |
-| SOLID_HOST              | bhhs.dev.yodata.io                  |
-| SOLID_STORE             | yodata-dev-solid-serverless-storage |
+| SOLID_HOST              | root.example.com                    |
+| SOLID_STORE             | name of the solid storage bucket    |
 | SVC_KEY                 | secret                              |
 
 ### PRODUCTION
@@ -44,6 +44,7 @@ $ arc env [-e staging|production|testing] [--add|--remove] VARIABLE_NAME VARIABL
 | REPLAY_BATCH_SIZE       | 100                                  |
 | REPLAY_ITEM_CONCURRENCY | 5                                    |
 | REPLAY_ITEM_LIMIT       | 10000                                |
-| SOLID_HOST              | bhhs.hsfaffiliates.com               |
-| SOLID_STORE             | hsf-reflex-prod-solid-server-storage |
+| SOLID_HOST              | root.example.com                     |
+| SOLID_STORE             | {cust}-{env}-solid-serverless-store  |
 | SVC_KEY                 | secret                               |
+|-------------------------|--------------------------------------|
