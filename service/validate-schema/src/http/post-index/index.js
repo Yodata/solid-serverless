@@ -2,7 +2,7 @@ const logger = require('@yodata/logger')
 const Ajv = require('ajv')
 const schemaParser = require('json-schema-ref-parser')
 /**
- * What does your function do?
+ * validates the event.object with event.schema and returns isValid or errors array.
  * @param {object} event
  * @param {object} event.object - the item to be validated
  * @param {object|string} event.schema - the json schema validation definition
