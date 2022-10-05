@@ -8,13 +8,12 @@ describe('@yodata/solid-tools/client', () => {
 	})
 
 	test('get.json does not throw', async () => {
-		let uri = 'https://dave.bhhs.dev.yodata.io/public/test-data-policy.json'
-		let c = getClient('dave_admin')
+		const uri = 'https://dave.bhhs.dev.yodata.io/public/test-data-policy.json'
+		const c = getClient(process.env.SOLID_KEY)
 
-		let data = await c(uri, { json: true })
+		const data = await c(uri, { json: true })
 			.then(res => (res.body))
 
 		return expect(data).toHaveProperty('type', 'test')
 	})
-
 })

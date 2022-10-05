@@ -13,8 +13,5 @@
   },
   "scripts": {
     "test": "npx jest --env node"
-  },
-  "devDependencies": {
-    "@types/jest": "^26.0.14"
   }
 }
