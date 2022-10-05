@@ -18,7 +18,7 @@
     "minimatch": "^3.0.4",
     "p-iteration": "^1.1.8",
     "parse-json": "^4.0.0",
-    "set-value": "^3.0.2",
+    "set-value": "^4.0.1",
     "type-is": "^1.6.18"
   },
   "scripts": {
