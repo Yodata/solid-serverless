@@ -1,4 +1,6 @@
 const { SOLID_HOST } = require('./service-config')
+const url = require('url')
+const hostname = new url.URL(SOLID_HOST).hostname
 /**
  * @function validateReplayStartInput
  * @param {object} input
@@ -17,7 +19,7 @@ async function validateReplayStartInput (input) {
 	if (typeof target !== 'string') throw new TypeError('Target must be a string')
 	if (!target.startsWith('https://')) throw new TypeError('Target must start with https://')
 	if (!target.endsWith('/')) throw new TypeError('Target must end with "/"')
-	if (!target.includes(SOLID_HOST)) throw new Error('Target domain must be root or child of ' + SOLID_HOST)
+	if (!target.includes(hostname)) throw new Error('Target domain must be root or child of ' + hostname)
 	if (typeof startDate !== 'string') throw new TypeError('Start date must be a string')
 	if (typeof endDate !== 'string') throw new TypeError('End date must be a string')
 	if (startDate.length !== 24) throw new TypeError('Start date must be 24 characters long')

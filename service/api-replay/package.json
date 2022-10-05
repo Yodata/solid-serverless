@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --env node --bail",
+    "deploy": "arc deploy",
+    "deploy-production": "AWS_PROFILE=bhhs arc deploy --production"
   },
   "keywords": [],
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",

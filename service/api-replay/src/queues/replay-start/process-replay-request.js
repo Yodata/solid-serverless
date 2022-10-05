@@ -32,9 +32,13 @@ async function publishItems (target, items) {
 			items,
 			result
 		})
+		return { target, items, result }
 	})
 		.catch(error => {
 			logger.error('PUBLISH_ITEM_ERROR', { target, items, error })
+			return {
+				target, items, error: { message: error.message, stack: error.stack }
+			}
 		})
 }
 /**

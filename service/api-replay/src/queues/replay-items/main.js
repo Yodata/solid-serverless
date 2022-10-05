@@ -1,34 +1,29 @@
 const Client = require('@yodata/client')
-const logger = require('@yodata/logger')
-const JSON_CONTENT_TYPE = 'application/json'
-
+const { SOLID_HOST, SVC_KEY } = require('./service-config')
+const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
 module.exports = handleReplayItemsEvent
 
 async function handleReplayItemsEvent (event) {
 	const pmap = await import('p-map')
 	const { target, items } = event
-	const { SOLID_HOST, SVC_KEY } = require('./service-config')
-	const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
-	const touch = async (name) => {
-		const location = target + name
+
+	async function touch (name) {
+		const location = client.resolve(target + name)
 		return client
 			.get(location)
 			.then(async response => {
-				const { statusCode, statusMessage, contentType, data } = response
-				if (statusCode === 200 && contentType.includes(JSON_CONTENT_TYPE)) {
-					const putResponse = await client.put(location, data, JSON_CONTENT_TYPE)
-					return { statusCode: putResponse.statusCode }
+				const { statusCode, data } = response
+				if (statusCode === 200 && data && data.id) {
+					return client.put(location, data).then(response => {
+						return `${name}:${response.statusCode}`
+					})
 				} else {
-					logger.error('UNEXPECTED STATUS_CODE: ' + statusCode, { statusCode, statusMessage, location })
-					return { statusCode }
+					return `${name}:UNEXPECTED_STATUS_CODE:${statusCode}`
 				}
 			})
-			.then(async response => {
-				const { statusCode } = response
-				return `${name}:${statusCode}`
-			})
 			.catch(error => {
-				return `ERROR:${name}:${error.message}`
+				const message = error.statusCode || error.message || 500
+				return `${name}:${message}`
 			})
 	}
 	const result = await pmap.default(items, touch, { concurrency: 5 })
