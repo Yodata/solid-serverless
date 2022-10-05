@@ -2,13 +2,10 @@
   "name": "@yodata/validate-schema",
   "version": "0.0.1",
   "description": "what does it do?",
-  "main": "index.js",
-  "directories": {
-    "example": "example",
-    "test": "__tests__"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx jest --env node --bail",
+    "deploy": "AWS_PROFILE=solid-dev arc deploy",
+    "deploy:production": "AWS_PROFILE=production arc deploy --production"
   },
   "keywords": [],
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",

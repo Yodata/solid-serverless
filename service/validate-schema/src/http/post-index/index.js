@@ -25,8 +25,8 @@ exports.handler = async (event) => {
 		if (typeof schema === 'string' && schema.startsWith('http')) {
 			schema = await schemaParser.dereference(schema)
 				.then(dereferencedSchema => {
-					if (typeof dereferencedSchema === 'object' && typeof dereferencedSchema[ 'payload' ] === 'object') {
-						return dereferencedSchema[ 'payload' ]
+					if (typeof dereferencedSchema === 'object' && typeof dereferencedSchema?.payload === 'object') {
+						return dereferencedSchema.payload
 					} else {
 						return dereferencedSchema
 					}
