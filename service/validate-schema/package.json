@@ -4,8 +4,9 @@
   "description": "what does it do?",
   "scripts": {
     "test": "npx jest --env node --bail",
-    "deploy": "AWS_PROFILE=solid-dev arc deploy",
-    "deploy:production": "AWS_PROFILE=production arc deploy --production"
+    "deploy": "AWS_PROFILE=solid-dev npx arc deploy",
+    "deploy:production": "AWS_PROFILE=production npx arc deploy --production",
+    "dev": "npx arc sandbox"
   },
   "keywords": [],
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",

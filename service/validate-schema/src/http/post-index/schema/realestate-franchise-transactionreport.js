@@ -1,0 +1,743 @@
+module.exports = {
+	allOf: [
+		{
+			type: 'object',
+			required: [
+				'topic',
+				'source',
+				'data'
+			],
+			properties: {
+				topic: {
+					description: 'event identifier, same as cloudevents type.',
+					type: 'string'
+				},
+				source: {
+					description: 'the user pod associated with the event, when events are published through an aggregator, publishers should add the source to identify the specific user associated with the event.',
+					type: 'string',
+					format: 'uri',
+					example: 'http://{event-subject}.gotham-city-real-estate.example.com/profile/card#me'
+				},
+				agent: {
+					description: 'the event publisher, may be an event aggregator in the case of a company pod distributing events on behalf of many users.',
+					type: 'string',
+					format: 'uri',
+					example: 'http://{event-publisher}.example.com/profile/card#me'
+				},
+				instrument: {
+					description: 'the message producer, the application or service that created the event',
+					type: 'string',
+					format: 'uri',
+					example: 'http://{event-producer}.example.com/profile/card#me'
+				},
+				time: {
+					description: 'the time the message was produced',
+					type: 'string',
+					format: 'date-time'
+				},
+				data: {
+					type: 'object',
+					description: 'message payload, typically an Action',
+					properties: {
+						type: {
+							type: 'string'
+						}
+					}
+				}
+			}
+		},
+		{
+			properties: {
+				topic: {
+					description: 'realestate/franchise#transactionreport',
+					enum: [
+						'realestate/franchise#transactionreport'
+					]
+				},
+				data: {
+					allOf: [
+						{
+							allOf: [
+								{
+									title: 'Action',
+									type: 'object',
+									description: 'An action performed by a direct agent and indirect participants upon a direct object. Optionally happens at a location with the help of an inanimate instrument. The execution of the action may produce a result. Specific action sub-type documentation specifies the exact expectation of each argument/role.',
+									required: [
+										'type',
+										'object',
+										'instrument'
+									],
+									properties: {
+										type: {
+											description: 'the action type',
+											type: 'string'
+										},
+										object: {
+											description: 'item on which the action is carried out'
+										}
+									},
+									externalDocs: {
+										description: 'schema.org/Action',
+										url: 'https://schema.org/Action'
+									}
+								},
+								{
+									title: 'UpdateAction',
+									description: 'the item (object) has been updated by user (agent)',
+									properties: {
+										type: {
+											description: 'const UpdateAction',
+											enum: [
+												'UpdateAction'
+											]
+										},
+										object: {
+											type: 'object',
+											description: 'the updated item'
+										}
+									}
+								}
+							]
+						},
+						{
+							properties: {
+								type: {
+									type: 'string'
+								},
+								instrument: {
+									type: 'object',
+									description: 'the data provider',
+									properties: {
+										type: {
+											type: 'string',
+											enum: [
+												'SoftwareApplication'
+											]
+										},
+										name: {
+											type: 'string',
+											description: 'the name of the data provider software',
+											example: 'Breaking BMS',
+											maxLength: 10
+										}
+									}
+								},
+								object: {
+									type: 'object',
+									title: 'RealEstateTransaction',
+									'x-range': 'RealEstateTransaction',
+									description: 'describes a sale, purchase and transfer of a real estate property.',
+									required: [
+										'type',
+										'identifier',
+										'additionalProperty',
+										'transactionType',
+										'reportingOffice',
+										'totalSalesProductionGCI',
+										'totalSalesProductionGCIDeduction',
+										'object'
+									],
+									properties: {
+										type: {
+											type: 'string',
+											description: '"RealEstateTransaction"',
+											enum: [
+												'RealEstateTransaction'
+											]
+										},
+										identifier: {
+											type: 'object',
+											description: 'the data producer\'s id for the transaction.',
+											required: [
+												'bmsTransactionId'
+											],
+											properties: {
+												bmsTransactionId: {
+													type: 'string',
+													maxLength: 12,
+													example: '0000074792'
+												}
+											}
+										},
+										additionalProperty: {
+											type: 'object',
+											description: 'vendor/context specific custom properties',
+											required: [
+												'batchId',
+												'transactionSequence',
+												'unimprovedLandFlag'
+											],
+											properties: {
+												batchId: {
+													type: 'integer',
+													description: 'identifies the batch for the current transaction',
+													example: 4136
+												},
+												transactionSequence: {
+													type: 'integer',
+													description: 'the sequentail order of this transaction report relative to previous reports of the the same RealEstateTransaction',
+													minimum: 0,
+													example: 1
+												},
+												unimprovedLandFlag: {
+													type: 'boolean',
+													description: 'true if the transaction subject property is an unimproved lot.'
+												}
+											}
+										},
+										transactionStatus: {
+											type: 'string',
+											description: 'transaction status',
+											'x-range': 'TransactionStatus',
+											example: 'ClosedTransactionStatus',
+											enum: [
+												'PendingTransactionStatus',
+												'ClosedTransactionStatus',
+												'CanceledTransactionStatus'
+											]
+										},
+										transactionType: {
+											type: 'string',
+											description: 'transaction type',
+											'x-range': 'TransactionType',
+											example: 'ST',
+											enum: [
+												'ST',
+												'LS',
+												'OI',
+												'PM',
+												'RF'
+											]
+										},
+										reportingOffice: {
+											type: 'string',
+											format: 'uri',
+											description: 'the reporting office',
+											example: 'https://{officeid}.example.com/profile/card#me'
+										},
+										listingOffice: {
+											type: 'string',
+											format: 'uri',
+											description: 'the office representing the seller',
+											example: 'https://{officeid}.example.com/profile/card#me'
+										},
+										buyerOffice: {
+											type: 'string',
+											format: 'uri',
+											description: 'the office representing the buyer',
+											example: 'https://{officeid}.example.com/profile/card#me'
+										},
+										commissionDate: {
+											type: 'string',
+											format: 'date-time',
+											'x-range': 'DateTime',
+											description: 'date the purchase offer was presented'
+										},
+										closeDate: {
+											type: 'string',
+											format: 'date-time',
+											'x-range': 'DateTime',
+											description: 'With purchase the date the purchase agreement was fulfilled. With lease, the date the requirements were fulfilled, such as contract and/or deposit.'
+										},
+										purchaseContractDate: {
+											type: 'string',
+											format: 'date-time',
+											description: 'date of purchase agreement execution (aka sale date)',
+											'x-range': 'DateTime'
+										},
+										closePrice: {
+											description: 'the final sale price of the subject',
+											example: {
+												type: 'MonetaryAmount',
+												value: 123456.78,
+												currency: 'USD'
+											},
+											type: 'object',
+											title: 'MonetaryAmount',
+											'x-range': 'MonetaryAmount',
+											required: [
+												'type',
+												'value',
+												'currency'
+											],
+											properties: {
+												type: {
+													type: 'string',
+													description: 'MonetaryAmount',
+													enum: [
+														'MonetaryAmount'
+													]
+												},
+												value: {
+													type: 'number',
+													description: 'the amount.',
+													example: 1234.56
+												},
+												currency: {
+													type: 'string',
+													description: 'use ISO4217 country codes',
+													maxLength: 3,
+													example: 'USD'
+												}
+											}
+										},
+										totalSalesProductionGCI: {
+											description: 'the total gci of the transaction',
+											example: {
+												type: 'MonetaryAmount',
+												value: 123456.78,
+												currency: 'USD'
+											},
+											type: 'object',
+											title: 'MonetaryAmount',
+											'x-range': 'MonetaryAmount',
+											required: [
+												'type',
+												'value',
+												'currency'
+											],
+											properties: {
+												type: {
+													type: 'string',
+													description: 'MonetaryAmount',
+													enum: [
+														'MonetaryAmount'
+													]
+												},
+												value: {
+													type: 'number',
+													description: 'the amount.',
+													example: 1234.56
+												},
+												currency: {
+													type: 'string',
+													description: 'use ISO4217 country codes',
+													maxLength: 3,
+													example: 'USD'
+												}
+											}
+										},
+										totalSalesProductionGCIDeduction: {
+											description: 'total gci deductions for the transaction',
+											example: {
+												type: 'MonetaryAmount',
+												value: 1234.56,
+												currency: 'USD'
+											},
+											type: 'object',
+											title: 'MonetaryAmount',
+											'x-range': 'MonetaryAmount',
+											required: [
+												'type',
+												'value',
+												'currency'
+											],
+											properties: {
+												type: {
+													type: 'string',
+													description: 'MonetaryAmount',
+													enum: [
+														'MonetaryAmount'
+													]
+												},
+												value: {
+													type: 'number',
+													description: 'the amount.',
+													example: 1234.56
+												},
+												currency: {
+													type: 'string',
+													description: 'use ISO4217 country codes',
+													maxLength: 3,
+													example: 'USD'
+												}
+											}
+										},
+										object: {
+											title: 'RealEstateProperty',
+											'x-range': 'RealEstateProperty',
+											description: 'a property in the real estate transaction context',
+											type: 'object',
+											required: [
+												'type',
+												'propertyType'
+											],
+											properties: {
+												type: {
+													type: 'string',
+													description: '"RealEstateProperty"',
+													enum: [
+														'RealEstateProperty'
+													]
+												},
+												apn: {
+													type: 'string',
+													description: 'Assessors Parcel Number',
+													example: 'ABC-12345-XX-XXXX'
+												},
+												listingId: {
+													type: 'string',
+													description: 'the local identifier for the listing (MLS #)'
+												},
+												streetAddress: {
+													type: 'string',
+													description: 'the street address',
+													example: '1007 Mountain Gate Rd',
+													maxLength: 75
+												},
+												addressRegion: {
+													type: 'string',
+													description: 'State or Province.',
+													example: 'New Jersey',
+													maxLength: 3
+												},
+												addressLocality: {
+													type: 'string',
+													description: 'City, Township.',
+													example: 'Gotham City',
+													maxLength: 50
+												},
+												postalCode: {
+													type: 'string',
+													description: 'Zip/Post Code',
+													example: '10010',
+													maxLength: 12
+												},
+												addressCountry: {
+													type: 'string',
+													description: 'two-letter ISO 3166-1 alpha-2 country code',
+													example: 'US',
+													enum: [
+														'CA',
+														'DE',
+														'GR',
+														'IN',
+														'IT',
+														'MX',
+														'PE',
+														'PT',
+														'ES',
+														'AE',
+														'GB',
+														'US'
+													]
+												},
+												propertyType: {
+													type: 'string',
+													description: 'RESO property type (see range for allowed values)',
+													'x-range': 'PropertyType',
+													minLength: 4,
+													maxLength: 4,
+													enum: [
+														'RESI',
+														'RLSE',
+														'RINC',
+														'LAND',
+														'MOBI',
+														'FARM',
+														'COMS',
+														'COML',
+														'BUSO'
+													]
+												},
+												propertySubType: {
+													title: 'propertySubType',
+													type: 'string',
+													'x-range': 'PropertySubType',
+													description: 'RESO property sub-type (see range for allowed values)',
+													enum: [
+														'ApartmentPropertyType',
+														'BoatSlipPropertyType',
+														'CabinPropertyType',
+														'CondominiumPropertyType',
+														'DeededParkingPropertyType',
+														'DuplexPropertyType',
+														'FarmPropertyType',
+														'ManufacturedHomePropertyType',
+														'ManufacturedOnLandPropertyType',
+														'MobileHomePropertyType',
+														'OwnYourOwnPropertyType',
+														'QuadruplexPropertyType',
+														'RanchPropertyType',
+														'SingleFamilyPropertyType',
+														'StockCooperativePropertyType',
+														'TimesharePropertyType',
+														'TownhousePropertyType',
+														'TriplexPropertyType',
+														'AgriculturePropertyType',
+														'BusinessPropertyType',
+														'HotelMotelPropertyType',
+														'IndustrialPropertyType',
+														'MixedUsePropertyType',
+														'MultiFamilyPropertyType',
+														'OfficePropertyType',
+														'RetailPropertyType',
+														'UnimprovedLandPropertyType',
+														'WarehousePropertyType'
+													]
+												},
+												universalPropertyId: {
+													type: 'string',
+													title: 'universalPropertyId',
+													description: 'The Universal Property Identifier is a unique identifier for all real property in the US and Canada.  It is based on country and local identification methods and is limited to real property.  For cases such as shares of real property, units, and other more granular cases, please utilize the UniversalPropertySubId.',
+													example: 'US-04015-N-R-11022331-N'
+												}
+											}
+										},
+										referral: {
+											description: 'referring agent details',
+											title: 'Referral',
+											type: 'object',
+											'x-range': 'Referral',
+											properties: {
+												type: {
+													enum: [
+														'Referral'
+													],
+													description: 'Referral',
+													type: 'string'
+												},
+												additionalProperty: {
+													type: 'object',
+													description: 'context specific custom properties',
+													properties: {
+														isReferralYN: {
+															type: 'string',
+															description: 'Y if transaction was a referral',
+															enum: [
+																'Y',
+																'N'
+															]
+														},
+														inNetworkReferralYN: {
+															type: 'string',
+															description: 'Y if transaction was referred by an in network agent',
+															enum: [
+																'Y',
+																'N'
+															]
+														}
+													}
+												},
+												referredBy: {
+													type: 'object',
+													description: 'the referring entity',
+													properties: {
+														type: {
+															type: 'string',
+															description: 'the referring entity type i.e RealEstateOrganization, RealEstateAgent',
+															enum: [
+																'RealEstateOrganization',
+																'RealEstateAgent',
+																'RealEstateOffice',
+																'Organization',
+																'Person'
+															]
+														},
+														id: {
+															type: 'string',
+															format: 'uri',
+															description: 'Linked-Data URI (@id)'
+														}
+													}
+												}
+											}
+										},
+										participant: {
+											type: 'array',
+											description: 'parties with a direct or indirect interest or role in the transaction',
+											'x-range': 'TransactionParticipant',
+											items: {
+												type: 'object',
+												title: 'TransactionParticipant',
+												'x-range': 'TransactionParticipant',
+												properties: {
+													type: {
+														description: '"TransactionParticipant"',
+														enum: [
+															'TransactionParticipant'
+														],
+														type: 'string'
+													},
+													roleName: {
+														type: 'string',
+														description: 'enum: Buyer,Seller',
+														enum: [
+															'Buyer',
+															'Seller'
+														]
+													},
+													position: {
+														type: 'number',
+														description: 'numeric position for the participant/roleName.',
+														example: 1
+													},
+													givenName: {
+														type: 'string',
+														description: 'First Name of a person',
+														example: 'Bruce'
+													},
+													familyName: {
+														type: 'string',
+														description: 'Last Name of a person',
+														example: 'Wayne',
+														maxLength: 50
+													},
+													additionalName: {
+														type: 'string',
+														description: 'middleName or alternate name of the Person',
+														example: 'Big'
+													},
+													email: {
+														type: 'string',
+														description: 'Primary email address.',
+														example: 'user@example.com'
+													},
+													telephone: {
+														type: 'string',
+														description: 'Primary phone number.',
+														example: '+15558675309'
+													},
+													affiliation: {
+														type: 'array',
+														description: 'person or organization associated with the participant',
+														items: {
+															type: 'string',
+															format: 'uri',
+															example: 'https://{agentid}.example.com/profile/card#me'
+														}
+													}
+												}
+											}
+										},
+										transactionEntry: {
+											type: 'array',
+											description: 'commissions and unit entries',
+											'x-range': 'TransactionEntry',
+											items: {
+												type: 'object',
+												title: 'TransactionEntry',
+												description: 'describes a unit of sales credit in unit or commission value relative to a parent transaction',
+												'x-range': 'TransactionEntry',
+												properties: {
+													type: {
+														type: 'string',
+														description: 'TransactionEntry',
+														enum: [
+															'TransactionEntry'
+														]
+													},
+													salesProductionUnit: {
+														type: 'number',
+														minimum: 0,
+														maximum: 1,
+														description: 'the sales production units credited to the recipient',
+														example: 0.5
+													},
+													salesProductionGCI: {
+														description: 'gross commission income credited to the recipient',
+														'x-range': 'MonetaryAmount',
+														example: {
+															type: 'MonetaryAmount',
+															value: 1234.56,
+															currency: 'USD'
+														},
+														type: 'object',
+														title: 'MonetaryAmount',
+														required: [
+															'type',
+															'value',
+															'currency'
+														],
+														properties: {
+															type: {
+																type: 'string',
+																description: 'MonetaryAmount',
+																enum: [
+																	'MonetaryAmount'
+																]
+															},
+															value: {
+																type: 'number',
+																description: 'the amount.',
+																example: 1234.56
+															},
+															currency: {
+																type: 'string',
+																description: 'use ISO4217 country codes',
+																maxLength: 3,
+																example: 'USD'
+															}
+														}
+													},
+													recipient: {
+														description: 'the agent credited with the sales production and who receives the value',
+														type: 'object',
+														properties: {
+															type: {
+																type: 'string',
+																description: 'typically a RealEstateAgent',
+																example: 'RealEstateAgent'
+															},
+															roleName: {
+																type: 'string',
+																description: 'enum: ListingAgent,BuyerAgent',
+																enum: [
+																	'ListingAgent',
+																	'BuyerAgent'
+																]
+															},
+															id: {
+																description: 'bhhs profile id for the referring entity',
+																example: 'https://{entityid}.example.com/profile/card#me',
+																type: 'string',
+																format: 'uri'
+															},
+															identifier: {
+																type: 'object',
+																description: 'unique identifier of the recipient from the data producer',
+																properties: {
+																	bmsAgentId: {
+																		type: 'string',
+																		maxLength: 12,
+																		example: '1657897'
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										},
+										document: {
+											type: 'array',
+											description: 'any documents, images, etc... related to the transaction.',
+											'x-range': 'DigitalDocument',
+											items: {
+												type: 'object',
+												example: {
+													type: 'DigitalDocument',
+													name: 'Sales Contract',
+													encodingFormat: 'application/zip',
+													about: {
+														type: 'Transaction',
+														identifier: {
+															guruTransactionId: '0000074792'
+														}
+													},
+													url: 'https://example.com/path/to/document.pdf'
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		}
+	],
+	'@id': 'https://validate-schema.bhhs.hsfaffiliates.com/public/schema/realestate/franchise/transactionreport.json',
+	id: 'https://validate-schema.bhhs.hsfaffiliates.com/public/schema/realestate/franchise/transactionreport.json'
+}
