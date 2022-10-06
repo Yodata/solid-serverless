@@ -59,3 +59,9 @@ exports.handler = async (event) => {
 	logger.debug(event)
 	return event
 }
+
+exports.getRemoteSchema = async function getRemoteSchema (event) {
+	const term = event?.topic || event?.type
+	const target = process.env.SCHEMA_STORE_URL + '/' + term
+	return schemaParser.dereference(target)
+}

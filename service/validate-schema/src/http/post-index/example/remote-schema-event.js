@@ -1,4 +1,3 @@
-const transactionreport = require('./transactionreport')
 
 module.exports = {
 	object: {
