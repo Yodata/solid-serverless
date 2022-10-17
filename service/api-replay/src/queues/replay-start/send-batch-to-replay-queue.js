@@ -5,8 +5,8 @@ const TARGET_QUEUE = 'replay-queue'
  *
  * @param {object} input
  * @param {string<uri>} input.target - target container url¯
- * @param {object} input.object
- * @param {string[]} input.object.items - array of ids to be replayed from the target container
+ * @param {string[]} input.items - array of ids to be replayed from the target container
+ * @param {object} [input.filter] - only items that match the filter will be replayed.
  * @returns
  */
 async function sendBatchToReplqyItemsQueue (input) {
@@ -15,7 +15,7 @@ async function sendBatchToReplqyItemsQueue (input) {
 		payload: input
 	}
 	return arc.queues.publish(params).then(() => {
-		return `sent ${input.object.items.length} items to replay from ${input.target}`
+		return `sent ${input.items.length} items to replay from ${input.target}`
 	})
 }
 

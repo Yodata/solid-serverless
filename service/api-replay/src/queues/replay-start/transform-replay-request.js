@@ -1,3 +1,4 @@
+
 // ## input parameters
 // ```yaml
 // type: ReplayStartAction
@@ -24,8 +25,27 @@ async function transformReplayRequest (input) {
 	const {
 		target,
 		startDate,
-		endDate
+		endDate,
+		items,
+		filter
 	} = input
+
+	// handle requests which are already reflex uris
+	if (Array.isArray(items)) {
+		const message = {
+			type: 'ReplayStartAction',
+			target: getPathFromTarget(target)
+		}
+		message.items = items.map(id => {
+			if (id.startsWith(message.target)) {
+				return id.substring(message.target.length)
+			} else {
+				return id
+			}
+		})
+		if (filter) message.filter = filter
+		return message
+	}
 	const bucket = SOLID_STORE
 	const targetPath = getPathFromTarget(target)
 	const startPath = targetPath + getPathFromDate(startDate)

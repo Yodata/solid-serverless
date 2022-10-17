@@ -4,6 +4,7 @@ const { ListObjectsV2Command } = require('@aws-sdk/client-s3')
 const s3Client = require('./s3client.js')
 const logger = require('@yodata/logger')
 const { REPLAY_ITEM_LIMIT, REPLAY_BATCH_SIZE } = require('./service-config')
+const processUriReplayRequest = require('./process-uri-item-request')
 
 function getItemId (item) {
 	return item.Key.split('/').slice(-1)[0]
@@ -19,17 +20,19 @@ function createItemReducer (endPath) {
 	}
 }
 
-async function publishItems (target, items) {
+async function publishItems (target, items, filter) {
 	return arc.queues.publish({
 		name: 'replay-items',
 		payload: {
 			target,
-			items
+			items,
+			filter
 		}
 	}).then(result => {
 		logger.debug('PUBLISHED_ITEMS', {
 			target,
 			items,
+			filter,
 			result
 		})
 		return { target, items, result }
@@ -54,7 +57,12 @@ async function publishItems (target, items) {
  * !
  */
 async function processReplayRequest (input) {
-	const { target, bucket, prefix, startPath, endPath } = input
+	const { target, bucket, prefix, startPath, endPath, items, filter } = input
+
+	if (Array.isArray(items)) {
+		return processUriReplayRequest(input)
+	}
+
 	const reducer = createItemReducer(endPath)
 
 	const commandOptions = {
@@ -75,7 +83,7 @@ async function processReplayRequest (input) {
 			const response = await s3Client.send(new ListObjectsV2Command(commandOptions))
 			if (Number(response.KeyCount) > 0) {
 				const items = response.Contents.reduce(reducer, [])
-				await publishItems(target, items)
+				await publishItems(target, items, filter)
 				itemsPublished += items.length
 				lastKey = response.Contents.slice(-1)[0].Key
 			}

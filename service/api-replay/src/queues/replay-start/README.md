@@ -8,6 +8,7 @@
 note: props are JSON buy I like yaml so examples are shown in yaml. deal with it. please.
 
 ## input parameters
+
 ```yaml
   type: ReplayRequestAction
   target: 'https://example.com/inbox/'
@@ -16,6 +17,7 @@ note: props are JSON buy I like yaml so examples are shown in yaml. deal with it
 ```
 
 ## transformed input parameters
+
 ```yaml
   type: ReplayRequestAction
   bucket: process.env.SOLID_STORE
@@ -24,4 +26,16 @@ note: props are JSON buy I like yaml so examples are shown in yaml. deal with it
   endPath: entities/${target.host}/data/by-ts/${target.path}/year/month/day/hours/minutes/
 ```
 
-##
+## sends to replay items queue (in batches of process.env.REPLAY_BATCH_SIZE)
+
+```yaml
+type: ReplayRequestAction
+target: 'https://bob.example.com/inbox/'
+items:
+  - 5e76a09475324bb6af67f90e629fd009
+  - 5e76a09475324bb6af67f90e629fd010
+  - 5e76a09475324bb6af67f90e629fd011
+ filter: ## optional filter
+  $contains:
+    data.object.type: RealEstateAgent
+```

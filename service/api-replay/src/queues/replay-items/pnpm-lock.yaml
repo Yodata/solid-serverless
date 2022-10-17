@@ -5,12 +5,14 @@ specifiers:
   '@yodata/client': ^1.11.23
   '@yodata/logger': ^2.1.6
   p-map: ^5.5.0
+  queryl: ^1.1.0
 
 dependencies:
   '@architect/functions': 5.2.2
   '@yodata/client': 1.11.23
   '@yodata/logger': 2.1.6
   p-map: 5.5.0
+  queryl: 1.1.0
 
 packages:
 
@@ -326,6 +328,10 @@ packages:
     resolution: {integrity: sha512-hXt6Ul/5yWjfklSGvLQl8vM//l3FtyHZeuelpzK6mm99pNvN9yTDruNZPEJZD1oWrqo+izBmB7oUfWgcCX7s4Q==}
     dev: false
 
+  /lodash/4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+    dev: false
+
   /lowercase-keys/2.0.0:
     resolution: {integrity: sha512-tqNXrS78oMOE73NMxK4EMLQsQowWf8jKooH9g7xPavRT706R6bkQJ6DY2Te7QukaZsulxa30wQ7bk0pm4XiHmA==}
     engines: {node: '>=8'}
@@ -393,6 +399,12 @@ packages:
     dependencies:
       end-of-stream: 1.4.4
       once: 1.4.0
+    dev: false
+
+  /queryl/1.1.0:
+    resolution: {integrity: sha512-ksSOSyRgDYk3W8lpuJ6/zMR2m6OYAPZYrO73YzDof5JXC7VwDzCaXy30ji+YIdDE/uEzh3izDKddTSkh+tgwAw==}
+    dependencies:
+      lodash: 4.17.21
     dev: false
 
   /queue-microtask/1.2.3:

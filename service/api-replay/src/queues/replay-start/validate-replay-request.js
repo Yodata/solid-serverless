@@ -12,7 +12,7 @@ const hostname = new url.URL(SOLID_HOST).hostname
  *
  */
 async function validateReplayStartInput (input) {
-	const { type, target, startDate, endDate } = input
+	const { type, target, startDate, endDate, items } = input
 
 	if (type === 'ReplayRequestActon') throw new Error('type of input must be ReplayRequestActon')
 	if (typeof input !== 'object') throw new TypeError('ReplayInput must be an object')
@@ -20,6 +20,12 @@ async function validateReplayStartInput (input) {
 	if (!target.startsWith('https://')) throw new TypeError('Target must start with https://')
 	if (!target.endsWith('/')) throw new TypeError('Target must end with "/"')
 	if (!target.includes(hostname)) throw new Error('Target domain must be root or child of ' + hostname)
+
+	// if the request already has ids to replay then go ahead and replay
+	if (Array.isArray(items)) {
+		return input
+	}
+
 	if (typeof startDate !== 'string') throw new TypeError('Start date must be a string')
 	if (typeof endDate !== 'string') throw new TypeError('End date must be a string')
 	if (startDate.length !== 24) throw new TypeError('Start date must be 24 characters long')
