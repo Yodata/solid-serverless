@@ -4,7 +4,7 @@
   "description": "validate reflex event",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest --env node --bail"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --env node --bail"
   },
   "keywords": [],
   "author": "yodaveduran <dave@yodata.io> (https://yodata.io/)",
