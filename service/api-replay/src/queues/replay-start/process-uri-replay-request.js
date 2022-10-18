@@ -19,7 +19,7 @@ async function processUriReplayRequest (input) {
 	}
 
 	while (items.length > 0 && ITEMS_REPLAYED < REPLAY_ITEM_LIMIT) {
-		message.items = items.slice(REPLAY_BATCH_SIZE).map(id => {
+		message.items = items.splice(0, REPLAY_BATCH_SIZE).map(id => {
 			if (id.startsWith(message.target)) {
 				return id.substring(message.target.length)
 			} else {

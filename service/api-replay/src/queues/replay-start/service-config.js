@@ -2,8 +2,8 @@
 const SOLID_STORE = process.env.SOLID_STORE ? process.env.SOLID_STORE : false
 const SOLID_HOST = process.env.SOLID_HOST ? process.env.SOLID_HOST : false
 const AWS_REGION = process.env.AWS_REGION || 'us-west-2'
-const REPLAY_BATCH_SIZE = process.env.REPLAY_BATCH_SIZE || 1000
-const REPLAY_ITEM_LIMIT = process.env.REPLAY_ITEM_LIMIT || 5000
+const REPLAY_BATCH_SIZE = process.env.REPLAY_BATCH_SIZE || 100
+const REPLAY_ITEM_LIMIT = process.env.REPLAY_ITEM_LIMIT || 10000
 
 if (!SOLID_STORE) {
 	throw new Error(
