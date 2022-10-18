@@ -31,14 +31,14 @@ async function transformReplayRequest (input) {
 	} = input
 
 	// handle requests which are already reflex uris
-	if (Array.isArray(items)) {
+	if (Array.isArray(items) && typeof target === 'string' && target.startsWith('http')) {
 		const message = {
 			type: 'ReplayStartAction',
-			target: getPathFromTarget(target)
+			target
 		}
 		message.items = items.map(id => {
-			if (id.startsWith(message.target)) {
-				return id.substring(message.target.length)
+			if (id.startsWith(target)) {
+				return id.substring(target.length)
 			} else {
 				return id
 			}

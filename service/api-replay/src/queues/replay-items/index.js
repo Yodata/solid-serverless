@@ -15,6 +15,7 @@ async function handleReplayItemEvent (event) {
 			log.actionStatus = 'CompletedActionStatus'
 			log.result = result
 			logger.info(log)
+			return log.actionStatus
 		})
 		.catch(error => {
 			log.actionStatus = 'FailedActionStatus'
@@ -23,10 +24,9 @@ async function handleReplayItemEvent (event) {
 				message: error.message,
 				stack: error.stack
 			}
+			log.object = event
 			logger.error(log)
-		})
-		.finally(() => {
-			return log
+			return `${log.actionStatus}:${error.message}`
 		})
 }
 exports.handler = arc.queues.subscribe(handleReplayItemEvent)

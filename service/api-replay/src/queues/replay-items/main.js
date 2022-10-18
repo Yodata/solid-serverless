@@ -1,25 +1,31 @@
 const Client = require('@yodata/client')
-const { SOLID_HOST, SVC_KEY } = require('./service-config')
-const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
-const query = require('queryl')
+const checkFilter = require('./check-filter')
+
 module.exports = handleReplayItemsEvent
 
 async function handleReplayItemsEvent (event) {
-	const pmap = await import('p-map')
+	const { SOLID_HOST, SVC_KEY, REPLAY_BATCH_SIZE, REPLAY_FILTERING_ENABLED } = require('./service-config')
+	const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
+	const pMap = await (await import('p-map')).default
 	const { target, items, filter } = event
+
+	if (Array.isArray(items) && items.Length > REPLAY_BATCH_SIZE) {
+		throw new Error('ITEM_COUNT_EXCEEDS_REPLAY_BATCH_SIZE' + items.length)
+	}
 
 	async function touch (name) {
 		const location = client.resolve(target + name)
 		return client
 			.get(location)
 			.then(async response => {
-				let matchesFilter = true
 				const { statusCode, data } = response
 				if (statusCode === 200 && data && data.id) {
-					if (filter) {
-						matchesFilter = query.match(filter, data)
+					if (filter && REPLAY_FILTERING_ENABLED === '1') {
+						const matchesFilter = checkFilter(filter, data)
+						if (matchesFilter === false) {
+							return `${name}:DOES_NOT_MATCH_FILTER`
+						}
 					}
-					if (!matchesFilter) return `${name}:DOES_NOT_MATCH_FILTER`
 					// items matches the filter so replay it.
 					return client.put(location, data).then(response => {
 						return `${name}:${response.statusCode}`
@@ -33,6 +39,6 @@ async function handleReplayItemsEvent (event) {
 				return `${name}:${message}`
 			})
 	}
-	const result = await pmap.default(items, touch, { concurrency: 5 })
+	const result = await pMap(items, touch, { concurrency: 5 })
 	return result
 }

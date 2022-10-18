@@ -8,26 +8,26 @@ async function handleEvent (event) {
 	const log = {
 		agent: AGENT,
 		actionStatus: 'ActiveActionStatus',
-		object: event,
 		result: ''
 	}
 	return main(event)
 		.then(result => {
 			log.actionStatus = 'CompletedActionStatus'
 			log.result = result
+			log.object = event
 			logger.info(log)
+			return result
 		})
 		.catch(error => {
 			log.actionStatus = 'FailedActionStatus'
 			log.result = error.message
+			log.object = event
 			log.error = {
 				message: error.message,
 				stack: error.stack
 			}
 			logger.error(log)
-		})
-		.finally(() => {
-			return log
+			return Promise.reject(log)
 		})
 }
 exports.handler = arc.queues.subscribe(handleEvent)

@@ -14,5 +14,9 @@
   "dependencies": {
     "@architect/functions": "^5.2.2",
     "@yodata/logger": "^2.1.6"
+  },
+  "devDependencies": {
+    "@types/nock": "^11.1.0",
+    "nock": "^13.2.9"
   }
 }

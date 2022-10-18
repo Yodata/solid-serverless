@@ -6,8 +6,10 @@ const { REPLAY_ITEM_LIMIT, REPLAY_BATCH_SIZE } = require('./service-config')
 module.exports = processUriReplayRequest
 
 async function processUriReplayRequest (input) {
-	let ITEMS_REPLAYED = 0
 	const { target, items, filter } = input
+	const response = []
+	let ITEMS_REPLAYED = 0
+
 	if (!Array.isArray(items)) {
 		throw new Error('Items must be an array')
 	}
@@ -26,13 +28,21 @@ async function processUriReplayRequest (input) {
 				return id
 			}
 		})
-		await publishItems(target, items, filter)
+
+		const result = await publishItems(message)
 		ITEMS_REPLAYED += message.items.length
-		logger.info(`published ${ITEMS_REPLAYED} itmes to ${target}`)
+		response.push({
+			message: 'PUBLISHED_ITEMS',
+			itemCount: message.items.length,
+			totalItemsPublished: ITEMS_REPLAYED,
+			items: message.items,
+			result
+		})
 	}
+	return response
 }
 
-async function publishItems (target, items, filter) {
+async function publishItems ({ target, items, filter }) {
 	return arc.queues.publish({
 		name: 'replay-items',
 		payload: {
@@ -40,19 +50,9 @@ async function publishItems (target, items, filter) {
 			items,
 			filter
 		}
-	}).then(result => {
-		logger.debug('PUBLISHED_ITEMS', {
-			target,
-			items,
-			filter,
-			result
-		})
-		return { target, items, filter, result }
 	})
 		.catch(error => {
 			logger.error('PUBLISH_ITEM_ERROR', { target, items, error })
-			return {
-				target, items, error: { message: error.message, stack: error.stack }
-			}
+			return `ERROR: ${error.message}`
 		})
 }
