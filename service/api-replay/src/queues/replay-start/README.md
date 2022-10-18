@@ -9,11 +9,27 @@ note: props are JSON buy I like yaml so examples are shown in yaml. deal with it
 
 ## input parameters
 
+### time bounded request (contains startDate and endDate)
+
 ```yaml
   type: ReplayRequestAction
   target: 'https://example.com/inbox/'
   startDate: '2022-09-30T02:09:16.483Z'
   endDate: '2022-09-30T03:09:16.483Z'
+```
+
+### specific item request (maxiumu of about 5000 items)
+
+```yaml
+  type: ReplayRequestAction
+  target: 'https://example.com/inbox/'
+  items:
+    - 5e76a09475324bb6af67f90e629fd011
+    - 5e76a09475324bb6af67f90e629fd012
+    - 5e76a09475324bb6af67f90e629fd013
+  filter: ## optional filter
+    $contains:
+      data.object.type: RealEstateAgent
 ```
 
 ## transformed input parameters
