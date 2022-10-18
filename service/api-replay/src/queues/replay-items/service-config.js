@@ -18,7 +18,7 @@ if (!SOLID_HOST) {
 }
 
 /**
-  * @typedef ReplayItemsCongig
+  * @typedef ReplayItemsConfig
   * @member {string} SOLID_HOST - hostname of the root pod i.e. bhhs.dev.yodata.io
 	* @member {string} SVC_KEY - credentials (service requires solid-admin permissions)
   */
