@@ -4,7 +4,7 @@ const checkFilter = require('./check-filter')
 module.exports = handleReplayItemsEvent
 
 async function handleReplayItemsEvent (event) {
-	const { SOLID_HOST, SVC_KEY, REPLAY_BATCH_SIZE, REPLAY_FILTERING_ENABLED } = require('./service-config')
+	const { SOLID_HOST, SVC_KEY, REPLAY_BATCH_SIZE, REPLAY_FILTERING_ENABLED, REPLAY_ITEM_CONCURRENCY } = require('./service-config')
 	const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
 	const pMap = await (await import('p-map')).default
 	const { target, items, filter } = event
@@ -39,6 +39,6 @@ async function handleReplayItemsEvent (event) {
 				return `${name}:${message}`
 			})
 	}
-	const result = await pMap(items, touch, { concurrency: 5 })
+	const result = await pMap(items, touch, { concurrency: REPLAY_ITEM_CONCURRENCY })
 	return result
 }
