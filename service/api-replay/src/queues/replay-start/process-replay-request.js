@@ -4,7 +4,7 @@ const { ListObjectsV2Command } = require('@aws-sdk/client-s3')
 const s3Client = require('./s3client.js')
 const logger = require('@yodata/logger')
 const { REPLAY_ITEM_LIMIT, REPLAY_BATCH_SIZE } = require('./service-config')
-const processUriReplayRequest = require('./process-uri-item-request')
+const processUriReplayRequest = require('./process-uri-replay-request')
 
 function getItemId (item) {
 	return item.Key.split('/').slice(-1)[0]

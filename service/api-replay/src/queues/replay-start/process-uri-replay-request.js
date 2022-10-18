@@ -3,12 +3,15 @@ const arc = require('@architect/functions')
 const logger = require('@yodata/logger')
 const { REPLAY_ITEM_LIMIT, REPLAY_BATCH_SIZE } = require('./service-config')
 
+module.exports = processUriReplayRequest
+
 async function processUriReplayRequest (input) {
 	let ITEMS_REPLAYED = 0
 	const { target, items, filter } = input
 	if (!Array.isArray(items)) {
 		throw new Error('Items must be an array')
 	}
+
 	const message = {
 		type: 'ReplayItemsRequest',
 		target,
@@ -25,6 +28,7 @@ async function processUriReplayRequest (input) {
 		})
 		await publishItems(target, items, filter)
 		ITEMS_REPLAYED += message.items.length
+		logger.info(`published ${ITEMS_REPLAYED} itmes to ${target}`)
 	}
 }
 
@@ -52,5 +56,3 @@ async function publishItems (target, items, filter) {
 			}
 		})
 }
-
-module.exports = processUriReplayRequest
