@@ -1,44 +1,29 @@
-const Client = require('@yodata/client')
-const checkFilter = require('./check-filter')
+const touch = require('./touch')
+const validateInput = require('./validate-input')
 
-module.exports = handleReplayItemsEvent
+module.exports = async function (event) {
+	return validateInput(event)
+		.then(handleReplayItemsEvent)
+}
 
+/**
+ *
+ * @param {object} request - request
+ * @param {string} request.target - container url @example http://name.example.com/inbox/
+ * @param {string[]} request.items - list of ids within the container to be replayed
+ * @param {object} [request.filter] - optional filter
+ * @param {object} [request.options - { stopOnError: true }
+ * @returns {Promise} returns a Promise resolved when the event is processed or rejected
+ */
 async function handleReplayItemsEvent (event) {
-	const { SOLID_HOST, SVC_KEY, REPLAY_BATCH_SIZE, REPLAY_FILTERING_ENABLED, REPLAY_ITEM_CONCURRENCY } = require('./service-config')
-	const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
+	const { STOP_REPLAY_ON_ERROR, REPLAY_ITEM_CONCURRENCY } = require('./service-config')
+	const replayOptions = { concurrency: REPLAY_ITEM_CONCURRENCY, stopOnError: STOP_REPLAY_ON_ERROR }
 	const pMap = await (await import('p-map')).default
-	const { target, items, filter } = event
+	const { target, items, filter, options } = event
 
-	if (Array.isArray(items) && items.Length > REPLAY_BATCH_SIZE) {
-		throw new Error('ITEM_COUNT_EXCEEDS_REPLAY_BATCH_SIZE' + items.length)
+	async function touchItem (pathName) {
+		return touch({ target, pathName, filter, options })
 	}
 
-	async function touch (name) {
-		const location = client.resolve(target + name)
-		return client
-			.get(location)
-			.then(async response => {
-				const { statusCode, data } = response
-				if (statusCode === 200 && data && data.id) {
-					if (filter && REPLAY_FILTERING_ENABLED === '1') {
-						const matchesFilter = checkFilter(filter, data)
-						if (matchesFilter === false) {
-							return `${name}:DOES_NOT_MATCH_FILTER`
-						}
-					}
-					// items matches the filter so replay it.
-					return client.put(location, data).then(response => {
-						return `${name}:${response.statusCode}`
-					})
-				} else {
-					return `${name}:UNEXPECTED_STATUS_CODE:${statusCode}`
-				}
-			})
-			.catch(error => {
-				const message = error.statusCode || error.message || 500
-				return `${name}:${message}`
-			})
-	}
-	const result = await pMap(items, touch, { concurrency: REPLAY_ITEM_CONCURRENCY })
-	return result
+	return pMap(items, touchItem, replayOptions)
 }

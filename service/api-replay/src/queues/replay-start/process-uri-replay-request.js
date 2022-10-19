@@ -6,7 +6,7 @@ const { REPLAY_ITEM_LIMIT, REPLAY_BATCH_SIZE } = require('./service-config')
 module.exports = processUriReplayRequest
 
 async function processUriReplayRequest (input) {
-	const { target, items, filter } = input
+	const { target, items, filter, options } = input
 	const response = []
 	let ITEMS_REPLAYED = 0
 
@@ -17,7 +17,8 @@ async function processUriReplayRequest (input) {
 	const message = {
 		type: 'ReplayItemsRequest',
 		target,
-		filter
+		filter,
+		options
 	}
 
 	while (items.length > 0 && ITEMS_REPLAYED < REPLAY_ITEM_LIMIT) {
@@ -42,17 +43,13 @@ async function processUriReplayRequest (input) {
 	return response
 }
 
-async function publishItems ({ target, items, filter }) {
+async function publishItems (message) {
 	return arc.queues.publish({
 		name: 'replay-items',
-		payload: {
-			target,
-			items,
-			filter
-		}
+		payload: message
 	})
 		.catch(error => {
-			logger.error('PUBLISH_ITEM_ERROR', { target, items, error })
+			logger.error('PUBLISH_ITEM_ERROR', message)
 			return `ERROR: ${error.message}`
 		})
 }

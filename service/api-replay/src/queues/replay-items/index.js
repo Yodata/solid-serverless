@@ -1,6 +1,7 @@
 const arc = require('@architect/functions')
 const logger = require('@yodata/logger')
 const main = require('./main')
+const { STOP_REPLAY_ON_ERROR } = require('./service-config')
 
 const AGENT = 'replay-items'
 
@@ -26,7 +27,7 @@ async function handleReplayItemEvent (event) {
 			}
 			log.object = event
 			logger.error(log)
-			return log
+			return (STOP_REPLAY_ON_ERROR) ? Promise.reject(log) : Promise.resolve(log)
 		})
 }
 exports.handler = arc.queues.subscribe(handleReplayItemEvent)
