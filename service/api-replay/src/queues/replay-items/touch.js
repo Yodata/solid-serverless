@@ -1,14 +1,5 @@
 const Client = require('@yodata/client')
 const checkFilter = require('./check-filter')
-const { SOLID_HOST, SVC_KEY, REPLAY_FILTERING_ENABLED, STOP_REPLAY_ON_ERROR } = require('./service-config')
-const client = new Client({ hostname: SOLID_HOST, hostkey: SVC_KEY })
-
-const getReplayConfig = (overrides) => {
-	const defaultConfig = Object.create({
-		stopOnError: STOP_REPLAY_ON_ERROR
-	})
-	return Object.assign(defaultConfig, overrides)
-}
 
 /**
  *
@@ -20,7 +11,8 @@ const getReplayConfig = (overrides) => {
  * @returns
  */
 module.exports = async function _touch ({ target, pathName, filter, options }) {
-	const config = getReplayConfig(options)
+	const { SOLID_HOST, REPLAY_FILTERING_ENABLED, STOP_REPLAY_ON_ERROR } = options
+	const client = new Client({ hostname: SOLID_HOST, hostkey: process.env.SVC_KEY })
 	const name = pathName
 	const location = client.resolve(target + name)
 	return client
@@ -54,9 +46,9 @@ module.exports = async function _touch ({ target, pathName, filter, options }) {
 		.catch(error => {
 			error.statusCode = error.statusCode || 500
 			error.statusMessage = error.statusMessage || error.message
-			error.url = error.url || target + pathName
-			if (config.stopOnError === true) {
-				throw error
+			error.url = error.url || location
+			if (STOP_REPLAY_ON_ERROR === true) {
+				throw new Error(`ERROR:${error.url}:${error.statusCode}`)
 			} else {
 				return `{pathname}:ERROR:${error.statusCode}:${error.message}`
 			}

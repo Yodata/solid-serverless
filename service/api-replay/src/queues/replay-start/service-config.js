@@ -18,14 +18,14 @@ if (!SOLID_HOST) {
 }
 
 /**
-  * @typedef ApiReplayConfig
+  * @typedef DEFAULT_CONFIG
   * @member {string} SOLID_HOST - hostname of the root pod i.e. bhhs.dev.yodata.io
   * @member {string} SOLID_STORE - bucket name of the solid-serverless-storage bucket
 	* @member {string} AWS_REGION - region of the root solid-serverless bucket @example us-west-2
  * 	@member {string} REPLAY_BATCH_SIZE - number of items to replay in a single batch
  *  @member {string} REPLAY_ITEM_LIMIT - limit replay requests to this number of items
   */
-const ApiReplayConfig = {
+const DEFAULT_CONFIG = {
 	SOLID_STORE,
 	SOLID_HOST,
 	AWS_REGION,
@@ -33,4 +33,4 @@ const ApiReplayConfig = {
 	REPLAY_ITEM_LIMIT: Number(REPLAY_ITEM_LIMIT)
 }
 
-module.exports = ApiReplayConfig
+module.exports = DEFAULT_CONFIG

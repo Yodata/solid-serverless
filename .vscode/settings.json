@@ -62,6 +62,7 @@
     ],
     "https://raw.githubusercontent.com/asyncapi/asyncapi/master/versions/1.2.0/schema.json": "asyncapi.yaml",
     "https://json.schemastore.org/eslintrc": "file:///Users/dave/git/yodata/solid-serverless/.eslintrc.yml"
-  }
+  },
+  "testing.autoRun.mode": "rerun"
 
 }

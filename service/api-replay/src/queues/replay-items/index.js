@@ -1,21 +1,25 @@
 const arc = require('@architect/functions')
 const logger = require('@yodata/logger')
-const main = require('./main')
-const { STOP_REPLAY_ON_ERROR } = require('./service-config')
 
 const AGENT = 'replay-items'
 
 async function handleReplayItemEvent (event) {
+	const main = require('./main')
+	const DEFAULT_CONFIG = require('./service-config')
+	const getOptions = (event) => Object.assign({}, DEFAULT_CONFIG, event.options)
+	event.options = getOptions(event)
+	const { STOP_REPLAY_ON_ERROR } = event.options
 	const log = {
 		agent: AGENT,
-		actionStatus: 'ActiveActionStatus',
-		target: event.target
+		target: event.target,
+		options: Object.assign({}, event.options, { SVC_KEY: 'REDACTED' }),
+		actionStatus: 'ActiveActionStatus'
 	}
 	return main(event)
 		.then(result => {
 			log.actionStatus = 'CompletedActionStatus'
 			log.result = result
-			logger.info(log)
+			log.itemsCount = event.items.lenth
 			return log
 		})
 		.catch(error => {
@@ -25,10 +29,19 @@ async function handleReplayItemEvent (event) {
 				message: error.message,
 				stack: error.stack
 			}
+			if (error.errors) {
+				log.errors = error.errors
+				log.error.stack = error.errors.join('\n')
+			}
 			log.object = event
-			logger.error(log)
-			return (STOP_REPLAY_ON_ERROR) ? Promise.reject(log) : Promise.resolve(log)
+			if (STOP_REPLAY_ON_ERROR) {
+				return Promise.reject(log)
+			} else {
+				logger.error(log)
+				return Promise.resolve(log)
+			}
 		})
 }
+
 exports.handler = arc.queues.subscribe(handleReplayItemEvent)
-exports.testHandler = handleReplayItemEvent
+exports.test = handleReplayItemEvent
