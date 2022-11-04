@@ -1,0 +1,16 @@
+{
+  "name": "@yodata/solid-serverless-api-publish-v2",
+  "private": "true",
+  "version": "0.0.1",
+  "description": "fast publish for trusted data sources",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "npx jest"
+  },
+  "author": "Dave Duran <dave@yodata.io> (https://yodata.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "@architect/functions": "^5.2.3",
+    "@yodata/logger": "^2.1.6"
+  }
+}
