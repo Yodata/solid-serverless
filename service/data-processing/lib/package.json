@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.382.0",
-    "jest": "^23.6.0",
+    "jest": "^29.3.1",
     "lambda-tester": "^3.5.0"
   }
 }
