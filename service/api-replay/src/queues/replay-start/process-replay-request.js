@@ -1,5 +1,4 @@
 // Import required AWS SDK clients and commands for Node.js.
-const _ = require("lodash");
 const arc = require("@architect/functions");
 const {
   ListObjectsV2Command,
